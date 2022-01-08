@@ -10,12 +10,13 @@ extras_require = {
         "coveralls",
         "mutwo.ext-music>=0.1.0, <1.0.0",
         "pillow>=8.2.0, <9.0.0",
+        "mutwo.ext-ekmelily>=0.1.0, <1.0.0",
     ]
 }
 
 setuptools.setup(
     name="mutwo.ext-abjad",
-    version="0.1.1",
+    version="0.1.2",
     license="GPL",
     description="abjad extension for event based framework for generative art",
     long_description=long_description,

@@ -23,11 +23,11 @@ from mutwo.ext.events import music
 
 
 def run_if_ekmelily_is_available(method_to_wrap: typing.Callable):
-    def wrapper(*args, **kwargs):
+    def test(*args, **kwargs):
         if frontends.abjad.parameters.EKMELILY_FOUND:
             return method_to_wrap(*args, **kwargs)
 
-    return wrapper
+    return test
 
 
 class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
