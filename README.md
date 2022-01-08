@@ -5,8 +5,16 @@
 [![PyPI version](https://badge.fury.io/py/mutwo.ext-abjad.svg)](https://badge.fury.io/py/mutwo.ext-abjad)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[Mutwo](https://github.com/mutwo-org/mutwo) extension for abjad.
+Abjad extension for event based library [mutwo](https://github.com/mutwo-org/mutwo).
 
 This extension implements:
 
 - mutwo.ext.converters.frontends.abjad extension package.
+
+### Installation
+
+mutwo.ext-abjad is available on [pypi](https://pypi.org/project/mutwo.ext-abjad/) and can be installed via pip:
+
+```sh
+pip3 install mutwo.ext-abjad
+```
