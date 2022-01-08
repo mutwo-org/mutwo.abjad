@@ -15,7 +15,7 @@ extras_require = {
 
 setuptools.setup(
     name="mutwo.ext-abjad",
-    version="0.1.0",
+    version="0.1.1",
     license="GPL",
     description="abjad extension for event based framework for generative art",
     long_description=long_description,
