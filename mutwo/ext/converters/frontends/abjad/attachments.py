@@ -8,12 +8,12 @@ import warnings
 
 import abjad  # type: ignore
 
-from mutwo.core.parameters import abc as parameters_abc
-from mutwo.core.parameters import notation_indicators
-from mutwo.core.parameters import playing_indicators
 from mutwo.core.utilities import tools
 
 from mutwo.ext.converters.frontends.abjad import attachments_constants
+from mutwo.ext.parameters import abc as ext_parameters_abc
+from mutwo.ext.parameters import notation_indicators
+from mutwo.ext.parameters import playing_indicators
 
 
 class AbjadAttachment(abc.ABC):
@@ -25,7 +25,7 @@ class AbjadAttachment(abc.ABC):
 
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: parameters_abc.IndicatorCollection
+        cls, indicator_collection: ext_parameters_abc.IndicatorCollection
     ) -> typing.Optional["AbjadAttachment"]:
         """Initialize :class:`AbjadAttachment` from :class:`~mutwo.parameters.abc.IndicatorCollection`.
 
@@ -472,7 +472,7 @@ class Hairpin(playing_indicators.Hairpin, ToggleAttachment):
         return leaf
 
 
-class BartokPizzicato(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
+class BartokPizzicato(ext_parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -483,7 +483,7 @@ class BartokPizzicato(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachme
         return leaf
 
 
-class BreathMark(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
+class BreathMark(ext_parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -505,7 +505,7 @@ class Fermata(playing_indicators.Fermata, BangFirstAttachment):
         return leaf
 
 
-class NaturalHarmonic(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
+class NaturalHarmonic(ext_parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -517,7 +517,7 @@ class NaturalHarmonic(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachme
         return leaf
 
 
-class Prall(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
+class Prall(ext_parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -528,7 +528,7 @@ class Prall(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
         return leaf
 
 
-class Tie(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
+class Tie(ext_parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -540,7 +540,7 @@ class Tie(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
         return leaf
 
 
-class DurationLineTriller(parameters_abc.ExplicitPlayingIndicator, BangEachAttachment):
+class DurationLineTriller(ext_parameters_abc.ExplicitPlayingIndicator, BangEachAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -552,7 +552,7 @@ class DurationLineTriller(parameters_abc.ExplicitPlayingIndicator, BangEachAttac
         return leaf
 
 
-class DurationLineDashed(parameters_abc.ExplicitPlayingIndicator, BangEachAttachment):
+class DurationLineDashed(ext_parameters_abc.ExplicitPlayingIndicator, BangEachAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -566,7 +566,7 @@ class DurationLineDashed(parameters_abc.ExplicitPlayingIndicator, BangEachAttach
         return leaf
 
 
-class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
+class Glissando(ext_parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     thickness = 3
     minimum_length = 5
 
@@ -649,7 +649,7 @@ class BendAfter(playing_indicators.BendAfter, BangLastAttachment):
         return leaf
 
 
-class LaissezVibrer(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
+class LaissezVibrer(ext_parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
@@ -784,7 +784,7 @@ class Dynamic(ToggleAttachment):
 
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: parameters_abc.IndicatorCollection
+        cls, indicator_collection: ext_parameters_abc.IndicatorCollection
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 
@@ -815,7 +815,7 @@ class Tempo(BangFirstAttachment):
 
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: parameters_abc.IndicatorCollection
+        cls, indicator_collection: ext_parameters_abc.IndicatorCollection
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 
@@ -855,7 +855,7 @@ class Tempo(BangFirstAttachment):
 class DynamicChangeIndicationStop(BangFirstAttachment):
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: parameters_abc.IndicatorCollection
+        cls, indicator_collection: ext_parameters_abc.IndicatorCollection
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 
@@ -880,7 +880,7 @@ class GraceNoteSequentialEvent(BangFirstAttachment):
 
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: parameters_abc.IndicatorCollection
+        cls, indicator_collection: ext_parameters_abc.IndicatorCollection
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 
@@ -910,7 +910,7 @@ class AfterGraceNoteSequentialEvent(BangLastAttachment):
 
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: parameters_abc.IndicatorCollection
+        cls, indicator_collection: ext_parameters_abc.IndicatorCollection
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 

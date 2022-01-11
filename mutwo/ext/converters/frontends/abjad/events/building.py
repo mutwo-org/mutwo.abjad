@@ -20,6 +20,7 @@ from mutwo.core.utilities import tools
 from mutwo.ext.converters.frontends.abjad import attachments
 from mutwo.ext.converters.frontends.abjad import constants as abjad_constants
 from mutwo.ext.converters.frontends.abjad import process_container_routines
+from mutwo.ext import parameters as ext_parameters
 
 from mutwo.ext import events as ext_events
 
@@ -160,7 +161,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     :type sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter, optional
     :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
-        (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
+        (objects that inherit from :class:`mutwo.ext.parameters.abc.Pitch`).
         By default it asks the Event for its
         :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
@@ -169,11 +170,11 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         should be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
         extracted), mutwo will assume an event without any pitches.
-    :type simple_event_to_pitch_list: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Pitch], optional
+    :type simple_event_to_pitch_list: typing.Callable[[events.basic.SimpleEvent], ext_parameters.abc.Pitch], optional
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating dynamic
         indicators. The function should return an object that inherits from
-        :class:`mutwo.parameters.abc.Volume`. By default it asks the Event for
+        :class:`mutwo.ext.parameters.abc.Volume`. By default it asks the Event for
         its :attr:`~mutwo.events.music.NoteLike.volume` attribute (because by default
         :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
@@ -182,7 +183,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
         extracted), mutwo will set :attr:`pitch_list` to an empty list and set
         volume to 0.
-    :type simple_event_to_volume: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Volume], optional
+    :type simple_event_to_volume: typing.Callable[[events.basic.SimpleEvent], ext_parameters.abc.Volume], optional
     :param simple_event_to_grace_note_sequential_event: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`~mutwo.events.basic.SequentialEvent`
@@ -217,7 +218,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     :type simple_event_to_after_grace_note_sequential_event: typing.Callable[[events.basic.SimpleEvent], events.basic.SequentialEvent[events.basic.SimpleEvent]], optional
     :param simple_event_to_playing_indicator_collection: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
-        :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
+        :class:`mutwo.ext.parameters.playing_indicators.PlayingIndicatorCollection`
         object. By default it asks the Event for its
         :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
@@ -228,10 +229,10 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
         from :const:`~mutwo.ext.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
-    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], ext_parameters.playing_indicators.PlayingIndicatorCollection,], optional
     :param simple_event_to_notation_indicator_collection: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
-        :class:`mutwo.parameters.notation_indicators.NotationIndicatorCollection`
+        :class:`mutwo.ext.parameters.notation_indicators.NotationIndicatorCollection`
         object. By default it asks the Event for its
         :attr:`~mutwo.events.music.NoteLike.notation_indicators`
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
@@ -240,18 +241,18 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
         collection can be extracted), mutwo will build a notation indicator collection
         from :const:`~mutwo.ext.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
-    :type simple_event_to_notation_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.notation_indicators.NotationIndicatorCollection,], optional
+    :type simple_event_to_notation_indicator_collection: typing.Callable[[events.basic.SimpleEvent], ext_parameters.notation_indicators.NotationIndicatorCollection,], optional
     :param is_simple_event_rest: Function to detect if the
         the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
         default Mutwo simply checks if 'pitch_list' contain any objects. If not,
         the Event will be interpreted as a rest.
     :type is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
-        :class:`mutwo.parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
+        :class:`mutwo.ext.parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
         See :class:`MutwoPitchToAbjadPitchConverter` for more information.
     :type mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter, optional
     :param mutwo_volume_to_abjad_attachment_dynamic_converter: Class which defines how
-        to convert :class:`mutwo.parameters.abc.Volume` objects to
+        to convert :class:`mutwo.ext.parameters.abc.Volume` objects to
         :class:`mutwo.converters.frontends.attachments.Dynamic` objects.
         See :class:`MutwoVolumeToAbjadAttachmentDynamicConverter` for more information.
     :type mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter, optional
@@ -270,27 +271,27 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     """
 
     ExtractedData = tuple[
-        list[parameters.abc.Pitch],
-        parameters.abc.Volume,
+        list[ext_parameters.abc.Pitch],
+        ext_parameters.abc.Volume,
         events.basic.SequentialEvent[events.basic.SimpleEvent],
         events.basic.SequentialEvent[events.basic.SimpleEvent],
-        parameters.playing_indicators.PlayingIndicatorCollection,
-        parameters.notation_indicators.NotationIndicatorCollection,
+        ext_parameters.playing_indicators.PlayingIndicatorCollection,
+        ext_parameters.notation_indicators.NotationIndicatorCollection,
     ]
 
     ExtractedDataPerSimpleEvent = tuple[ExtractedData, ...]
 
-    _empty_volume = parameters.volumes.DirectVolume(0)
+    _empty_volume = ext_parameters.volumes.DirectVolume(0)
     _empty_grace_note_sequential_event = events.basic.SequentialEvent([])
 
     def __init__(
         self,
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = NauertSequentialEventToQuantizedAbjadContainerConverter(),
         simple_event_to_pitch_list: typing.Callable[
-            [events.basic.SimpleEvent], list[parameters.abc.Pitch]
+            [events.basic.SimpleEvent], list[ext_parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
         simple_event_to_volume: typing.Callable[
-            [events.basic.SimpleEvent], parameters.abc.Volume
+            [events.basic.SimpleEvent], ext_parameters.abc.Volume
         ] = lambda simple_event: simple_event.volume,  # type: ignore
         simple_event_to_grace_note_sequential_event: typing.Callable[
             [events.basic.SimpleEvent],
@@ -302,11 +303,11 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         ] = lambda simple_event: simple_event.after_grace_note_sequential_event,  # type: ignore
         simple_event_to_playing_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
-            parameters.playing_indicators.PlayingIndicatorCollection,
+            ext_parameters.playing_indicators.PlayingIndicatorCollection,
         ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
         simple_event_to_notation_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
-            parameters.notation_indicators.NotationIndicatorCollection,
+            ext_parameters.notation_indicators.NotationIndicatorCollection,
         ] = lambda simple_event: simple_event.notation_indicator_collection,  # type: ignore
         is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool] = None,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
@@ -442,7 +443,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     # ###################################################################### #
 
     @staticmethod
-    def _detect_abjad_event_type(pitch_list: list[parameters.abc.Pitch]) -> type:
+    def _detect_abjad_event_type(pitch_list: list[ext_parameters.abc.Pitch]) -> type:
         n_pitches = len(pitch_list)
         if n_pitches == 0:
             abjad_event_type = abjad.Rest
@@ -485,7 +486,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     def _indicator_collection_to_attachments(
         self,
-        indicator_collection: parameters.abc.IndicatorCollection,
+        indicator_collection: ext_parameters.abc.IndicatorCollection,
     ) -> dict[str, attachments.AbjadAttachment]:
         attachment_dict = {}
         for abjad_attachment_class in self._abjad_attachment_class_sequence:
@@ -529,7 +530,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         return {name: abjad_attachment_class(grace_note_sequential_event_container)}
 
     def _volume_to_abjad_attachment(
-        self, volume: parameters.abc.Volume
+        self, volume: ext_parameters.abc.Volume
     ) -> dict[str, attachments.AbjadAttachment]:
         if self._mutwo_volume_to_abjad_attachment_dynamic_converter:
             abjad_attachment_dynamic = (
@@ -682,7 +683,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     def _extract_pitch_list_and_volume_from_simple_event(
         self, simple_event: events.basic.SimpleEvent
-    ) -> tuple[list[parameters.abc.Pitch], parameters.abc.Volume]:
+    ) -> tuple[list[ext_parameters.abc.Pitch], ext_parameters.abc.Volume]:
         extracted_data = [
             # pitch list
             tools.call_function_except_attribute_error(
@@ -961,18 +962,18 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
         self,
         is_before: bool,
         simple_event_to_pitch_list: typing.Callable[
-            [events.basic.SimpleEvent], list[parameters.abc.Pitch]
+            [events.basic.SimpleEvent], list[ext_parameters.abc.Pitch]
         ],
         simple_event_to_volume: typing.Callable[
-            [events.basic.SimpleEvent], parameters.abc.Volume
+            [events.basic.SimpleEvent], ext_parameters.abc.Volume
         ],
         simple_event_to_playing_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
-            parameters.playing_indicators.PlayingIndicatorCollection,
+            ext_parameters.playing_indicators.PlayingIndicatorCollection,
         ],
         simple_event_to_notation_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
-            parameters.notation_indicators.NotationIndicatorCollection,
+            ext_parameters.notation_indicators.NotationIndicatorCollection,
         ],
         is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool],
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter,

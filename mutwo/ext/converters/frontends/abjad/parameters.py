@@ -1,4 +1,4 @@
-"""Module to convert mutwo parameters to abjad equivalents."""
+"""Module to convert mutwo.ext.parameters to abjad equivalents."""
 
 import abc
 import logging
@@ -18,6 +18,7 @@ from mutwo.core.utilities import constants
 from mutwo.core.utilities import tools
 
 from mutwo.ext.converters.frontends.abjad import attachments
+from mutwo.ext import parameters as ext_parameters
 
 
 __all__ = (
@@ -44,7 +45,7 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
     """Convert Mutwo Pitch objects to Abjad Pitch objects.
 
     This default class simply checks if the passed Mutwo object belongs to
-    :class:`mutwo.parameters.pitches.WesternPitch`. If it does, Mutwo
+    :class:`mutwo.ext.parameters.pitches.WesternPitch`. If it does, Mutwo
     will initialise the Abjad Pitch from the :attr:`name` attribute.
     Otherwise Mutwo will simply initialise the Abjad Pitch from the
     objects :attr:`frequency` attribute.
@@ -54,8 +55,8 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
     inherit from this class to define more complex cases.
     """
 
-    def convert(self, pitch_to_convert: parameters.abc.Pitch) -> abjad.Pitch:
-        if isinstance(pitch_to_convert, parameters.pitches.WesternPitch):
+    def convert(self, pitch_to_convert: ext_parameters.abc.Pitch) -> abjad.Pitch:
+        if isinstance(pitch_to_convert, ext_parameters.pitches.WesternPitch):
             return abjad.NamedPitch(pitch_to_convert.name)
         else:
             return abjad.NamedPitch.from_hertz(pitch_to_convert.frequency)
@@ -64,11 +65,11 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
 if EKMELILY_FOUND:
 
     class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
-        """Convert Mutwo :obj:`~mutwo.parameters.pitches.JustIntonationPitch` objects to Abjad Pitch objects.
+        """Convert Mutwo :obj:`~mutwo.ext.parameters.pitches.JustIntonationPitch` objects to Abjad Pitch objects.
 
         :param reference_pitch: The reference pitch (1/1). Should be a diatonic
             pitch name (see
-            :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE`)
+            :const:`~mutwo.ext.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE`)
             in English nomenclature. For any other reference pitch than 'c', Lilyponds
             midi rendering for pitches with the diatonic pitch 'c' will be slightly
             out of tune (because the first value of :arg:`global_scale`
@@ -112,7 +113,7 @@ if EKMELILY_FOUND:
 
         **Example:**
 
-        >>> from mutwo.parameters import pitches
+        >>> from mutwo.ext.parameters import pitches
         >>> from mutwo.converters.frontends import abjad
         >>> my_ji_pitch = pitches.JustIntonationPitch('5/4')
         >>> converter_on_a = abjad.MutwoPitchToHEJIAbjadPitchConverter(reference_pitch='a')
@@ -177,7 +178,7 @@ if EKMELILY_FOUND:
             self._exponent_to_exponent_indicator = exponent_to_exponent_indicator
             self._tempered_pitch_indicator = tempered_pitch_indicator
             self._reference_index = (
-                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
+                ext_parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                     reference_pitch
                 )
             )
@@ -185,22 +186,22 @@ if EKMELILY_FOUND:
 
         def _find_western_octave_for_just_intonation_pitch(
             self,
-            pitch_to_convert: parameters.pitches.JustIntonationPitch,
+            pitch_to_convert: ext_parameters.pitches.JustIntonationPitch,
             closest_pythagorean_pitch_name: str,
         ) -> int:
             octave = pitch_to_convert.octave + 4
             closest_pythagorean_pitch_index = (
-                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
+                ext_parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                     closest_pythagorean_pitch_name[0]
                 )
             )
             if closest_pythagorean_pitch_index < self._reference_index:
                 octave += 1
 
-            pitch_as_western_pitch = parameters.pitches.WesternPitch(
+            pitch_as_western_pitch = ext_parameters.pitches.WesternPitch(
                 closest_pythagorean_pitch_name[0], octave
             )
-            reference_pitch_as_western_pitch = parameters.pitches.WesternPitch(
+            reference_pitch_as_western_pitch = ext_parameters.pitches.WesternPitch(
                 self._reference_pitch, 4
             )
             expected_difference_in_cents = pitch_to_convert.cents
@@ -246,7 +247,7 @@ if EKMELILY_FOUND:
 
         def _find_heji_accidental_for_just_intonation_pitch(
             self,
-            pitch_to_convert: parameters.pitches.JustIntonationPitch,
+            pitch_to_convert: ext_parameters.pitches.JustIntonationPitch,
             abjad_pitch_class: abjad.NamedPitchClass,
         ):
             # find additional commas
@@ -275,7 +276,7 @@ if EKMELILY_FOUND:
 
         def _convert_just_intonation_pitch(
             self,
-            pitch_to_convert: parameters.pitches.JustIntonationPitch,
+            pitch_to_convert: ext_parameters.pitches.JustIntonationPitch,
         ) -> abjad.Pitch:
             # find pythagorean pitch
             closest_pythagorean_pitch_name = (
@@ -298,8 +299,8 @@ if EKMELILY_FOUND:
             abjad_pitch._pitch_class = abjad_pitch_class
             return abjad_pitch
 
-        def convert(self, pitch_to_convert: parameters.abc.Pitch) -> abjad.Pitch:
-            if isinstance(pitch_to_convert, parameters.pitches.JustIntonationPitch):
+        def convert(self, pitch_to_convert: ext_parameters.abc.Pitch) -> abjad.Pitch:
+            if isinstance(pitch_to_convert, ext_parameters.pitches.JustIntonationPitch):
                 abjad_pitch = self._convert_just_intonation_pitch(pitch_to_convert)
             else:
                 abjad_pitch = MutwoPitchToAbjadPitchConverter().convert(
@@ -313,21 +314,21 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
     """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.attachments.Dynamic`.
 
     This default class simply checks if the passed Mutwo object belongs to
-    :class:`mutwo.parameters.volumes.WesternVolume`. If it does, Mutwo
+    :class:`mutwo.ext.parameters.volumes.WesternVolume`. If it does, Mutwo
     will initialise the :class:`Tempo` object from the :attr:`name` attribute.
     Otherwise Mutwo will first initialise a :class:`WesternVolume` object via
-    its py:method:`mutwo.parameters.volumes.WesternVolume.from_amplitude` method.
+    its py:method:`mutwo.ext.parameters.volumes.WesternVolume.from_amplitude` method.
 
-    Hairpins aren't notated with the aid of :class:`mutwo.parameters.abc.Volume`
-    objects, but with :class:`mutwo.parameters.playing_indicators.Hairpin`.
+    Hairpins aren't notated with the aid of :class:`mutwo.ext.parameters.abc.Volume`
+    objects, but with :class:`mutwo.ext.parameters.playing_indicators.Hairpin`.
     """
 
     def convert(
-        self, volume_to_convert: parameters.abc.Volume
+        self, volume_to_convert: ext_parameters.abc.Volume
     ) -> typing.Optional[attachments.Dynamic]:
-        if not isinstance(volume_to_convert, parameters.volumes.WesternVolume):
+        if not isinstance(volume_to_convert, ext_parameters.volumes.WesternVolume):
             if volume_to_convert.amplitude > 0:
-                volume_to_convert = parameters.volumes.WesternVolume.from_amplitude(
+                volume_to_convert = ext_parameters.volumes.WesternVolume.from_amplitude(
                     volume_to_convert.amplitude
                 )
             else:

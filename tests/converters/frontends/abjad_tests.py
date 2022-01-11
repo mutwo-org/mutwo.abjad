@@ -18,6 +18,7 @@ from mutwo.core import parameters
 
 from mutwo.ext.converters import frontends
 from mutwo.ext.events import music
+from mutwo.ext import parameters as ext_parameters
 
 # TODO(Add more unit tests to make abjad conversion more reliable!)
 
@@ -34,28 +35,28 @@ class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
     def test_convert(self):
         converter = frontends.abjad.MutwoPitchToAbjadPitchConverter()
         self.assertEqual(
-            converter.convert(parameters.pitches.WesternPitch("ds", 4)),
+            converter.convert(ext_parameters.pitches.WesternPitch("ds", 4)),
             abjad.NamedPitch("ds'"),
         )
         self.assertEqual(
-            converter.convert(parameters.pitches.WesternPitch("gf", 5)),
+            converter.convert(ext_parameters.pitches.WesternPitch("gf", 5)),
             abjad.NamedPitch("gf''"),
         )
         self.assertEqual(
             converter.convert(
-                parameters.pitches.JustIntonationPitch("3/2", concert_pitch=262)
+                ext_parameters.pitches.JustIntonationPitch("3/2", concert_pitch=262)
             ),
             abjad.NumberedPitch(7),
         )
         self.assertEqual(
             converter.convert(
-                parameters.pitches.JustIntonationPitch("3/4", concert_pitch=262)
+                ext_parameters.pitches.JustIntonationPitch("3/4", concert_pitch=262)
             ),
             abjad.NumberedPitch(-5),
         )
         self.assertEqual(
             converter.convert(
-                parameters.pitches.JustIntonationPitch("5/4", concert_pitch=262)
+                ext_parameters.pitches.JustIntonationPitch("5/4", concert_pitch=262)
             ),
             abjad.NumberedPitch(4),
         )
@@ -69,67 +70,67 @@ class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("1/1"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("1/1"))
             ),
             abjad.lilypond(abjad.NamedPitch("c'")),
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("3/2"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("3/2"))
             ),
             abjad.lilypond(abjad.NamedPitch("g'")),
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("5/4"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("5/4"))
             ),
             "eoaa'",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("7/4"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("7/4"))
             ),
             "bfoba'",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("7/6"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("7/6"))
             ),
             "efoba'",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("12/7"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("12/7"))
             ),
             "auba'",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("9/8"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("9/8"))
             ),
             "d'",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("9/16"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("9/16"))
             ),
             "d",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("9/4"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("9/4"))
             ),
             "d''",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("32/33"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("32/33"))
             ),
             "cuca'",
         )
         self.assertEqual(
             abjad.lilypond(
-                converter.convert(parameters.pitches.JustIntonationPitch("49/50"))
+                converter.convert(ext_parameters.pitches.JustIntonationPitch("49/50"))
             ),
             "dffuabobb'",
         )
@@ -139,17 +140,17 @@ class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
     def test_convert(self):
         converter = frontends.abjad.MutwoVolumeToAbjadAttachmentDynamicConverter()
         self.assertEqual(
-            converter.convert(parameters.volumes.WesternVolume("mf")),
+            converter.convert(ext_parameters.volumes.WesternVolume("mf")),
             frontends.abjad.attachments.Dynamic("mf"),
         )
         self.assertEqual(
-            converter.convert(parameters.volumes.WesternVolume("fff")),
+            converter.convert(ext_parameters.volumes.WesternVolume("fff")),
             frontends.abjad.attachments.Dynamic("fff"),
         )
         self.assertEqual(
-            converter.convert(parameters.volumes.DecibelVolume(-6)),
+            converter.convert(ext_parameters.volumes.DecibelVolume(-6)),
             frontends.abjad.attachments.Dynamic(
-                parameters.volumes.WesternVolume.from_decibel(-6).name
+                ext_parameters.volumes.WesternVolume.from_decibel(-6).name
             ),
         )
 
@@ -754,7 +755,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                             [
                                 music.NoteLike(pitch, duration)
                                 for pitch, duration in [
-                                    [parameters.pitches.WesternPitch("c", 3), 1 / 2]
+                                    [ext_parameters.pitches.WesternPitch("c", 3), 1 / 2]
                                 ]
                                 * 4
                             ]
@@ -768,7 +769,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                             [
                                 music.NoteLike(pitch, duration)
                                 for pitch, duration in [
-                                    [parameters.pitches.WesternPitch("es", 5), 1 / 2]
+                                    [ext_parameters.pitches.WesternPitch("es", 5), 1 / 2]
                                 ]
                                 * 4
                             ]
@@ -777,7 +778,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                             [
                                 music.NoteLike(pitch, duration)
                                 for pitch, duration in [
-                                    [parameters.pitches.WesternPitch("b", 3), 1 / 2]
+                                    [ext_parameters.pitches.WesternPitch("b", 3), 1 / 2]
                                 ]
                                 * 4
                             ]

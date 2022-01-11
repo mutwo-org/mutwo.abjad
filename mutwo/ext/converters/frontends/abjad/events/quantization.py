@@ -16,10 +16,8 @@ import expenvelope  # type: ignore
 import ranges  # type: ignore
 
 from mutwo.core.converters import abc as converters_abc
-
 from mutwo.core import events
 from mutwo.core import parameters
-
 from mutwo.core.utilities import tools
 
 __all__ = (
