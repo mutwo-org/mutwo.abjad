@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  python: circleci/python@1.2
-
 jobs:
   build_test:
     docker:
@@ -18,7 +15,7 @@ jobs:
             TEST_VIRTUALENV_DIR=mutwo_test
             mkdir $TEST_VIRTUALENV_DIR
             virtualenv $TEST_VIRTUALENV_DIR/mutwo_test
-            source mutwo_test/mutwo_test/bin/activate
+            source $TEST_VIRTUALENV_DIR/mutwo_test/bin/activate
             pip3 install .[testing]
             cp -r tests mutwo_test/
             cd mutwo_test
@@ -26,7 +23,7 @@ jobs:
             deactivate
   pypi_publish:
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
     steps:
       - checkout  # checkout source code to working directory
       - run:
