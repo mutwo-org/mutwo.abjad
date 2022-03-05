@@ -5,14 +5,23 @@ import typing
 
 import abjad
 
-from mutwo.core import events
+from mutwo import core_events
+
+
+__all__ = (
+    "ProcessAbjadContainerRoutine",
+    "AddDurationLineEngraver",
+    "AddInstrumentName",
+    "AddAccidentalStyle",
+    "SetStaffSize",
+)
 
 
 class ProcessAbjadContainerRoutine(abc.ABC):
     @abc.abstractmethod
     def __call__(
         self,
-        complex_event_to_convert: events.abc.ComplexEvent,
+        complex_event_to_convert: core_events.abc.ComplexEvent,
         container_to_process: abjad.Container,
     ):
         raise NotImplementedError
@@ -21,7 +30,7 @@ class ProcessAbjadContainerRoutine(abc.ABC):
 class AddDurationLineEngraver(ProcessAbjadContainerRoutine):
     def __call__(
         self,
-        complex_event_to_convert: events.abc.ComplexEvent,
+        complex_event_to_convert: core_events.abc.ComplexEvent,
         container_to_process: abjad.Container,
     ):
         container_to_process.consists_commands.append("Duration_line_engraver")
@@ -31,10 +40,10 @@ class AddInstrumentName(ProcessAbjadContainerRoutine):
     def __init__(
         self,
         complex_event_to_instrument_name: typing.Callable[
-            [events.abc.ComplexEvent], str
+            [core_events.abc.ComplexEvent], str
         ] = lambda complex_event: complex_event.instrument_name,
         complex_event_to_short_instrument_name: typing.Callable[
-            [events.abc.ComplexEvent], str
+            [core_events.abc.ComplexEvent], str
         ] = lambda complex_event: complex_event.short_instrument_name,
         instrument_name_font_size: str = "teeny",
         short_instrument_name_font_size: str = "teeny",
@@ -48,7 +57,7 @@ class AddInstrumentName(ProcessAbjadContainerRoutine):
 
     def __call__(
         self,
-        complex_event_to_convert: events.abc.ComplexEvent,
+        complex_event_to_convert: core_events.abc.ComplexEvent,
         container_to_process: abjad.Container,
     ):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)
@@ -96,7 +105,7 @@ class AddAccidentalStyle(ProcessAbjadContainerRoutine):
 
     def __call__(
         self,
-        complex_event_to_convert: events.abc.ComplexEvent,
+        complex_event_to_convert: core_events.abc.ComplexEvent,
         container_to_process: abjad.Container,
     ):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)
@@ -114,7 +123,7 @@ class SetStaffSize(ProcessAbjadContainerRoutine):
 
     def __call__(
         self,
-        complex_event_to_convert: events.abc.ComplexEvent,
+        complex_event_to_convert: core_events.abc.ComplexEvent,
         container_to_process: abjad.Container,
     ):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)

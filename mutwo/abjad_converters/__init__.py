@@ -20,12 +20,9 @@ If one wants to build complete scores from within mutwo, the module offers the
    parts of your music.
 """
 
-from . import attachments_constants
-
-from . import attachments
-from . import process_container_routines
-
 from . import constants
+
+from .process_container_routines import *
 
 from .parameters import *
 from .events import *
@@ -35,3 +32,6 @@ from .events import __all__ as _all_events
 
 
 __all__ = _all_parameters + _all_events
+
+# Force flat structure
+del events, parameters, process_container_routines

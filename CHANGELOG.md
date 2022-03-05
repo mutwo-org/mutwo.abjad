@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-03-05
+
+### Changed
+- package structure to namespace package to apply refactor of mutwo main package
+- default arguments (lambda functions) in `SequentialEventToAbjadVoiceConverter` to common `music_converters` functions
+- moved `attachments` from `converters` to `abjad_parameters`
+
+
 ## [0.2.0] - 2022-01-11
 
 ### Changed

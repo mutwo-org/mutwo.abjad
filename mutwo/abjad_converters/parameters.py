@@ -12,13 +12,12 @@ except ImportError:
 import abjad  # type: ignore
 import expenvelope  # type: ignore
 
-from mutwo.core.converters import abc as converters_abc
-from mutwo.core import parameters
-from mutwo.core.utilities import constants
-from mutwo.core.utilities import tools
-
-from mutwo.ext.converters.frontends.abjad import attachments
-from mutwo.ext import parameters as ext_parameters
+from mutwo import abjad_parameters
+from mutwo import core_converters
+from mutwo import core_constants
+from mutwo import core_parameters
+from mutwo import core_utilities
+from mutwo import music_parameters
 
 
 __all__ = (
@@ -29,19 +28,20 @@ __all__ = (
 )
 
 try:
-    from mutwo.ext.converters.frontends import ekmelily_constants
+    from mutwo import ekmelily_converters
+
     __all__ += ("MutwoPitchToHEJIAbjadPitchConverter",)
     EKMELILY_FOUND = True
 except ImportError:
     logging.info(
-        "Couldn't find 'ekmelily_constants'. Please install "
+        "Couldn't find 'ekmelily_converters.constants'. Please install "
         "package 'mutwo.ext-ekmelily' if you want to use "
         "'MutwoPitchToHEJIAbjadPitchConverter'"
     )
     EKMELILY_FOUND = False
 
 
-class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
+class MutwoPitchToAbjadPitchConverter(core_converters.abc.Converter):
     """Convert Mutwo Pitch objects to Abjad Pitch objects.
 
     This default class simply checks if the passed Mutwo object belongs to
@@ -55,8 +55,8 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
     inherit from this class to define more complex cases.
     """
 
-    def convert(self, pitch_to_convert: ext_parameters.abc.Pitch) -> abjad.Pitch:
-        if isinstance(pitch_to_convert, ext_parameters.pitches.WesternPitch):
+    def convert(self, pitch_to_convert: music_parameters.abc.Pitch) -> abjad.Pitch:
+        if isinstance(pitch_to_convert, music_parameters.WesternPitch):
             return abjad.NamedPitch(pitch_to_convert.name)
         else:
             return abjad.NamedPitch.from_hertz(pitch_to_convert.frequency)
@@ -78,28 +78,28 @@ if EKMELILY_FOUND:
         :param prime_to_heji_accidental_name: Mapping of a prime number
             to a string which indicates the respective prime number in the resulting
             accidental name. See
-            :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT`
+            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT`
             for the default mapping.
         :type prime_to_heji_accidental_name: dict[int, str], optional
         :param otonality_indicator: String which indicates that the
             respective prime alteration is otonal. See
-            :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_OTONALITY_INDICATOR`
             for the default value.
         :type otonality_indicator: str, optional
         :param utonality_indicator: String which indicates that the
             respective prime alteration is utonal. See
-            :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_OTONALITY_INDICATOR`
             for the default value.
         :type utonality_indicator: str, optional
         :param exponent_to_exponent_indicator: Function to convert the
             exponent of a prime number to string which indicates the respective
             exponent. See
-            :func:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
+            :func:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
             for the default function.
         :type exponent_to_exponent_indicator: typing.Callable[[int], str], optional
         :param tempered_pitch_indicator: String which indicates that the
             respective accidental is tempered (12 EDO). See
-            :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
+            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
             for the default value.
         :type tempered_pitch_indicator: str, optional
 
@@ -153,23 +153,23 @@ if EKMELILY_FOUND:
             # set default values
             if prime_to_heji_accidental_name is None:
                 prime_to_heji_accidental_name = (
-                    ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT
+                    ekmelily_converters.constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT
                 )
 
             if otonality_indicator is None:
-                otonality_indicator = ekmelily_constants.DEFAULT_OTONALITY_INDICATOR
+                otonality_indicator = ekmelily_converters.constants.DEFAULT_OTONALITY_INDICATOR
 
             if utonality_indicator is None:
-                utonality_indicator = ekmelily_constants.DEFAULT_UTONALITY_INDICATOR
+                utonality_indicator = ekmelily_converters.constants.DEFAULT_UTONALITY_INDICATOR
 
             if exponent_to_exponent_indicator is None:
                 exponent_to_exponent_indicator = (
-                    ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR
+                    ekmelily_converters.constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR
                 )
 
             if tempered_pitch_indicator is None:
                 tempered_pitch_indicator = (
-                    ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR
+                    ekmelily_converters.constants.DEFAULT_TEMPERED_PITCH_INDICATOR
                 )
 
             self._reference_pitch = reference_pitch
@@ -178,7 +178,7 @@ if EKMELILY_FOUND:
             self._exponent_to_exponent_indicator = exponent_to_exponent_indicator
             self._tempered_pitch_indicator = tempered_pitch_indicator
             self._reference_index = (
-                ext_parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
+                music_parameters.constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                     reference_pitch
                 )
             )
@@ -186,22 +186,22 @@ if EKMELILY_FOUND:
 
         def _find_western_octave_for_just_intonation_pitch(
             self,
-            pitch_to_convert: ext_parameters.pitches.JustIntonationPitch,
+            pitch_to_convert: music_parameters.JustIntonationPitch,
             closest_pythagorean_pitch_name: str,
         ) -> int:
             octave = pitch_to_convert.octave + 4
             closest_pythagorean_pitch_index = (
-                ext_parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
+                music_parameters.constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                     closest_pythagorean_pitch_name[0]
                 )
             )
             if closest_pythagorean_pitch_index < self._reference_index:
                 octave += 1
 
-            pitch_as_western_pitch = ext_parameters.pitches.WesternPitch(
+            pitch_as_western_pitch = music_parameters.WesternPitch(
                 closest_pythagorean_pitch_name[0], octave
             )
-            reference_pitch_as_western_pitch = ext_parameters.pitches.WesternPitch(
+            reference_pitch_as_western_pitch = music_parameters.WesternPitch(
                 self._reference_pitch, 4
             )
             expected_difference_in_cents = pitch_to_convert.cents
@@ -247,7 +247,7 @@ if EKMELILY_FOUND:
 
         def _find_heji_accidental_for_just_intonation_pitch(
             self,
-            pitch_to_convert: ext_parameters.pitches.JustIntonationPitch,
+            pitch_to_convert: music_parameters.JustIntonationPitch,
             abjad_pitch_class: abjad.NamedPitchClass,
         ):
             # find additional commas
@@ -276,7 +276,7 @@ if EKMELILY_FOUND:
 
         def _convert_just_intonation_pitch(
             self,
-            pitch_to_convert: ext_parameters.pitches.JustIntonationPitch,
+            pitch_to_convert: music_parameters.JustIntonationPitch,
         ) -> abjad.Pitch:
             # find pythagorean pitch
             closest_pythagorean_pitch_name = (
@@ -299,8 +299,8 @@ if EKMELILY_FOUND:
             abjad_pitch._pitch_class = abjad_pitch_class
             return abjad_pitch
 
-        def convert(self, pitch_to_convert: ext_parameters.abc.Pitch) -> abjad.Pitch:
-            if isinstance(pitch_to_convert, ext_parameters.pitches.JustIntonationPitch):
+        def convert(self, pitch_to_convert: music_parameters.abc.Pitch) -> abjad.Pitch:
+            if isinstance(pitch_to_convert, music_parameters.JustIntonationPitch):
                 abjad_pitch = self._convert_just_intonation_pitch(pitch_to_convert)
             else:
                 abjad_pitch = MutwoPitchToAbjadPitchConverter().convert(
@@ -310,8 +310,8 @@ if EKMELILY_FOUND:
             return abjad_pitch
 
 
-class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
-    """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.attachments.Dynamic`.
+class MutwoVolumeToAbjadAttachmentDynamicConverter(core_converters.abc.Converter):
+    """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.abjad_parameters.Dynamic`.
 
     This default class simply checks if the passed Mutwo object belongs to
     :class:`mutwo.ext.parameters.volumes.WesternVolume`. If it does, Mutwo
@@ -324,20 +324,20 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
     """
 
     def convert(
-        self, volume_to_convert: ext_parameters.abc.Volume
-    ) -> typing.Optional[attachments.Dynamic]:
-        if not isinstance(volume_to_convert, ext_parameters.volumes.WesternVolume):
+        self, volume_to_convert: music_parameters.abc.Volume
+    ) -> typing.Optional[abjad_parameters.Dynamic]:
+        if not isinstance(volume_to_convert, music_parameters.WesternVolume):
             if volume_to_convert.amplitude > 0:
-                volume_to_convert = ext_parameters.volumes.WesternVolume.from_amplitude(
+                volume_to_convert = music_parameters.WesternVolume.from_amplitude(
                     volume_to_convert.amplitude
                 )
             else:
                 return None
-        return attachments.Dynamic(dynamic_indicator=volume_to_convert.name)
+        return abjad_parameters.Dynamic(dynamic_indicator=volume_to_convert.name)
 
 
-class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
-    """Convert tempo envelope to :class:`~mutwo.converters.frontends.attachments.Tempo`.
+class TempoEnvelopeToAbjadAttachmentTempoConverter(core_converters.abc.Converter):
+    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_parameters.Tempo`.
 
     Abstract base class for tempo envelope conversion. See
     :class:`ComplexTempoEnvelopeToAbjadAttachmentTempoConverter` for a concrete
@@ -347,17 +347,17 @@ class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
     @abc.abstractmethod
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
-    ) -> tuple[tuple[constants.Real, attachments.Tempo], ...]:
-        # return tuple filled with subtuples (leaf_index, attachments.Tempo)
+    ) -> tuple[tuple[core_constants.Real, abjad_parameters.Tempo], ...]:
+        # return tuple filled with subtuples (leaf_index, abjad_parameters.Tempo)
         raise NotImplementedError()
 
 
 class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     TempoEnvelopeToAbjadAttachmentTempoConverter
 ):
-    """Convert tempo envelope to :class:`~mutwo.converters.frontends.attachments.Tempo`.
+    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_parameters.Tempo`.
 
-    This object tries to intelligently set correct tempo attachments to an
+    This object tries to intelligently set correct tempo abjad_parameters to an
     :class:`abjad.Voice` object, appropriate to Western notation standards.
     Therefore it will not repeat tempo indications if they are merely repetitions
     of previous tempo indications and it will write 'a tempo' when returning to the
@@ -371,20 +371,20 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     @staticmethod
     def _convert_tempo_point_tuple(
         tempo_point_tuple: tuple[
-            typing.Union[constants.Real, parameters.tempos.TempoPoint], ...
+            typing.Union[core_constants.Real, core_parameters.TempoPoint], ...
         ]
-    ) -> tuple[parameters.tempos.TempoPoint, ...]:
+    ) -> tuple[core_parameters.TempoPoint, ...]:
         return tuple(
             tempo_point
-            if isinstance(tempo_point, parameters.tempos.TempoPoint)
-            else parameters.tempos.TempoPoint(float(tempo_point))
+            if isinstance(tempo_point, core_parameters.TempoPoint)
+            else core_parameters.TempoPoint(float(tempo_point))
             for tempo_point in tempo_point_tuple
         )
 
     @staticmethod
     def _find_dynamic_change_indication(
-        tempo_point: parameters.tempos.TempoPoint,
-        next_tempo_point: typing.Optional[parameters.tempos.TempoPoint],
+        tempo_point: core_parameters.TempoPoint,
+        next_tempo_point: typing.Optional[core_parameters.TempoPoint],
     ) -> typing.Optional[str]:
         dynamic_change_indication = None
         if next_tempo_point:
@@ -411,8 +411,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     def _shall_write_metronome_mark(
         tempo_envelope_to_convert: expenvelope.Envelope,
         nth_tempo_point: int,
-        tempo_point: parameters.tempos.TempoPoint,
-        tempo_points: tuple[parameters.tempos.TempoPoint, ...],
+        tempo_point: core_parameters.TempoPoint,
+        tempo_points: tuple[core_parameters.TempoPoint, ...],
     ) -> bool:
         write_metronome_mark = True
         for previous_tempo_point, previous_tempo_point_duration in zip(
@@ -440,7 +440,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     @staticmethod
     def _shall_stop_dynamic_change_indication(
-        tempo_attachment_tuple: tuple[tuple[constants.Real, attachments.Tempo], ...]
+        tempo_attachment_tuple: tuple[
+            tuple[core_constants.Real, abjad_parameters.Tempo], ...
+        ]
     ) -> bool:
         stop_dynamic_change_indicaton = False
         for _, previous_tempo_attachment in reversed(tempo_attachment_tuple):
@@ -455,7 +457,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     @staticmethod
     def _find_metronome_mark_values(
         write_metronome_mark: bool,
-        tempo_point: parameters.tempos.TempoPoint,
+        tempo_point: core_parameters.TempoPoint,
         stop_dynamic_change_indicaton: bool,
     ) -> tuple[
         typing.Optional[tuple[int, int]],
@@ -497,13 +499,15 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     def _process_tempo_event(
         tempo_envelope_to_convert: expenvelope.Envelope,
         nth_tempo_point: int,
-        tempo_point: parameters.tempos.TempoPoint,
-        tempo_point_tuple: tuple[parameters.tempos.TempoPoint, ...],
-        tempo_attachment_tuple: tuple[tuple[constants.Real, attachments.Tempo], ...],
-    ) -> attachments.Tempo:
+        tempo_point: core_parameters.TempoPoint,
+        tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
+        tempo_attachment_tuple: tuple[
+            tuple[core_constants.Real, abjad_parameters.Tempo], ...
+        ],
+    ) -> abjad_parameters.Tempo:
         try:
             next_tempo_point: typing.Optional[
-                parameters.tempos.TempoPoint
+                core_parameters.TempoPoint
             ] = tempo_point_tuple[nth_tempo_point + 1]
         except IndexError:
             next_tempo_point = None
@@ -535,7 +539,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         if textual_indication == "a tempo":
             write_metronome_mark = True
 
-        converted_tempo_point = attachments.Tempo(
+        converted_tempo_point = abjad_parameters.Tempo(
             reference_duration=reference_duration,
             units_per_minute=units_per_minute,
             textual_indication=textual_indication,
@@ -552,15 +556,17 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
-    ) -> tuple[tuple[constants.Real, attachments.Tempo], ...]:
+    ) -> tuple[tuple[core_constants.Real, abjad_parameters.Tempo], ...]:
         tempo_point_tuple = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_point_tuple(
             tempo_envelope_to_convert.levels
         )
 
-        tempo_attachment_list: list[tuple[constants.Real, attachments.Tempo]] = []
+        tempo_attachment_list: list[
+            tuple[core_constants.Real, abjad_parameters.Tempo]
+        ] = []
         for nth_tempo_point, absolute_time, duration, tempo_point in zip(
             range(len(tempo_point_tuple)),
-            tools.accumulate_from_zero(tempo_envelope_to_convert.durations),
+            core_utilities.accumulate_from_zero(tempo_envelope_to_convert.durations),
             tempo_envelope_to_convert.durations + (1,),
             tempo_point_tuple,
         ):

@@ -15,10 +15,10 @@ from abjadext import rmakers  # type: ignore
 import expenvelope  # type: ignore
 import ranges  # type: ignore
 
-from mutwo.core.converters import abc as converters_abc
-from mutwo.core import events
-from mutwo.core import parameters
-from mutwo.core.utilities import tools
+from mutwo import core_converters
+from mutwo import core_events
+from mutwo import core_parameters
+from mutwo import core_utilities
 
 __all__ = (
     "SequentialEventToQuantizedAbjadContainerConverter",
@@ -29,17 +29,17 @@ __all__ = (
 )
 
 
-class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter):
-    """Quantize :class:`~mutwo.events.basic.SequentialEvent` objects.
+class SequentialEventToQuantizedAbjadContainerConverter(core_converters.abc.Converter):
+    """Quantize :class:`~mutwo.core_events.SequentialEvent` objects.
 
     :param time_signatures: Set time signatures to divide the quantized abjad data
-        in desired bar sizes. If the converted :class:`~mutwo.events.basic.SequentialEvent`
+        in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`expenvelope.Envelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope has
+        or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
     """
 
@@ -61,8 +61,8 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         time_signature_tuple = tuple(time_signature_sequence)
         if tempo_envelope is None:
             tempo_envelope = expenvelope.Envelope.from_points(
-                (0, parameters.tempos.TempoPoint(120)),
-                (0, parameters.tempos.TempoPoint(120)),
+                (0, core_parameters.TempoPoint(120)),
+                (0, core_parameters.TempoPoint(120)),
             )
 
         self._time_signature_tuple = time_signature_tuple
@@ -78,7 +78,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
     @abc.abstractmethod
     def convert(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...]]:
         raise NotImplementedError
 
@@ -86,21 +86,21 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 class NauertSequentialEventToQuantizedAbjadContainerConverter(
     SequentialEventToQuantizedAbjadContainerConverter
 ):
-    """Quantize :class:`~mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
+    """Quantize :class:`~mutwo.core_events.SequentialEvent` objects via :mod:`abjadext.nauert`.
 
     :param time_signatures: Set time signatures to divide the quantized abjad data
-        in desired bar sizes. If the converted :class:`~mutwo.events.basic.SequentialEvent`
+        in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :param duration_unit: This defines the `duration_unit` of the passed
-        :class:`~mutwo.events.basic.SequentialEvent` (how the
+        :class:`~mutwo.core_events.SequentialEvent` (how the
         :attr:`~mutwo.events.abc.Event.duration` attribute will be
         interpreted). Can either be 'beats' (default) or 'miliseconds'.
         WARNING: 'miliseconds' isn't working properly yet!
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`expenvelope.Envelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope has
+        or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
     :param attack_point_optimizer: Optionally the user can pass a
         :class:`nauert.AttackPointOptimizer` object. Attack point optimizer help to
@@ -267,7 +267,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _make_related_abjad_leaves_per_simple_event(
-        sequential_event: events.basic.SequentialEvent,
+        sequential_event: core_events.SequentialEvent,
         q_event_sequence: nauert.QEventSequence,
         quanitisized_abjad_leaf_voice: abjad.Voice,
     ) -> tuple[tuple[tuple[int, ...], ...], ...,]:
@@ -321,7 +321,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
     # ###################################################################### #
 
     def _sequential_event_to_q_event_sequence(
-        self, sequential_event: events.basic.SequentialEvent
+        self, sequential_event: core_events.SequentialEvent
     ) -> nauert.QEventSequence:
         duration_list = list(sequential_event.get_parameter("duration"))
 
@@ -360,7 +360,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
     # ###################################################################### #
 
     def convert(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
         q_event_sequence = self._sequential_event_to_q_event_sequence(
             sequential_event_to_convert
@@ -381,17 +381,17 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
 class RMakersSequentialEventToQuantizedAbjadContainerConverter(
     SequentialEventToQuantizedAbjadContainerConverter
 ):
-    """Quantize :class:`~mutwo.events.basic.SequentialEvent` object via :mod:`abjadext.rmakers`.
+    """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjadext.rmakers`.
 
     :param time_signatures: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted
-        :class:`~mutwo.events.basic.SequentialEvent` is longer than the sum of
+        :class:`~mutwo.core_events.SequentialEvent` is longer than the sum of
         all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`expenvelope.Envelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope
+        or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope
         has been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
 
     This method is significantly faster than the
@@ -403,7 +403,7 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         2. :class:`RMakersSequentialEventToQuantizedAbjadContainerConverter` doesn't
            support ties across tuplets with different prolation (or across tuplets
            and not-tuplet notation). If ties are desired the user has to build them
-           manually before passing the :class:`~mutwo.events.basic.SequentialEvent`
+           manually before passing the :class:`~mutwo.core_events.SequentialEvent`
            to the converter.
     """
 
@@ -530,7 +530,7 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
     # ###################################################################### #
 
     def _make_notes(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> abjad.Selection:
         stack = rmakers.stack(
             rmakers.note(),
@@ -612,7 +612,7 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
             )
 
     def _make_voice(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> abjad.Voice:
         # first build notes
         notes = self._make_notes(sequential_event_to_convert)
@@ -704,7 +704,7 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         return tuple(related_abjad_leaves_per_simple_event)
 
     def convert(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
         voice = self._make_voice(sequential_event_to_convert)
         related_abjad_leaves_per_simple_event = (
@@ -813,7 +813,7 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
 
         for abjad_leaves_indices in related_abjad_leaves_per_simple_event:
             if abjad_leaves_indices:
-                first_element = tools.get_nested_item_from_index_sequence(
+                first_element = core_utilities.get_nested_item_from_index_sequence(
                     abjad_leaves_indices[0], quanitisized_abjad_leaf_voice
                 )
                 if is_first:
@@ -830,10 +830,10 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
                     )
 
                     for indices in abjad_leaves_indices[1:]:
-                        element = tools.get_nested_item_from_index_sequence(
+                        element = core_utilities.get_nested_item_from_index_sequence(
                             indices, quanitisized_abjad_leaf_voice
                         )
-                        tools.set_nested_item_from_index_sequence(
+                        core_utilities.set_nested_item_from_index_sequence(
                             indices,
                             quanitisized_abjad_leaf_voice,
                             abjad.Skip(element.written_duration),
@@ -859,7 +859,7 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         )
 
     def convert(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
 
         (
@@ -893,7 +893,7 @@ class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         )
 
     def convert(
-        self, sequential_event_to_convert: events.basic.SequentialEvent
+        self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
 
         (

@@ -20,3 +20,6 @@ custom string contact points:
     >>> from mutwo.converters.frontends import abjad as mutwo_abjad
     >>> mutwo_abjad.CUSTOM_STRING_CONTACT_POINT_DICT.update({"ebow": "eb"})
 """
+
+# Cleanup
+del abjad
