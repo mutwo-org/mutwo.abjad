@@ -21,15 +21,15 @@ from mutwo import music_converters
 from mutwo import music_events
 from mutwo import music_parameters
 
-from ..parameters import MutwoPitchToAbjadPitchConverter
-from ..parameters import MutwoVolumeToAbjadAttachmentDynamicConverter
-from ..parameters import TempoEnvelopeToAbjadAttachmentTempoConverter
-from ..parameters import ComplexTempoEnvelopeToAbjadAttachmentTempoConverter
+from ..parameters import MutwoPitchToAbjadPitch
+from ..parameters import MutwoVolumeToAbjadAttachmentDynamic
+from ..parameters import TempoEnvelopeToAbjadAttachmentTempo
+from ..parameters import ComplexTempoEnvelopeToAbjadAttachmentTempo
 
-from .quantization import SequentialEventToQuantizedAbjadContainerConverter
-from .quantization import NauertSequentialEventToQuantizedAbjadContainerConverter
+from .quantization import SequentialEventToQuantizedAbjadContainer
+from .quantization import NauertSequentialEventToQuantizedAbjadContainer
 
-# from .quantization import RMakersSequentialEventToQuantizedAbjadContainerConverter
+# from .quantization import RMakersSequentialEventToQuantizedAbjadContainer
 from .quantization import (
     NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
 )
@@ -39,16 +39,16 @@ from .quantization import (
 
 
 __all__ = (
-    "ComplexEventToAbjadContainerConverter",
-    "SequentialEventToAbjadVoiceConverter",
-    "NestedComplexEventToAbjadContainerConverter",
-    "NestedComplexEventToComplexEventToAbjadContainerConvertersConverter",
-    "CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter",
-    "TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter",
+    "ComplexEventToAbjadContainer",
+    "SequentialEventToAbjadVoice",
+    "NestedComplexEventToAbjadContainer",
+    "NestedComplexEventToComplexEventToAbjadContainers",
+    "CycleBasedNestedComplexEventToComplexEventToAbjadContainers",
+    "TagBasedNestedComplexEventToComplexEventToAbjadContainers",
 )
 
 
-class ComplexEventToAbjadContainerConverter(core_converters.abc.Converter):
+class ComplexEventToAbjadContainer(core_converters.abc.Converter):
     def __init__(
         self,
         abjad_container_class: typing.Type[abjad.Container],
@@ -149,13 +149,13 @@ class ComplexEventToAbjadContainerConverter(core_converters.abc.Converter):
         return abjad_container
 
 
-class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter):
+class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     """Convert :class:`~mutwo.core_events.SequentialEvent` to :class:`abjad.Voice`.
 
     :param sequential_event_to_quantized_abjad_container_converter: Class which
         defines how the Mutwo data will be quantized. See
-        :class:`SequentialEventToQuantizedAbjadContainerConverter` for more information.
-    :type sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter, optional
+        :class:`SequentialEventToQuantizedAbjadContainer` for more information.
+    :type sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainer, optional
     :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.core_events.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.music_parameters.abc.Pitch`).
@@ -246,18 +246,18 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     :type is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
         :class:`mutwo.music_parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
-        See :class:`MutwoPitchToAbjadPitchConverter` for more information.
-    :type mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter, optional
+        See :class:`MutwoPitchToAbjadPitch` for more information.
+    :type mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch, optional
     :param mutwo_volume_to_abjad_attachment_dynamic_converter: Class which defines how
         to convert :class:`mutwo.music_parameters.abc.Volume` objects to
         :class:`mutwo.converters.frontends.abjad_parameters.Dynamic` objects.
-        See :class:`MutwoVolumeToAbjadAttachmentDynamicConverter` for more information.
-    :type mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter, optional
+        See :class:`MutwoVolumeToAbjadAttachmentDynamic` for more information.
+    :type mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamic, optional
     :param tempo_envelope_to_abjad_attachment_tempo_converter: Class which defines how
         to convert tempo envelopes to
         :class:`mutwo.converters.frontends.abjad_parameters.Tempo` objects.
-        See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
-    :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter, optional
+        See :class:`TempoEnvelopeToAbjadAttachmentTempo` for more information.
+    :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempo, optional
     :param abjad_attachment_class_sequence: A tuple which contains all available abjad attachment classes
         which shall be used by the converter.
     :type abjad_attachment_class_sequence: typing.Sequence[abjad_parameters.abc.AbjadAttachment], optional
@@ -283,7 +283,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     def __init__(
         self,
-        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = NauertSequentialEventToQuantizedAbjadContainerConverter(),
+        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainer = NauertSequentialEventToQuantizedAbjadContainer(),
         simple_event_to_pitch_list: typing.Callable[
             [core_events.SimpleEvent], list[music_parameters.abc.Pitch]
         ] = music_converters.SimpleEventToPitchList(),  # type: ignore
@@ -307,13 +307,13 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             music_parameters.NotationIndicatorCollection,
         ] = music_converters.SimpleEventToNotationIndicatorCollection(),  # type: ignore
         is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool] = None,
-        mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
+        mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch = MutwoPitchToAbjadPitch(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: typing.Optional[
-            MutwoVolumeToAbjadAttachmentDynamicConverter
-        ] = MutwoVolumeToAbjadAttachmentDynamicConverter(),
+            MutwoVolumeToAbjadAttachmentDynamic
+        ] = MutwoVolumeToAbjadAttachmentDynamic(),
         tempo_envelope_to_abjad_attachment_tempo_converter: typing.Optional[
-            TempoEnvelopeToAbjadAttachmentTempoConverter
-        ] = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
+            TempoEnvelopeToAbjadAttachmentTempo
+        ] = ComplexTempoEnvelopeToAbjadAttachmentTempo(),
         abjad_attachment_class_sequence: typing.Sequence[
             typing.Type[abjad_parameters.abc.AbjadAttachment]
         ] = None,
@@ -550,7 +550,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         ...,
     ]:
         absolute_time_per_leaf = (
-            SequentialEventToAbjadVoiceConverter._find_absolute_times_of_abjad_leaves(
+            SequentialEventToAbjadVoice._find_absolute_times_of_abjad_leaves(
                 abjad_voice
             )
         )
@@ -886,7 +886,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
         # fifth, replace rests lasting one bar with full measure rests
         if self._write_multimeasure_rests:
-            SequentialEventToAbjadVoiceConverter._replace_rests_with_full_measure_rests(
+            SequentialEventToAbjadVoice._replace_rests_with_full_measure_rests(
                 quanitisized_abjad_leaf_voice
             )
 
@@ -921,7 +921,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         >>>         for pitch, duration in zip("c a g e".split(" "), (1, 1 / 6, 1 / 6, 1 / 6))
         >>>     ]
         >>> )
-        >>> converter = mutwo_abjad.SequentialEventToAbjadVoiceConverter()
+        >>> converter = mutwo_abjad.SequentialEventToAbjadVoice()
         >>> abjad_melody = converter.convert(mutwo_melody)
         >>> abjad.lilypond(abjad_melody)
         \\new Voice
@@ -946,7 +946,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         return super().convert(sequential_event_to_convert)
 
 
-class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
+class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoice):
     class GraceNotesToQuantizedAbjadContainerConverter(core_converters.abc.Converter):
         def convert(
             self, sequential_event_to_convert: core_events.SequentialEvent
@@ -977,7 +977,7 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
             music_parameters.NotationIndicatorCollection,
         ],
         is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool],
-        mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter,
+        mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch,
     ):
         def raise_attribute_error(_):
             raise AttributeError
@@ -1028,23 +1028,21 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
         return tuple([])
 
 
-class NestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
-    core_converters.abc.Converter
-):
+class NestedComplexEventToComplexEventToAbjadContainers(core_converters.abc.Converter):
     @abc.abstractmethod
     def convert(
         self, nested_complex_event_to_convert: core_events.abc.ComplexEvent
-    ) -> tuple[ComplexEventToAbjadContainerConverter, ...]:
+    ) -> tuple[ComplexEventToAbjadContainer, ...]:
         raise NotImplementedError
 
 
-class CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
-    NestedComplexEventToComplexEventToAbjadContainerConvertersConverter
+class CycleBasedNestedComplexEventToComplexEventToAbjadContainers(
+    NestedComplexEventToComplexEventToAbjadContainers
 ):
     def __init__(
         self,
         complex_event_to_abjad_container_converter_sequence: typing.Sequence[
-            ComplexEventToAbjadContainerConverter
+            ComplexEventToAbjadContainer
         ],
     ):
         self._complex_event_to_abjad_container_converters = (
@@ -1053,7 +1051,7 @@ class CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConver
 
     def convert(
         self, nested_complex_event_to_convert: core_events.abc.ComplexEvent
-    ) -> tuple[ComplexEventToAbjadContainerConverter, ...]:
+    ) -> tuple[ComplexEventToAbjadContainer, ...]:
         complex_event_to_abjad_container_converters_cycle = itertools.cycle(
             self._complex_event_to_abjad_container_converters
         )
@@ -1065,13 +1063,13 @@ class CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConver
         return tuple(complex_event_to_abjad_container_converter_list)
 
 
-class TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
-    NestedComplexEventToComplexEventToAbjadContainerConvertersConverter
+class TagBasedNestedComplexEventToComplexEventToAbjadContainers(
+    NestedComplexEventToComplexEventToAbjadContainers
 ):
     def __init__(
         self,
         tag_to_complex_event_to_abjad_container_converter: dict[
-            str, ComplexEventToAbjadContainerConverter
+            str, ComplexEventToAbjadContainer
         ],
         complex_event_to_tag: typing.Callable[
             [core_events.abc.ComplexEvent], str
@@ -1084,7 +1082,7 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverte
 
     def convert(
         self, nested_complex_event_to_convert: core_events.abc.ComplexEvent
-    ) -> tuple[ComplexEventToAbjadContainerConverter, ...]:
+    ) -> tuple[ComplexEventToAbjadContainer, ...]:
         complex_event_to_abjad_container_converter_list = []
         for complex_event in nested_complex_event_to_convert:
             tag = self._complex_event_to_tag(complex_event)
@@ -1105,12 +1103,10 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverte
         return tuple(complex_event_to_abjad_container_converter_list)
 
 
-class NestedComplexEventToAbjadContainerConverter(
-    ComplexEventToAbjadContainerConverter
-):
+class NestedComplexEventToAbjadContainer(ComplexEventToAbjadContainer):
     def __init__(
         self,
-        nested_complex_event_to_complex_event_to_abjad_container_converters_converter: NestedComplexEventToComplexEventToAbjadContainerConvertersConverter,
+        nested_complex_event_to_complex_event_to_abjad_container_converters_converter: NestedComplexEventToComplexEventToAbjadContainers,
         abjad_container_class: typing.Type[abjad.Container],
         lilypond_type_of_abjad_container: str,
         complex_event_to_abjad_container_name: typing.Callable[

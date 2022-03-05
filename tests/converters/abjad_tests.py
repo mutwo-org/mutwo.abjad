@@ -37,9 +37,9 @@ def run_if_ekmelily_is_available(method_to_wrap: typing.Callable):
     return test
 
 
-class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
+class MutwoPitchToAbjadPitchTest(unittest.TestCase):
     def test_convert(self):
-        converter = abjad_converters.MutwoPitchToAbjadPitchConverter()
+        converter = abjad_converters.MutwoPitchToAbjadPitch()
         self.assertEqual(
             converter.convert(music_parameters.WesternPitch("ds", 4)),
             abjad.NamedPitch("ds'"),
@@ -68,10 +68,10 @@ class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
         )
 
 
-class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
+class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
     @run_if_ekmelily_is_available
     def test_convert(self):
-        converter = abjad_converters.MutwoPitchToHEJIAbjadPitchConverter(
+        converter = abjad_converters.MutwoPitchToHEJIAbjadPitch(
             reference_pitch="c"
         )
         self.assertEqual(
@@ -142,9 +142,9 @@ class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
         )
 
 
-class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
+class MutwoVolumeToAbjadAttachmentDynamicTest(unittest.TestCase):
     def test_convert(self):
-        converter = abjad_converters.MutwoVolumeToAbjadAttachmentDynamicConverter()
+        converter = abjad_converters.MutwoVolumeToAbjadAttachmentDynamic()
         self.assertEqual(
             converter.convert(music_parameters.WesternVolume("mf")),
             abjad_parameters.Dynamic("mf"),
@@ -161,10 +161,10 @@ class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
         )
 
 
-class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase):
+class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
     def test_convert_tempo_points(self):
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_point_tuple(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
                 (60, 120, core_parameters.TempoPoint(120, reference=4))
             ),
             (
@@ -176,25 +176,25 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
 
     def test_find_dynamic_change_indication(self):
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_dynamic_change_indication(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
                 core_parameters.TempoPoint(120), core_parameters.TempoPoint(130)
             ),
             "acc.",
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_dynamic_change_indication(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
                 core_parameters.TempoPoint(120), core_parameters.TempoPoint(110)
             ),
             "rit.",
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_dynamic_change_indication(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
                 core_parameters.TempoPoint(120), core_parameters.TempoPoint(120)
             ),
             None,
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_dynamic_change_indication(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
                 core_parameters.TempoPoint(120),
                 core_parameters.TempoPoint(60, reference=2),
             ),
@@ -210,7 +210,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             durations=[2, 2, 2, 2, 0, 2, 0],
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_write_metronome_mark(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                 tempo_envelope_to_convert,
                 1,
                 tempo_envelope_to_convert.levels[1],
@@ -219,7 +219,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             False,
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_write_metronome_mark(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                 tempo_envelope_to_convert,
                 2,
                 tempo_envelope_to_convert.levels[2],
@@ -228,7 +228,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             True,
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_write_metronome_mark(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                 tempo_envelope_to_convert,
                 5,
                 tempo_envelope_to_convert.levels[5],
@@ -237,7 +237,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             False,
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_write_metronome_mark(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                 tempo_envelope_to_convert,
                 7,
                 tempo_envelope_to_convert.levels[7],
@@ -252,13 +252,13 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             (2, abjad_parameters.Tempo(dynamic_change_indication=None)),
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
                 previous_tempo_attachments
             ),
             False,
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
                 previous_tempo_attachments[:1]
             ),
             True,
@@ -266,7 +266,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
 
     def test_find_metronome_mark_values(self):
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_metronome_mark_values(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
                 True,
                 core_parameters.TempoPoint(
                     60, reference=2, textual_indication="ordinary"
@@ -276,7 +276,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             ((1, 2), 60, "ordinary"),
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_metronome_mark_values(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
                 True,
                 core_parameters.TempoPoint(
                     120, reference=1, textual_indication="faster"
@@ -286,7 +286,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             ((1, 4), 120, "faster"),
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_metronome_mark_values(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
                 False,
                 core_parameters.TempoPoint(
                     120, reference=1, textual_indication="faster"
@@ -296,7 +296,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             (None, None, None),
         )
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_metronome_mark_values(
+            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
                 False,
                 core_parameters.TempoPoint(
                     120, reference=1, textual_indication="faster"
@@ -384,7 +384,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             current_tempo_attachments = tempo_attachments[:nth_tempo_attachment]
             current_tempo_attachment = tempo_attachments[nth_tempo_attachment][1]
             self.assertEqual(
-                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._process_tempo_event(
+                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
                     tempo_envelope_to_convert,
                     nth_tempo_point,
                     tempo_point,
@@ -395,7 +395,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             )
 
 
-class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
+class SequentialEventToAbjadVoiceTest(unittest.TestCase):
     @staticmethod
     def _are_png_equal(path_to_png0: str, path_to_png1: str) -> bool:
         image0, image1 = (Image.open(path) for path in (path_to_png0, path_to_png1))
@@ -462,7 +462,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # initialise converter and sequential event for simple tests
-        cls.converter = abjad_converters.SequentialEventToAbjadVoiceConverter()
+        cls.converter = abjad_converters.SequentialEventToAbjadVoice()
         cls.sequential_event = core_events.SequentialEvent(
             [
                 music_events.NoteLike(pitch_name, duration=duration, volume="mf")
@@ -475,8 +475,8 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             ]
         )
         # initialise complex converter and sequential event for complex tests
-        cls.complex_converter = abjad_converters.SequentialEventToAbjadVoiceConverter(
-            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainerConverter(
+        cls.complex_converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer(
                 time_signature_sequence=[
                     abjad.TimeSignature(ts)
                     for ts in (
@@ -498,7 +498,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             )
         )
         cls.complex_sequential_event = (
-            SequentialEventToAbjadVoiceConverterTest._make_complex_sequential_event()
+            SequentialEventToAbjadVoiceTest._make_complex_sequential_event()
         )
 
     def test_convert(self):
@@ -563,7 +563,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
                 new_png_file_path, png_file_to_compare_path
             )
         )
@@ -583,8 +583,8 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             ],
             durations=[2],
         )
-        converter = abjad_converters.SequentialEventToAbjadVoiceConverter(
-            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainerConverter(
+        converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer(
                 tempo_envelope=tempo_envelope
             )
         )
@@ -616,7 +616,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
                 new_png_file_path, png_file_to_compare_path
             )
         )
@@ -629,7 +629,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # is equal to the previously rendered and manually checked png)
         # -> this tests, if duration lines are printed in a correct manner
 
-        converter = abjad_converters.SequentialEventToAbjadVoiceConverter(
+        converter = abjad_converters.SequentialEventToAbjadVoice(
             abjad_converters.NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
         )
         sequential_event_to_convert = core_events.SequentialEvent(
@@ -665,7 +665,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
                 new_png_file_path, png_file_to_compare_path
             )
         )
@@ -679,8 +679,8 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # -> this tests, if the resulting notation prints grace notes and
         # after grace notes
 
-        converter = abjad_converters.SequentialEventToAbjadVoiceConverter(
-            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainerConverter()
+        converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer()
         )
         sequential_event_to_convert = core_events.SequentialEvent(
             [
@@ -743,7 +743,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
                 new_png_file_path, png_file_to_compare_path
             )
         )
@@ -752,7 +752,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         os.remove(new_png_file_path)
 
 
-class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
+class NestedComplexEventToAbjadContainerTest(unittest.TestCase):
     def test_nested_conversion(self):
         # core_eventsally an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
@@ -808,14 +808,14 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
             tag="Integrating duo",
         )
 
-        converter = abjad_converters.NestedComplexEventToAbjadContainerConverter(
-            abjad_converters.TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
+        converter = abjad_converters.NestedComplexEventToAbjadContainer(
+            abjad_converters.TagBasedNestedComplexEventToComplexEventToAbjadContainers(
                 {
-                    "Piano": abjad_converters.NestedComplexEventToAbjadContainerConverter(
-                        abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
+                    "Piano": abjad_converters.NestedComplexEventToAbjadContainer(
+                        abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainers(
                             [
-                                abjad_converters.SequentialEventToAbjadVoiceConverter(
-                                    abjad_converters.RMakersSequentialEventToQuantizedAbjadContainerConverter()
+                                abjad_converters.SequentialEventToAbjadVoice(
+                                    abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer()
                                 ),
                             ]
                         ),
@@ -827,10 +827,10 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                             ),
                         ),
                     ),
-                    "Violin": abjad_converters.NestedComplexEventToAbjadContainerConverter(
-                        abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
+                    "Violin": abjad_converters.NestedComplexEventToAbjadContainer(
+                        abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainers(
                             [
-                                abjad_converters.SequentialEventToAbjadVoiceConverter(),
+                                abjad_converters.SequentialEventToAbjadVoice(),
                             ]
                         ),
                         abjad.Staff,
@@ -874,7 +874,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
                 new_png_file_path, png_file_to_compare_path
             )
         )

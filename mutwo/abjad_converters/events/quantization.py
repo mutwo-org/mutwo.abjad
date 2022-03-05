@@ -21,15 +21,15 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 __all__ = (
-    "SequentialEventToQuantizedAbjadContainerConverter",
-    "NauertSequentialEventToQuantizedAbjadContainerConverter",
+    "SequentialEventToQuantizedAbjadContainer",
+    "NauertSequentialEventToQuantizedAbjadContainer",
     "NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter",
-    "RMakersSequentialEventToQuantizedAbjadContainerConverter",
+    "RMakersSequentialEventToQuantizedAbjadContainer",
     "RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter",
 )
 
 
-class SequentialEventToQuantizedAbjadContainerConverter(core_converters.abc.Converter):
+class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` objects.
 
     :param time_signatures: Set time signatures to divide the quantized abjad data
@@ -83,8 +83,8 @@ class SequentialEventToQuantizedAbjadContainerConverter(core_converters.abc.Conv
         raise NotImplementedError
 
 
-class NauertSequentialEventToQuantizedAbjadContainerConverter(
-    SequentialEventToQuantizedAbjadContainerConverter
+class NauertSequentialEventToQuantizedAbjadContainer(
+    SequentialEventToQuantizedAbjadContainer
 ):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` objects via :mod:`abjadext.nauert`.
 
@@ -109,9 +109,9 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         to better represent metrical structures within bars. If no optimizer is desired
         this argument can be set to ``None``.
 
-    Unlike :class:`RMakersSequentialEventToQuantizedAbjadContainerConverter` this converter
+    Unlike :class:`RMakersSequentialEventToQuantizedAbjadContainer` this converter
     supports nested tuplets and ties across tuplets. But this converter is much slower
-    than the :class:`RMakersSequentialEventToQuantizedAbjadContainerConverter`. Because the
+    than the :class:`RMakersSequentialEventToQuantizedAbjadContainer`. Because the
     converter depends on the abjad extension `nauert` its quality is dependent on the
     inner mechanism of the used package. Because the quantization made by the `nauert`
     package can be somewhat indeterministic a lot of tweaking may be necessary for
@@ -155,7 +155,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         self._duration_unit = duration_unit
         self._attack_point_optimizer = attack_point_optimizer
         self._q_schema = (
-            NauertSequentialEventToQuantizedAbjadContainerConverter._make_q_schema(
+            NauertSequentialEventToQuantizedAbjadContainer._make_q_schema(
                 self._time_signature_tuple, search_tree
             )
         )
@@ -187,7 +187,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         has_tie: bool,
         index_of_previous_q_event: int,
     ) -> tuple[bool, int]:
-        q_event = NauertSequentialEventToQuantizedAbjadContainerConverter._get_respective_q_event_from_abjad_leaf(
+        q_event = NauertSequentialEventToQuantizedAbjadContainer._get_respective_q_event_from_abjad_leaf(
             abjad_leaf
         )
 
@@ -223,7 +223,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
             (
                 has_tie,
                 index_of_previous_q_event,
-            ) = NauertSequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf_or_tuplet(
+            ) = NauertSequentialEventToQuantizedAbjadContainer._process_abjad_leaf_or_tuplet(
                 indices + [nth_abjad_leaf_or_tuplet],
                 abjad_leaf_or_tuplet,
                 related_abjad_leaves_per_simple_event,
@@ -245,7 +245,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
     ) -> tuple[bool, int]:
         if isinstance(abjad_leaf_or_tuplet, abjad.Tuplet):
             return (
-                NauertSequentialEventToQuantizedAbjadContainerConverter._process_tuplet(
+                NauertSequentialEventToQuantizedAbjadContainer._process_tuplet(
                     index_list,
                     abjad_leaf_or_tuplet,
                     related_abjad_leaves_per_simple_event,
@@ -256,7 +256,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
             )
 
         else:
-            return NauertSequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf(
+            return NauertSequentialEventToQuantizedAbjadContainer._process_abjad_leaf(
                 index_list,
                 abjad_leaf_or_tuplet,
                 related_abjad_leaves_per_simple_event,
@@ -281,7 +281,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
                 (
                     has_tie,
                     index_of_previous_q_event,
-                ) = NauertSequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf_or_tuplet(
+                ) = NauertSequentialEventToQuantizedAbjadContainer._process_abjad_leaf_or_tuplet(
                     [nth_bar, nth_abjad_leaf_or_tuplet],
                     abjad_leaf_or_tuplet,
                     related_abjad_leaves_per_simple_event,
@@ -369,7 +369,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
             self._q_event_sequence_to_quanitisized_abjad_leaf_voice(q_event_sequence)
         )
 
-        related_abjad_leaves_per_simple_event = NauertSequentialEventToQuantizedAbjadContainerConverter._make_related_abjad_leaves_per_simple_event(
+        related_abjad_leaves_per_simple_event = NauertSequentialEventToQuantizedAbjadContainer._make_related_abjad_leaves_per_simple_event(
             sequential_event_to_convert, q_event_sequence, quanitisized_abjad_leaf_voice
         )
         return (
@@ -378,8 +378,8 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         )
 
 
-class RMakersSequentialEventToQuantizedAbjadContainerConverter(
-    SequentialEventToQuantizedAbjadContainerConverter
+class RMakersSequentialEventToQuantizedAbjadContainer(
+    SequentialEventToQuantizedAbjadContainer
 ):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjadext.rmakers`.
 
@@ -395,12 +395,12 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         has been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
 
     This method is significantly faster than the
-    :class:`NauertSequentialEventToQuantizedAbjadContainerConverter`. But it also
+    :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
     has several known limitations:
 
-        1. :class:`RMakersSequentialEventToQuantizedAbjadContainerConverter` doesn't
+        1. :class:`RMakersSequentialEventToQuantizedAbjadContainer` doesn't
            support nested tuplets.
-        2. :class:`RMakersSequentialEventToQuantizedAbjadContainerConverter` doesn't
+        2. :class:`RMakersSequentialEventToQuantizedAbjadContainer` doesn't
            support ties across tuplets with different prolation (or across tuplets
            and not-tuplet notation). If ties are desired the user has to build them
            manually before passing the :class:`~mutwo.core_events.SequentialEvent`
@@ -436,7 +436,7 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
     def _add_explicit_beams(
         bar: abjad.Container, meter: abjad.Meter, global_offset: abjad.Offset
     ) -> None:
-        offset_inventory = RMakersSequentialEventToQuantizedAbjadContainerConverter._find_offset_inventory(
+        offset_inventory = RMakersSequentialEventToQuantizedAbjadContainer._find_offset_inventory(
             meter
         )
         leaf_offset_list = []
@@ -560,16 +560,16 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         return notes
 
     def _concatenate_adjacent_tuplets_for_one_bar(self, bar: abjad.Container):
-        tuplet_index_tuple = RMakersSequentialEventToQuantizedAbjadContainerConverter._find_tuplet_indices(
+        tuplet_index_tuple = RMakersSequentialEventToQuantizedAbjadContainer._find_tuplet_indices(
             bar
         )
         if tuplet_index_tuple:
-            grouped_tuplet_index_list_list = RMakersSequentialEventToQuantizedAbjadContainerConverter._group_tuplet_indices(
+            grouped_tuplet_index_list_list = RMakersSequentialEventToQuantizedAbjadContainer._group_tuplet_indices(
                 tuplet_index_tuple
             )
             for tuplet_index_list in reversed(grouped_tuplet_index_list_list):
                 if len(tuplet_index_list) > 1:
-                    RMakersSequentialEventToQuantizedAbjadContainerConverter._concatenate_adjacent_tuplets_for_one_group(
+                    RMakersSequentialEventToQuantizedAbjadContainer._concatenate_adjacent_tuplets_for_one_group(
                         bar, tuplet_index_list
                     )
 
@@ -841,7 +841,7 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
 
 
 class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
-    NauertSequentialEventToQuantizedAbjadContainerConverter,
+    NauertSequentialEventToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
     def __init__(
@@ -875,7 +875,7 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
 
 
 class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
-    RMakersSequentialEventToQuantizedAbjadContainerConverter,
+    RMakersSequentialEventToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
     def __init__(
@@ -919,8 +919,8 @@ class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
 
 
 NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter._set_docs(
-    NauertSequentialEventToQuantizedAbjadContainerConverter
+    NauertSequentialEventToQuantizedAbjadContainer
 )
 RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter._set_docs(
-    RMakersSequentialEventToQuantizedAbjadContainerConverter
+    RMakersSequentialEventToQuantizedAbjadContainer
 )

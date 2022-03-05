@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - package structure to namespace package to apply refactor of mutwo main package
 - default arguments (lambda functions) in `SequentialEventToAbjadVoiceConverter` to common `music_converters` functions
 - moved `attachments` from `converters` to `abjad_parameters`
+- `...Converter` to `...`, for instance:
+    - `SequentialEventToAbjadVoiceConverter` to `SequentialEventToAbjadVoice`
+    - `MutwoPitchToAbjadPitchConverter` to `MutwoPitchToAbjadPitch`
+    - `MutwoVolumeToAbjadAttachmentDynamicConverter` to `MutwoVolumeToAbjadAttachmentDynamic`
+    - `TempoEnvelopeToAbjadAttachmentTempoConverter` to `TempoEnvelopeToAbjadAttachmentTempo`
+    - ...
 
 
 ## [0.2.0] - 2022-01-11

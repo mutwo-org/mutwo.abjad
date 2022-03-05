@@ -41,7 +41,7 @@ setuptools.setup(
         "mutwo.ext-core>=0.55.0, <0.56.0",
         "mutwo.ext-music>=0.7.1, <0.8.0",
         "abjad-ext-nauert>=3.4.0, <3.5.0",
-        "abjad>=3.6.0, <3.7",
+        "abjad>=3.4.0, <3.5.0",
         "abjad-ext-rmakers>=3.4.0, <3.5",
     ],
     extras_require=extras_require,

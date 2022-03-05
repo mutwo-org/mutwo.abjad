@@ -21,27 +21,27 @@ from mutwo import music_parameters
 
 
 __all__ = (
-    "MutwoPitchToAbjadPitchConverter",
-    "MutwoVolumeToAbjadAttachmentDynamicConverter",
-    "TempoEnvelopeToAbjadAttachmentTempoConverter",
-    "ComplexTempoEnvelopeToAbjadAttachmentTempoConverter",
+    "MutwoPitchToAbjadPitch",
+    "MutwoVolumeToAbjadAttachmentDynamic",
+    "TempoEnvelopeToAbjadAttachmentTempo",
+    "ComplexTempoEnvelopeToAbjadAttachmentTempo",
 )
 
 try:
     from mutwo import ekmelily_converters
 
-    __all__ += ("MutwoPitchToHEJIAbjadPitchConverter",)
+    __all__ += ("MutwoPitchToHEJIAbjadPitch",)
     EKMELILY_FOUND = True
 except ImportError:
     logging.info(
         "Couldn't find 'ekmelily_converters.constants'. Please install "
         "package 'mutwo.ext-ekmelily' if you want to use "
-        "'MutwoPitchToHEJIAbjadPitchConverter'"
+        "'MutwoPitchToHEJIAbjadPitch'"
     )
     EKMELILY_FOUND = False
 
 
-class MutwoPitchToAbjadPitchConverter(core_converters.abc.Converter):
+class MutwoPitchToAbjadPitch(core_converters.abc.Converter):
     """Convert Mutwo Pitch objects to Abjad Pitch objects.
 
     This default class simply checks if the passed Mutwo object belongs to
@@ -64,7 +64,7 @@ class MutwoPitchToAbjadPitchConverter(core_converters.abc.Converter):
 
 if EKMELILY_FOUND:
 
-    class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
+    class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
         """Convert Mutwo :obj:`~mutwo.ext.parameters.pitches.JustIntonationPitch` objects to Abjad Pitch objects.
 
         :param reference_pitch: The reference pitch (1/1). Should be a diatonic
@@ -116,8 +116,8 @@ if EKMELILY_FOUND:
         >>> from mutwo.ext.parameters import pitches
         >>> from mutwo.converters.frontends import abjad
         >>> my_ji_pitch = pitches.JustIntonationPitch('5/4')
-        >>> converter_on_a = abjad.MutwoPitchToHEJIAbjadPitchConverter(reference_pitch='a')
-        >>> converter_on_c = abjad.MutwoPitchToHEJIAbjadPitchConverter(reference_pitch='c')
+        >>> converter_on_a = abjad.MutwoPitchToHEJIAbjadPitch(reference_pitch='a')
+        >>> converter_on_c = abjad.MutwoPitchToHEJIAbjadPitch(reference_pitch='c')
         >>> converter_on_a.convert(my_ji_pitch)
         NamedPitch("csoaa''")
         >>> converter_on_c.convert(my_ji_pitch)
@@ -127,7 +127,7 @@ if EKMELILY_FOUND:
         class _HEJIAccidental(object):
             """Fake abjad accidental
 
-            Only for internal usage within the :class:`MutwoPitchToHEJIAbjadPitchConverter`.
+            Only for internal usage within the :class:`MutwoPitchToHEJIAbjadPitch`.
             """
 
             def __init__(self, accidental: str):
@@ -303,14 +303,14 @@ if EKMELILY_FOUND:
             if isinstance(pitch_to_convert, music_parameters.JustIntonationPitch):
                 abjad_pitch = self._convert_just_intonation_pitch(pitch_to_convert)
             else:
-                abjad_pitch = MutwoPitchToAbjadPitchConverter().convert(
+                abjad_pitch = MutwoPitchToAbjadPitch().convert(
                     pitch_to_convert
                 )
 
             return abjad_pitch
 
 
-class MutwoVolumeToAbjadAttachmentDynamicConverter(core_converters.abc.Converter):
+class MutwoVolumeToAbjadAttachmentDynamic(core_converters.abc.Converter):
     """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.abjad_parameters.Dynamic`.
 
     This default class simply checks if the passed Mutwo object belongs to
@@ -336,11 +336,11 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(core_converters.abc.Converter
         return abjad_parameters.Dynamic(dynamic_indicator=volume_to_convert.name)
 
 
-class TempoEnvelopeToAbjadAttachmentTempoConverter(core_converters.abc.Converter):
+class TempoEnvelopeToAbjadAttachmentTempo(core_converters.abc.Converter):
     """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_parameters.Tempo`.
 
     Abstract base class for tempo envelope conversion. See
-    :class:`ComplexTempoEnvelopeToAbjadAttachmentTempoConverter` for a concrete
+    :class:`ComplexTempoEnvelopeToAbjadAttachmentTempo` for a concrete
     class.
     """
 
@@ -352,8 +352,8 @@ class TempoEnvelopeToAbjadAttachmentTempoConverter(core_converters.abc.Converter
         raise NotImplementedError()
 
 
-class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
-    TempoEnvelopeToAbjadAttachmentTempoConverter
+class ComplexTempoEnvelopeToAbjadAttachmentTempo(
+    TempoEnvelopeToAbjadAttachmentTempo
 ):
     """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_parameters.Tempo`.
 
@@ -513,17 +513,17 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
             next_tempo_point = None
 
         # check for dynamic_change_indication
-        dynamic_change_indication = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_dynamic_change_indication(
+        dynamic_change_indication = ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
             tempo_point, next_tempo_point
         )
-        write_metronome_mark = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_write_metronome_mark(
+        write_metronome_mark = ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
             tempo_envelope_to_convert,
             nth_tempo_point,
             tempo_point,
             tempo_point_tuple,
         )
 
-        stop_dynamic_change_indicaton = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
+        stop_dynamic_change_indicaton = ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
             tempo_attachment_tuple
         )
 
@@ -531,7 +531,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
             reference_duration,
             units_per_minute,
             textual_indication,
-        ) = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_metronome_mark_values(
+        ) = ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
             write_metronome_mark, tempo_point, stop_dynamic_change_indicaton
         )
 
@@ -557,7 +557,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
     ) -> tuple[tuple[core_constants.Real, abjad_parameters.Tempo], ...]:
-        tempo_point_tuple = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_point_tuple(
+        tempo_point_tuple = ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
             tempo_envelope_to_convert.levels
         )
 
@@ -572,7 +572,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         ):
 
             if duration > 0:
-                tempo_attachment = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._process_tempo_event(
+                tempo_attachment = ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
                     tempo_envelope_to_convert,
                     nth_tempo_point,
                     tempo_point,
