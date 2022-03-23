@@ -352,7 +352,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
         if abjad_attachment_class_sequence is None:
             abjad_attachment_class_sequence = (
-                abjad_converters.constants.DEFAULT_ABJAD_ATTACHMENT_CLASS_TUPLE
+                abjad_converters.configurations.DEFAULT_ABJAD_ATTACHMENT_CLASS_TUPLE
             )
         else:
             abjad_attachment_class_sequence = tuple(abjad_attachment_class_sequence)

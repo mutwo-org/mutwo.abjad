@@ -20,7 +20,7 @@ If one wants to build complete scores from within mutwo, the module offers the
    parts of your music.
 """
 
-from . import constants
+from . import configurations
 
 from .process_container_routines import *
 

@@ -169,11 +169,11 @@ class StringContactPoint(
         # Extend abjad with custom string contact points
         class StringContactPoint(abjad.StringContactPoint):
             _contact_point = abjad.StringContactPoint._contact_points + tuple(
-                abjad_parameters.constants.CUSTOM_STRING_CONTACT_POINT_DICT.keys()
+                abjad_parameters.configurations.CUSTOM_STRING_CONTACT_POINT_DICT.keys()
             )
             _contact_point_abbreviations = dict(
                 abjad.StringContactPoint._contact_point_abbreviations,
-                **abjad_parameters.constants.CUSTOM_STRING_CONTACT_POINT_DICT,
+                **abjad_parameters.configurations.CUSTOM_STRING_CONTACT_POINT_DICT,
             )
 
         self._string_contact_point_class = StringContactPoint

@@ -1,4 +1,4 @@
-"""Constants to be used for and with :mod:`mutwo.abjad_converters`.
+"""Configure :mod:`mutwo.abjad_converters`.
 """
 
 import inspect
