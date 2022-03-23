@@ -78,28 +78,28 @@ if EKMELILY_FOUND:
         :param prime_to_heji_accidental_name: Mapping of a prime number
             to a string which indicates the respective prime number in the resulting
             accidental name. See
-            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT`
+            :const:`mutwo.ekmelily_converters.configurations.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT`
             for the default mapping.
         :type prime_to_heji_accidental_name: dict[int, str], optional
         :param otonality_indicator: String which indicates that the
             respective prime alteration is otonal. See
-            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_OTONALITY_INDICATOR`
+            :const:`mutwo.ekmelily_converters.configurations.DEFAULT_OTONALITY_INDICATOR`
             for the default value.
         :type otonality_indicator: str, optional
         :param utonality_indicator: String which indicates that the
             respective prime alteration is utonal. See
-            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_OTONALITY_INDICATOR`
+            :const:`mutwo.ekmelily_converters.configurations.DEFAULT_OTONALITY_INDICATOR`
             for the default value.
         :type utonality_indicator: str, optional
         :param exponent_to_exponent_indicator: Function to convert the
             exponent of a prime number to string which indicates the respective
             exponent. See
-            :func:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
+            :func:`mutwo.ekmelily_converters.configurations.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
             for the default function.
         :type exponent_to_exponent_indicator: typing.Callable[[int], str], optional
         :param tempered_pitch_indicator: String which indicates that the
             respective accidental is tempered (12 EDO). See
-            :const:`~mutwo.converters.frontends.ekmelily_converters.constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
+            :const:`mutwo.ekmelily_converters.configurations.DEFAULT_TEMPERED_PITCH_INDICATOR`
             for the default value.
         :type tempered_pitch_indicator: str, optional
 
@@ -153,23 +153,23 @@ if EKMELILY_FOUND:
             # set default values
             if prime_to_heji_accidental_name is None:
                 prime_to_heji_accidental_name = (
-                    ekmelily_converters.constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT
+                    ekmelily_converters.configurations.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT
                 )
 
             if otonality_indicator is None:
-                otonality_indicator = ekmelily_converters.constants.DEFAULT_OTONALITY_INDICATOR
+                otonality_indicator = ekmelily_converters.configurations.DEFAULT_OTONALITY_INDICATOR
 
             if utonality_indicator is None:
-                utonality_indicator = ekmelily_converters.constants.DEFAULT_UTONALITY_INDICATOR
+                utonality_indicator = ekmelily_converters.configurations.DEFAULT_UTONALITY_INDICATOR
 
             if exponent_to_exponent_indicator is None:
                 exponent_to_exponent_indicator = (
-                    ekmelily_converters.constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR
+                    ekmelily_converters.configurations.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR
                 )
 
             if tempered_pitch_indicator is None:
                 tempered_pitch_indicator = (
-                    ekmelily_converters.constants.DEFAULT_TEMPERED_PITCH_INDICATOR
+                    ekmelily_converters.configurations.DEFAULT_TEMPERED_PITCH_INDICATOR
                 )
 
             self._reference_pitch = reference_pitch

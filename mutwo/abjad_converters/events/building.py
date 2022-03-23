@@ -225,7 +225,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
-        from :const:`~mutwo.ext.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
+        from :const:`~mutwo.music_events.configurations.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
     :type simple_event_to_playing_indicator_collection: typing.Callable[[core_events.SimpleEvent], music_parameters.PlayingIndicatorCollection,], optional
     :param simple_event_to_notation_indicator_collection: Function to extract from a
         :class:`mutwo.core_events.SimpleEvent` a
@@ -237,7 +237,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         their playing_indicators property, this argument should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
         collection can be extracted), mutwo will build a notation indicator collection
-        from :const:`~mutwo.ext.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
+        from :const:`~mutwo.music_events.configurations.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
     :type simple_event_to_notation_indicator_collection: typing.Callable[[core_events.SimpleEvent], music_parameters.NotationIndicatorCollection,], optional
     :param is_simple_event_rest: Function to detect if the
         the inspected :class:`mutwo.core_events.SimpleEvent` is a Rest. By
@@ -409,11 +409,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             ),
             (
                 self._simple_event_to_playing_indicator_collection,
-                music_events.constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS,
+                music_events.configurations.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS,
             ),
             (
                 self._simple_event_to_notation_indicator_collection,
-                music_events.constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS,
+                music_events.configurations.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS,
             ),
         )
 
