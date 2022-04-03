@@ -24,7 +24,7 @@ from mutwo import music_parameters
 def run_if_ekmelily_is_available(method_to_wrap: typing.Callable):
 
     try:
-        from mutwo import ekmelily_converters
+        from mutwo import ekmelily_converters  # type: ignore
 
         ekmelily_found = True
     except ImportError:
@@ -71,9 +71,7 @@ class MutwoPitchToAbjadPitchTest(unittest.TestCase):
 class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
     @run_if_ekmelily_is_available
     def test_convert(self):
-        converter = abjad_converters.MutwoPitchToHEJIAbjadPitch(
-            reference_pitch="c"
-        )
+        converter = abjad_converters.MutwoPitchToHEJIAbjadPitch(reference_pitch="c")
         self.assertEqual(
             abjad.lilypond(
                 converter.convert(music_parameters.JustIntonationPitch("1/1"))
@@ -158,6 +156,38 @@ class MutwoVolumeToAbjadAttachmentDynamicTest(unittest.TestCase):
             abjad_parameters.Dynamic(
                 music_parameters.WesternVolume.from_decibel(-6).name
             ),
+        )
+
+
+class MutwoLyricToAbjadStringTest(unittest.TestCase):
+    def setUp(self):
+        self.mutwo_lyric_to_abjad_string = abjad_converters.MutwoLyricToAbjadString()
+
+    def test_convert_empty_string(self):
+        self.assertEqual(
+            self.mutwo_lyric_to_abjad_string(music_parameters.DirectLyric("")), "_"
+        )
+
+    def test_convert_filled_string(self):
+        self.assertEqual(
+            self.mutwo_lyric_to_abjad_string(music_parameters.DirectLyric("hello")),
+            "hello",
+        )
+
+    def test_convert_not_last_syllable(self):
+        self.assertEqual(
+            self.mutwo_lyric_to_abjad_string(
+                music_parameters.LanguageBasedSyllable(False, "hel")
+            ),
+            "hel --",
+        )
+
+    def test_convert_last_syllable(self):
+        self.assertEqual(
+            self.mutwo_lyric_to_abjad_string(
+                music_parameters.LanguageBasedSyllable(True, "lo")
+            ),
+            "lo",
         )
 
 
@@ -729,6 +759,68 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
                 tests_path
             )
         )
+
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        score_block = abjad.Block(name="score")
+        score_block.items.append(
+            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+        )
+        lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
+
+        self.assertTrue(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
+        )
+
+        # remove test file
+        os.remove(new_png_file_path)
+
+    def test_lyric_conversion(self):
+        # Integration test!
+
+        converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer()
+        )
+        sequential_event_to_convert = core_events.SequentialEvent(
+            [
+                music_events.NoteLike(
+                    "c", 1, lyric=music_parameters.LanguageBasedLyric("helloDearTest")
+                ),
+                music_events.NoteLike(
+                    "d",
+                    fractions.Fraction(1, 8),
+                    lyric=music_parameters.LanguageBasedLyric(""),
+                ),
+                music_events.NoteLike(
+                    "e",
+                    fractions.Fraction(1, 4),
+                    lyric=music_parameters.LanguageBasedLyric("i"),
+                ),
+                music_events.NoteLike(
+                    "e",
+                    fractions.Fraction(3, 8),
+                    lyric=music_parameters.LanguageBasedSyllable(False, "ho"),
+                ),
+                music_events.NoteLike(
+                    "e",
+                    fractions.Fraction(1, 4),
+                    lyric=music_parameters.LanguageBasedSyllable(True, "pe"),
+                ),
+            ]
+        )
+        converted_sequential_event = converter.convert(sequential_event_to_convert)
+
+        tests_path = "tests/converters"
+        png_file_to_compare_path = (
+            "{}/abjad_expected_png_output_for_lyric_test.png".format(tests_path)
+        )
+        new_png_file_path = "{}/abjad_png_output_for_lyric_test.png".format(tests_path)
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")

@@ -18,13 +18,13 @@ from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_utilities
 from mutwo import music_converters
-from mutwo import music_events
 from mutwo import music_parameters
 
 from ..parameters import MutwoPitchToAbjadPitch
 from ..parameters import MutwoVolumeToAbjadAttachmentDynamic
 from ..parameters import TempoEnvelopeToAbjadAttachmentTempo
 from ..parameters import ComplexTempoEnvelopeToAbjadAttachmentTempo
+from ..parameters import MutwoLyricToAbjadString
 
 from .quantization import SequentialEventToQuantizedAbjadContainer
 from .quantization import NauertSequentialEventToQuantizedAbjadContainer
@@ -239,6 +239,18 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         collection can be extracted), mutwo will build a notation indicator collection
         from :const:`~mutwo.music_events.configurations.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
     :type simple_event_to_notation_indicator_collection: typing.Callable[[core_events.SimpleEvent], music_parameters.NotationIndicatorCollection,], optional
+    :param simple_event_to_lyric: Function to extract the lyric from a
+        :class:`mutwo.core_events.SimpleEvent` in the purpose of generating lyrics.
+        The function should return an object that inherits from
+        :class:`mutwo.music_parameters.abc.Lyric`. By default it asks the Event for
+        its :attr:`~mutwo.events.music.NoteLike.lyric` attribute (because by default
+        :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their lyric property, this argument should
+        be overridden.
+        If the function call raises an :obj:`AttributeError` (e.g. if no lyric can be
+        extracted), mutwo will set :attr:`lyric` to an empty text.
+    :type simple_event_to_lyric: typing.Callable[[core_events.SimpleEvent], music_parameters.abc.Lyric], optional
     :param is_simple_event_rest: Function to detect if the
         the inspected :class:`mutwo.core_events.SimpleEvent` is a Rest. By
         default Mutwo simply checks if 'pitch_list' contain any objects. If not,
@@ -258,6 +270,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         :class:`mutwo.converters.frontends.abjad_parameters.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempo` for more information.
     :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempo, optional
+    :param mutwo_lyric_to_abjad_string: Callable which defines how
+        to convert :class:`mutwo.music_parameters.abc.Lyric` to a string.
+        Consult :class:`mutwo.abjad_converters.MutwoLyricToAbjadString`
+        for more information.
+    :type mutwo_lyric_to_abjad_string: MutwoLyricToAbjadString
     :param abjad_attachment_class_sequence: A tuple which contains all available abjad attachment classes
         which shall be used by the converter.
     :type abjad_attachment_class_sequence: typing.Sequence[abjad_parameters.abc.AbjadAttachment], optional
@@ -274,38 +291,40 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         core_events.SequentialEvent[core_events.SimpleEvent],
         music_parameters.PlayingIndicatorCollection,
         music_parameters.NotationIndicatorCollection,
+        music_parameters.abc.Lyric,
     ]
 
     ExtractedDataPerSimpleEvent = tuple[ExtractedData, ...]
-
-    _empty_volume = music_parameters.DirectVolume(0)
-    _empty_grace_note_sequential_event = core_events.SequentialEvent([])
 
     def __init__(
         self,
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainer = NauertSequentialEventToQuantizedAbjadContainer(),
         simple_event_to_pitch_list: typing.Callable[
             [core_events.SimpleEvent], list[music_parameters.abc.Pitch]
-        ] = music_converters.SimpleEventToPitchList(),  # type: ignore
+        ] = music_converters.SimpleEventToPitchList(),
         simple_event_to_volume: typing.Callable[
             [core_events.SimpleEvent], music_parameters.abc.Volume
-        ] = music_converters.SimpleEventToVolume(),  # type: ignore
+        ] = music_converters.SimpleEventToVolume(),
         simple_event_to_grace_note_sequential_event: typing.Callable[
             [core_events.SimpleEvent],
             core_events.SequentialEvent[core_events.SimpleEvent],
-        ] = music_converters.SimpleEventToGraceNoteSequentialEvent(),  # type: ignore
+        ] = music_converters.SimpleEventToGraceNoteSequentialEvent(),
         simple_event_to_after_grace_note_sequential_event: typing.Callable[
             [core_events.SimpleEvent],
             core_events.SequentialEvent[core_events.SimpleEvent],
-        ] = music_converters.SimpleEventToAfterGraceNoteSequentialEvent(),  # type: ignore
+        ] = music_converters.SimpleEventToAfterGraceNoteSequentialEvent(),
         simple_event_to_playing_indicator_collection: typing.Callable[
             [core_events.SimpleEvent],
             music_parameters.PlayingIndicatorCollection,
-        ] = music_converters.SimpleEventToPlayingIndicatorCollection(),  # type: ignore
+        ] = music_converters.SimpleEventToPlayingIndicatorCollection(),
         simple_event_to_notation_indicator_collection: typing.Callable[
             [core_events.SimpleEvent],
             music_parameters.NotationIndicatorCollection,
-        ] = music_converters.SimpleEventToNotationIndicatorCollection(),  # type: ignore
+        ] = music_converters.SimpleEventToNotationIndicatorCollection(),
+        simple_event_to_lyric: typing.Callable[
+            [core_events.SimpleEvent],
+            music_parameters.abc.Lyric,
+        ] = music_converters.SimpleEventToLyric(),
         is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool] = None,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch = MutwoPitchToAbjadPitch(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: typing.Optional[
@@ -314,6 +333,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         tempo_envelope_to_abjad_attachment_tempo_converter: typing.Optional[
             TempoEnvelopeToAbjadAttachmentTempo
         ] = ComplexTempoEnvelopeToAbjadAttachmentTempo(),
+        mutwo_lyric_to_abjad_string: MutwoLyricToAbjadString = MutwoLyricToAbjadString(),
         abjad_attachment_class_sequence: typing.Sequence[
             typing.Type[abjad_parameters.abc.AbjadAttachment]
         ] = None,
@@ -390,31 +410,13 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         self._simple_event_to_notation_indicator_collection = (
             simple_event_to_notation_indicator_collection
         )
-        self._simple_event_to_function_and_exception_value_tuple = (
-            (
-                self._simple_event_to_pitch_list,
-                [],
-            ),
-            (
-                self._simple_event_to_volume,
-                self._empty_volume,
-            ),
-            (
-                self._simple_event_to_grace_note_sequential_event,
-                self._empty_grace_note_sequential_event,
-            ),
-            (
-                self._simple_event_to_after_grace_note_sequential_event,
-                self._empty_grace_note_sequential_event,
-            ),
-            (
-                self._simple_event_to_playing_indicator_collection,
-                music_events.configurations.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS,
-            ),
-            (
-                self._simple_event_to_notation_indicator_collection,
-                music_events.configurations.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS,
-            ),
+        self._simple_event_to_lyric = simple_event_to_lyric
+        self._simple_event_to_function_tuple = (
+            self._simple_event_to_grace_note_sequential_event,
+            self._simple_event_to_after_grace_note_sequential_event,
+            self._simple_event_to_playing_indicator_collection,
+            self._simple_event_to_notation_indicator_collection,
+            self._simple_event_to_lyric,
         )
 
         self._is_simple_event_rest = is_simple_event_rest
@@ -432,6 +434,8 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         else:
             tempo_attachment_tuple = None
         self._tempo_attachment_tuple = tempo_attachment_tuple
+
+        self._mutwo_lyric_to_abjad_string = mutwo_lyric_to_abjad_string
 
         self._write_multimeasure_rests = write_multimeasure_rests
 
@@ -602,6 +606,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 after_grace_note_sequential_event,
                 playing_indicators,
                 notation_indicators,
+                *_,
             ) = extracted_data
             abjad_parameters_for_nth_event = self._volume_to_abjad_attachment(volume)
             abjad_parameters_for_nth_event.update(
@@ -685,30 +690,17 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     def _extract_pitch_list_and_volume_from_simple_event(
         self, simple_event: core_events.SimpleEvent
     ) -> tuple[list[music_parameters.abc.Pitch], music_parameters.abc.Volume]:
-        extracted_data = [
-            # pitch list
-            core_utilities.call_function_except_attribute_error(
-                self._simple_event_to_function_and_exception_value_tuple[0][0],
-                simple_event,
-                self._simple_event_to_function_and_exception_value_tuple[0][1],
-            )
-        ]
+        pitch_list = self._simple_event_to_pitch_list(simple_event)
 
         # TODO(Add option: no dynamic indicator if there aren't any pitches)
-        if extracted_data[0]:
-            volume = core_utilities.call_function_except_attribute_error(
-                self._simple_event_to_function_and_exception_value_tuple[1][0],
-                simple_event,
-                self._simple_event_to_function_and_exception_value_tuple[1][1],
-            )
-            if volume == self._empty_volume:
-                extracted_data[0] = []
+        if pitch_list:
+            volume = self._simple_event_to_volume(simple_event)
+            if not volume.amplitude:
+                pitch_list = []
         else:
-            volume = self._empty_volume
+            volume = music_parameters.DirectVolume(0)
 
-        extracted_data.append(volume)
-
-        return tuple(extracted_data)
+        return pitch_list, volume
 
     def _extract_data_from_simple_event(
         self, simple_event: core_events.SimpleEvent
@@ -720,19 +712,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             self._extract_pitch_list_and_volume_from_simple_event(simple_event)
         )
 
-        for (
-            function,
-            exception_value,
-        ) in self._simple_event_to_function_and_exception_value_tuple[2:]:
-            extracted_data.append(
-                core_utilities.call_function_except_attribute_error(
-                    function,
-                    simple_event,
-                    exception_value,
-                )
-            )
+        for function in self._simple_event_to_function_tuple:
+            extracted_data.append(function(simple_event))  # type: ignore
 
-        return tuple(extracted_data)
+        return tuple(extracted_data)  # type: ignore
 
     def _apply_pitch_list_on_quantized_abjad_leaf(
         self,
@@ -804,6 +787,38 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                     related_abjad_leaf_index_tuple_tuple,
                 )
 
+    def _get_lyric_content(
+        self, extracted_data_per_simple_event: ExtractedDataPerSimpleEvent
+    ) -> str:
+        lyric_content_list = []
+        for extracted_data in extracted_data_per_simple_event:
+            lyric = extracted_data[6]
+            abjad_string = self._mutwo_lyric_to_abjad_string(lyric)
+            lyric_content_list.append(abjad_string)
+        return " ".join(lyric_content_list)
+
+    def _apply_lyrics_on_voice(
+        self, voice_to_apply_lyrics_to: abjad.Voice, lyric_content: str
+    ):
+        # We only add the lyrics in case it isn't empty
+        reduced_lyric = tuple(set(filter(bool, lyric_content.split(" "))))
+        test_tuple = (
+            # "" -> this doesn't need to be added
+            bool(lyric_content),
+            # "        " -> this doesn't need to be added
+            not lyric_content.isspace(),
+            # "_ _ _ _" -> this doesn't need to be added
+            len(reduced_lyric) != 1 or reduced_lyric[0] != "_",
+        )
+        if all(test_tuple):
+            abjad.attach(
+                abjad.LilyPondLiteral(
+                    "\\addlyrics { " + lyric_content + " }",
+                    format_slot="absolute_after",
+                ),
+                voice_to_apply_lyrics_to,
+            )
+
     def _quantize_sequential_event(
         self,
         sequential_event_to_convert: core_events.SequentialEvent[
@@ -822,7 +837,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 "is_rest",
                 lambda _: next(is_simple_event_rest_per_simple_event_iterator),
                 set_unassigned_parameter=True,
-                mutate=False,
+                mutate=False,  # type: ignore
             )
         )
         return (
@@ -842,7 +857,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             lambda event0, event1: self._is_simple_event_rest(event0)
             and self._is_simple_event_rest(event1),
             event_type_to_examine=core_events.SimpleEvent,
-            mutate=False,
+            mutate=False,  # type: ignore
         )
 
         # first, extract data from simple events and find rests
@@ -892,6 +907,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
         # move leaves from 'quanitisized_abjad_leaf_voice' object to target container
         abjad.mutate.swap(quanitisized_abjad_leaf_voice, abjad_container_to_fill)
+
+        # finally: apply lyrics on abjad voice
+        lyric_content = self._get_lyric_content(extracted_data_per_simple_event)
+        self._apply_lyrics_on_voice(abjad_container_to_fill, lyric_content)
 
     # ###################################################################### #
     #               public methods for interaction with the user             #
@@ -997,8 +1016,12 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoice):
             mutwo_pitch_to_abjad_pitch_converter=mutwo_pitch_to_abjad_pitch_converter,
             mutwo_volume_to_abjad_attachment_dynamic_converter=None,
             tempo_envelope_to_abjad_attachment_tempo_converter=None,
-            simple_event_to_grace_note_sequential_event=raise_attribute_error,
-            simple_event_to_after_grace_note_sequential_event=raise_attribute_error,
+            simple_event_to_grace_note_sequential_event=lambda _: core_events.SequentialEvent(
+                []
+            ),
+            simple_event_to_after_grace_note_sequential_event=lambda _: core_events.SequentialEvent(
+                []
+            ),
             write_multimeasure_rests=False,
             abjad_container_class=abjad_container_class,
             lilypond_type_of_abjad_container=None,

@@ -27,11 +27,5 @@ from .process_container_routines import *
 from .parameters import *
 from .events import *
 
-from .parameters import __all__ as _all_parameters
-from .events import __all__ as _all_events
-
-
-__all__ = _all_parameters + _all_events
-
 # Force flat structure
 del events, parameters, process_container_routines

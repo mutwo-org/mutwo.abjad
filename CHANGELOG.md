@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-04-03
+
+### Added
+- conversion of lyrics
+
+### Changed
+- internal structure
+
 
 ## [0.3.0] - 2022-03-23
 
