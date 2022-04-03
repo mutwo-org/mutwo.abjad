@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 # This script runs all tests in an adhoc created virtualenv.
+sudo apt-get install espeak-ng mbrola mbrola-en1
 TEST_VIRTUALENV_DIR=$(mktemp -d -t mutwo-test.XXXXXXX)
 TEST_VIRTUALENV_NAME=$TEST_VIRTUALENV_DIR/mutwo_test_virtualenv
 echo "Create test virtualenv in $TEST_VIRTUALENV_NAME"
