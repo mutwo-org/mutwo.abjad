@@ -32,7 +32,7 @@ __all__ = (
 class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` objects.
 
-    :param time_signatures: Set time signatures to divide the quantized abjad data
+    :param time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
@@ -50,10 +50,10 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         ),
         tempo_envelope: expenvelope.Envelope = None,
     ):
-        n_time_signatures = len(time_signature_sequence)
-        if n_time_signatures == 0:
+        n_time_signature_sequence = len(time_signature_sequence)
+        if n_time_signature_sequence == 0:
             message = (
-                "Found empty sequence for argument 'time_signatures'. Specify at least"
+                "Found empty sequence for argument 'time_signature_sequence'. Specify at least"
                 " one time signature!"
             )
             raise ValueError(message)
@@ -88,7 +88,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 ):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` objects via :mod:`abjadext.nauert`.
 
-    :param time_signatures: Set time signatures to divide the quantized abjad data
+    :param time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
@@ -383,7 +383,7 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
 ):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjadext.rmakers`.
 
-    :param time_signatures: Set time signatures to divide the quantized abjad data
+    :param time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted
         :class:`~mutwo.core_events.SequentialEvent` is longer than the sum of
         all passed time signatures, the last time signature
@@ -618,13 +618,13 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
         notes = self._make_notes(sequential_event_to_convert)
 
         # split notes by time signatures
-        notes_split_by_time_signatures = abjad.mutate.split(
+        notes_split_by_time_signature_sequence = abjad.mutate.split(
             notes,
             [time_signature.duration for time_signature in self._time_signature_tuple],
             cyclic=True,
         )
         bar_list = []
-        for selection in notes_split_by_time_signatures:
+        for selection in notes_split_by_time_signature_sequence:
             try:
                 bar = abjad.Container(selection.items, simultaneous=False)
             except Exception:

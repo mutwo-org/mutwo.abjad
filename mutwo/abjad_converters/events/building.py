@@ -788,13 +788,18 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 )
 
     def _get_lyric_content(
-        self, extracted_data_per_simple_event: ExtractedDataPerSimpleEvent
+        self,
+        extracted_data_per_simple_event: ExtractedDataPerSimpleEvent,
+        is_simple_event_rest_per_simple_event: tuple[bool, ...],
     ) -> str:
         lyric_content_list = []
-        for extracted_data in extracted_data_per_simple_event:
-            lyric = extracted_data[6]
-            abjad_string = self._mutwo_lyric_to_abjad_string(lyric)
-            lyric_content_list.append(abjad_string)
+        for extracted_data, is_simple_event_rest in zip(
+            extracted_data_per_simple_event, is_simple_event_rest_per_simple_event
+        ):
+            if not is_simple_event_rest:
+                lyric = extracted_data[6]
+                abjad_string = self._mutwo_lyric_to_abjad_string(lyric)
+                lyric_content_list.append(abjad_string)
         return " ".join(lyric_content_list)
 
     def _apply_lyrics_on_voice(
@@ -909,7 +914,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         abjad.mutate.swap(quanitisized_abjad_leaf_voice, abjad_container_to_fill)
 
         # finally: apply lyrics on abjad voice
-        lyric_content = self._get_lyric_content(extracted_data_per_simple_event)
+        lyric_content = self._get_lyric_content(
+            extracted_data_per_simple_event, is_simple_event_rest_per_simple_event
+        )
         self._apply_lyrics_on_voice(abjad_container_to_fill, lyric_content)
 
     # ###################################################################### #

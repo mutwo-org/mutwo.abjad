@@ -789,8 +789,9 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         )
         sequential_event_to_convert = core_events.SequentialEvent(
             [
+                music_events.NoteLike([], 1),
                 music_events.NoteLike(
-                    "c", 1, lyric=music_parameters.LanguageBasedLyric("helloDearTest")
+                    "c", 1, lyric=music_parameters.LanguageBasedLyric("helloT")
                 ),
                 music_events.NoteLike(
                     "d",
