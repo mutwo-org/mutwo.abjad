@@ -16,7 +16,7 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
 
     :param reference_pitch: The reference pitch (1/1). Should be a diatonic
         pitch name (see
-        :const:`~mutwo.ext.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE`)
+        :const:`~mutwo.ext.parameters.pitches_constants.DIATONIC_PITCH_CLASS_CONTAINER`)
         in English nomenclature. For any other reference pitch than 'c', Lilyponds
         midi rendering for pitches with the diatonic pitch 'c' will be slightly
         out of tune (because the first value of :arg:`global_scale`
@@ -129,9 +129,9 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
         self._exponent_to_exponent_indicator = exponent_to_exponent_indicator
         self._tempered_pitch_indicator = tempered_pitch_indicator
         self._reference_index = (
-            music_parameters.constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
+            music_parameters.constants.DIATONIC_PITCH_CLASS_CONTAINER[
                 reference_pitch
-            )
+            ].index
         )
         self._prime_to_heji_accidental_name = prime_to_heji_accidental_name
 
@@ -142,9 +142,9 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
     ) -> int:
         octave = pitch_to_convert.octave + 4
         closest_pythagorean_pitch_index = (
-            music_parameters.constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
+            music_parameters.constants.DIATONIC_PITCH_CLASS_CONTAINER[
                 closest_pythagorean_pitch_name[0]
-            )
+            ].index
         )
         if closest_pythagorean_pitch_index < self._reference_index:
             octave += 1
