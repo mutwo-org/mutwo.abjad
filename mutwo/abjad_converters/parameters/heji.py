@@ -182,18 +182,6 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
         ):
             pitch_as_western_pitch.octave -= 1
 
-        """
-        # for pitches which are written with the same diatonic pitch as
-        # the reference_pitch, but which are slightly deeper
-        if (
-            closest_pythagorean_pitch_index == self._reference_index
-            and pitch_to_convert.normalize(mutate=False).cents > 600  # type: ignore
-        ):
-            octave += 1
-        print(octave, closest_pythagorean_pitch_index, self._reference_index, '\n')
-
-        return octave
-        """
         return pitch_as_western_pitch.octave
 
     def _find_heji_accidental_for_just_intonation_pitch(
