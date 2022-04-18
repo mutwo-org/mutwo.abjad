@@ -8,7 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 
-## [0.4.0] - 2022-04-18
+## [0.8.0] - 2022-04-18
+
+### Added
+- Cue and WoodwindFinger attachment classes
+
+
+## [0.7.0] - 2022-04-18
 
 ### Changed
 - updated to new `mutwo.ext-music` and `mutwo.ext-ekmelily` versions
