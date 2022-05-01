@@ -40,123 +40,77 @@ def run_if_ekmelily_is_available(method_to_wrap: typing.Callable):
 class MutwoPitchToAbjadPitchTest(unittest.TestCase):
     def test_convert(self):
         converter = abjad_converters.MutwoPitchToAbjadPitch()
-        self.assertEqual(
-            converter.convert(music_parameters.WesternPitch("ds", 4)),
-            abjad.NamedPitch("ds'"),
-        )
-        self.assertEqual(
-            converter.convert(music_parameters.WesternPitch("gf", 5)),
-            abjad.NamedPitch("gf''"),
-        )
-        self.assertEqual(
-            converter.convert(
-                music_parameters.JustIntonationPitch("3/2", concert_pitch=262)
+        for mutwo_pitch, expected_abajd_pitch in (
+            (
+                music_parameters.WesternPitch("ds", 4),
+                abjad.NamedPitch("ds'"),
             ),
-            abjad.NumberedPitch(7),
-        )
-        self.assertEqual(
-            converter.convert(
-                music_parameters.JustIntonationPitch("3/4", concert_pitch=262)
+            (
+                music_parameters.WesternPitch("gf", 5),
+                abjad.NamedPitch("gf''"),
             ),
-            abjad.NumberedPitch(-5),
-        )
-        self.assertEqual(
-            converter.convert(
-                music_parameters.JustIntonationPitch("5/4", concert_pitch=262)
+            (
+                music_parameters.JustIntonationPitch("3/2", concert_pitch=262),
+                abjad.NumberedPitch(7),
             ),
-            abjad.NumberedPitch(4),
-        )
+            (
+                music_parameters.JustIntonationPitch("3/4", concert_pitch=262),
+                abjad.NumberedPitch(-5),
+            ),
+            (
+                music_parameters.JustIntonationPitch("5/4", concert_pitch=262),
+                abjad.NumberedPitch(4),
+            ),
+        ):
+            self.assertEqual(converter.convert(mutwo_pitch), expected_abajd_pitch)
 
 
 class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
     @run_if_ekmelily_is_available
     def test_convert(self):
         converter = abjad_converters.MutwoPitchToHEJIAbjadPitch(reference_pitch="c")
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("1/1"))
-            ),
-            abjad.lilypond(abjad.NamedPitch("c'")),
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("3/2"))
-            ),
-            abjad.lilypond(abjad.NamedPitch("g'")),
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("5/4"))
-            ),
-            "eoaa'",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("7/4"))
-            ),
-            "bfoba'",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("7/6"))
-            ),
-            "efoba'",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("12/7"))
-            ),
-            "auba'",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("9/8"))
-            ),
-            "d'",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("9/16"))
-            ),
-            "d",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("9/4"))
-            ),
-            "d''",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("32/33"))
-            ),
-            "cuca'",
-        )
-        self.assertEqual(
-            abjad.lilypond(
-                converter.convert(music_parameters.JustIntonationPitch("49/50"))
-            ),
-            "dffuabobb'",
-        )
+        for mutwo_pitch, expected_abjad_pitch in (
+            (music_parameters.JustIntonationPitch("1/1"), abjad.NamedPitch("c'")),
+            (music_parameters.JustIntonationPitch("3/2"), abjad.NamedPitch("g'")),
+        ):
+            self.assertEqual(
+                abjad.lilypond(converter.convert(mutwo_pitch)),
+                abjad.lilypond(expected_abjad_pitch),
+            )
+        for mutwo_pitch, expected_lilypond_string in (
+            (music_parameters.JustIntonationPitch("5/4"), "eoaa'"),
+            (music_parameters.JustIntonationPitch("7/4"), "bfoba'"),
+            (music_parameters.JustIntonationPitch("7/6"), "efoba'"),
+            (music_parameters.JustIntonationPitch("12/7"), "auba'"),
+            (music_parameters.JustIntonationPitch("9/8"), "d'"),
+            (music_parameters.JustIntonationPitch("9/16"), "d"),
+            (music_parameters.JustIntonationPitch("9/4"), "d''"),
+            (music_parameters.JustIntonationPitch("32/33"), "cuca'"),
+            (music_parameters.JustIntonationPitch("49/50"), "dffuabobb'"),
+        ):
+            self.assertEqual(
+                abjad.lilypond(converter.convert(mutwo_pitch)),
+                expected_lilypond_string,
+            )
 
 
 class MutwoVolumeToAbjadAttachmentDynamicTest(unittest.TestCase):
     def test_convert(self):
         converter = abjad_converters.MutwoVolumeToAbjadAttachmentDynamic()
-        self.assertEqual(
-            converter.convert(music_parameters.WesternVolume("mf")),
-            abjad_parameters.Dynamic("mf"),
-        )
-        self.assertEqual(
-            converter.convert(music_parameters.WesternVolume("fff")),
-            abjad_parameters.Dynamic("fff"),
-        )
-        self.assertEqual(
-            converter.convert(music_parameters.DecibelVolume(-6)),
-            abjad_parameters.Dynamic(
-                music_parameters.WesternVolume.from_decibel(-6).name
+        for mutwo_volume, expected_abjad_parameter in (
+            (music_parameters.WesternVolume("mf"), abjad_parameters.Dynamic("mf")),
+            (music_parameters.WesternVolume("fff"), abjad_parameters.Dynamic("fff")),
+            (
+                music_parameters.DecibelVolume(-6),
+                abjad_parameters.Dynamic(
+                    music_parameters.WesternVolume.from_decibel(-6).name
+                ),
             ),
-        )
+        ):
+            self.assertEqual(
+                converter.convert(mutwo_volume),
+                expected_abjad_parameter,
+            )
 
 
 class MutwoLyricToAbjadStringTest(unittest.TestCase):
@@ -192,7 +146,7 @@ class MutwoLyricToAbjadStringTest(unittest.TestCase):
 
 
 class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
-    def test_convert_tempo_points(self):
+    def test_convert_tempo_point_tuple(self):
         self.assertEqual(
             abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
                 (60, 120, core_parameters.TempoPoint(120, reference=4))
@@ -205,31 +159,33 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
         )
 
     def test_find_dynamic_change_indication(self):
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
-                core_parameters.TempoPoint(120), core_parameters.TempoPoint(130)
+        for tempo_point_tuple, expected_dynamic_change_indication in (
+            (
+                (core_parameters.TempoPoint(120), core_parameters.TempoPoint(130)),
+                "acc.",
             ),
-            "acc.",
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
-                core_parameters.TempoPoint(120), core_parameters.TempoPoint(110)
+            (
+                (core_parameters.TempoPoint(120), core_parameters.TempoPoint(110)),
+                "rit.",
             ),
-            "rit.",
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
-                core_parameters.TempoPoint(120), core_parameters.TempoPoint(120)
+            (
+                (core_parameters.TempoPoint(120), core_parameters.TempoPoint(120)),
+                None,
             ),
-            None,
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
-                core_parameters.TempoPoint(120),
-                core_parameters.TempoPoint(60, reference=2),
+            (
+                (
+                    core_parameters.TempoPoint(120),
+                    core_parameters.TempoPoint(60, reference=2),
+                ),
+                None,
             ),
-            None,
-        )
+        ):
+            self.assertEqual(
+                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
+                    *tempo_point_tuple
+                ),
+                expected_dynamic_change_indication,
+            )
 
     def test_shall_write_metronome_mark(self):
         tempo_envelope_to_convert = expenvelope.Envelope.from_levels_and_durations(
@@ -239,102 +195,89 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ],
             durations=[2, 2, 2, 2, 0, 2, 0],
         )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
-                tempo_envelope_to_convert,
-                1,
-                tempo_envelope_to_convert.levels[1],
-                tempo_envelope_to_convert.levels,
-            ),
-            False,
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
-                tempo_envelope_to_convert,
-                2,
-                tempo_envelope_to_convert.levels[2],
-                tempo_envelope_to_convert.levels,
-            ),
-            True,
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
-                tempo_envelope_to_convert,
-                5,
-                tempo_envelope_to_convert.levels[5],
-                tempo_envelope_to_convert.levels,
-            ),
-            False,
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
-                tempo_envelope_to_convert,
-                7,
-                tempo_envelope_to_convert.levels[7],
-                tempo_envelope_to_convert.levels,
-            ),
-            True,
-        )
+        for tempo_point_index, shall_write_metronome_mark in (
+            (1, False),
+            (2, True),
+            (5, False),
+            (7, True),
+        ):
+            self.assertEqual(
+                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
+                    tempo_envelope_to_convert,
+                    tempo_point_index,
+                    tempo_envelope_to_convert.levels[tempo_point_index],
+                    tempo_envelope_to_convert.levels,
+                ),
+                shall_write_metronome_mark,
+            )
 
     def test_shall_stop_dynamic_change_indication(self):
-        previous_tempo_attachments = (
+        previous_tempo_attachment_tuple = (
             (0, abjad_parameters.Tempo(dynamic_change_indication="rit.")),
             (2, abjad_parameters.Tempo(dynamic_change_indication=None)),
         )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
-                previous_tempo_attachments
-            ),
-            False,
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
-                previous_tempo_attachments[:1]
-            ),
-            True,
-        )
+        for (
+            local_previous_tempo_attachment_tuple,
+            shall_stop_dynamic_change_indication,
+        ) in (
+            (previous_tempo_attachment_tuple, False),
+            (previous_tempo_attachment_tuple[:1], True),
+        ):
+            self.assertEqual(
+                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
+                    local_previous_tempo_attachment_tuple
+                ),
+                shall_stop_dynamic_change_indication,
+            )
 
     def test_find_metronome_mark_values(self):
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
+        for (
+            write_metronome_mark,
+            tempo_point,
+            stop_dynamic_change_indicaton,
+            expected_metronome_mark_values,
+        ) in (
+            (
                 True,
                 core_parameters.TempoPoint(
                     60, reference=2, textual_indication="ordinary"
                 ),
                 False,
+                ((1, 2), 60, "ordinary"),
             ),
-            ((1, 2), 60, "ordinary"),
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
+            (
                 True,
                 core_parameters.TempoPoint(
                     120, reference=1, textual_indication="faster"
                 ),
                 False,
+                ((1, 4), 120, "faster"),
             ),
-            ((1, 4), 120, "faster"),
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
+            (
                 False,
                 core_parameters.TempoPoint(
                     120, reference=1, textual_indication="faster"
                 ),
                 False,
+                (None, None, None),
             ),
-            (None, None, None),
-        )
-        self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
+            (
                 False,
                 core_parameters.TempoPoint(
                     120, reference=1, textual_indication="faster"
                 ),
                 True,
+                (None, None, "a tempo"),
             ),
-            (None, None, "a tempo"),
-        )
+        ):
+            self.assertEqual(
+                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
+                    write_metronome_mark,
+                    tempo_point,
+                    stop_dynamic_change_indicaton,
+                ),
+                expected_metronome_mark_values,
+            )
 
     def test_process_tempo_event(self):
         tempo_envelope_to_convert = expenvelope.Envelope.from_levels_and_durations(
@@ -344,7 +287,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ],
             durations=[2, 2, 2, 2, 0, 2, 0],
         )
-        tempo_points = tempo_envelope_to_convert.levels
+        tempo_point_tuple = tuple(tempo_envelope_to_convert.levels)
         tempo_attachments = (
             (
                 0,
@@ -403,22 +346,22 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ),
         )
 
-        for nth_tempo_point, nth_tempo_attachment in (
+        for tempo_point_index, tempo_attachment_index in (
             (0, 0),
             (1, 1),
             (2, 2),
             (3, 3),
             (5, 4),
         ):
-            tempo_point = tempo_points[nth_tempo_point]
-            current_tempo_attachments = tempo_attachments[:nth_tempo_attachment]
-            current_tempo_attachment = tempo_attachments[nth_tempo_attachment][1]
+            tempo_point = tempo_point_tuple[tempo_point_index]
+            current_tempo_attachments = tempo_attachments[:tempo_attachment_index]
+            current_tempo_attachment = tempo_attachments[tempo_attachment_index][1]
             self.assertEqual(
                 abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
                     tempo_envelope_to_convert,
-                    nth_tempo_point,
+                    tempo_point_index,
                     tempo_point,
-                    tempo_points,
+                    tempo_point_tuple,
                     current_tempo_attachments,
                 ),
                 current_tempo_attachment,

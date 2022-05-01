@@ -92,14 +92,14 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     @staticmethod
     def _shall_write_metronome_mark(
         tempo_envelope_to_convert: expenvelope.Envelope,
-        nth_tempo_point: int,
+        tempo_point_index: int,
         tempo_point: core_parameters.TempoPoint,
-        tempo_points: tuple[core_parameters.TempoPoint, ...],
+        tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
     ) -> bool:
         write_metronome_mark = True
         for previous_tempo_point, previous_tempo_point_duration in zip(
-            reversed(tempo_points[:nth_tempo_point]),
-            reversed(tempo_envelope_to_convert.durations[:nth_tempo_point]),
+            reversed(tempo_point_tuple[:tempo_point_index]),
+            reversed(tempo_envelope_to_convert.durations[:tempo_point_index]),
         ):
             # make sure the previous tempo point could have been written
             # down (longer duration than minimal duration)
@@ -180,7 +180,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     @staticmethod
     def _process_tempo_event(
         tempo_envelope_to_convert: expenvelope.Envelope,
-        nth_tempo_point: int,
+        tempo_point_index: int,
         tempo_point: core_parameters.TempoPoint,
         tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
         tempo_attachment_tuple: tuple[
@@ -190,7 +190,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
         try:
             next_tempo_point: typing.Optional[
                 core_parameters.TempoPoint
-            ] = tempo_point_tuple[nth_tempo_point + 1]
+            ] = tempo_point_tuple[tempo_point_index + 1]
         except IndexError:
             next_tempo_point = None
 
@@ -203,7 +203,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
         write_metronome_mark = (
             ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                 tempo_envelope_to_convert,
-                nth_tempo_point,
+                tempo_point_index,
                 tempo_point,
                 tempo_point_tuple,
             )
@@ -245,17 +245,17 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     ) -> tuple[tuple[core_constants.Real, abjad_parameters.Tempo], ...]:
         tempo_point_tuple = (
             ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
-                tempo_envelope_to_convert.levels
+                tuple(tempo_envelope_to_convert.levels)
             )
         )
 
         tempo_attachment_list: list[
             tuple[core_constants.Real, abjad_parameters.Tempo]
         ] = []
-        for nth_tempo_point, absolute_time, duration, tempo_point in zip(
+        for tempo_point_index, absolute_time, duration, tempo_point in zip(
             range(len(tempo_point_tuple)),
             core_utilities.accumulate_from_zero(tempo_envelope_to_convert.durations),
-            tempo_envelope_to_convert.durations + (1,),
+            tuple(tempo_envelope_to_convert.durations) + (1,),
             tempo_point_tuple,
         ):
 
@@ -263,7 +263,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
                 tempo_attachment = (
                     ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
                         tempo_envelope_to_convert,
-                        nth_tempo_point,
+                        tempo_point_index,
                         tempo_point,
                         tempo_point_tuple,
                         tuple(tempo_attachment_list),
