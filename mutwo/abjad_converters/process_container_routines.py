@@ -11,6 +11,7 @@ from mutwo import core_events
 __all__ = (
     "ProcessAbjadContainerRoutine",
     "AddDurationLineEngraver",
+    "PrepareForDurationLineBasedNotation",
     "AddInstrumentName",
     "AddAccidentalStyle",
     "SetStaffSize",
@@ -34,6 +35,39 @@ class AddDurationLineEngraver(ProcessAbjadContainerRoutine):
         container_to_process: abjad.Container,
     ):
         container_to_process.consists_commands.append("Duration_line_engraver")
+
+
+class PrepareForDurationLineBasedNotation(ProcessAbjadContainerRoutine):
+    def __call__(
+        self,
+        _: core_events.abc.ComplexEvent,
+        container_to_process: abjad.Container,
+    ):
+        first_element = abjad.get.leaf(container_to_process, 0)
+        before_grace_container = abjad.get.before_grace_container(first_element)
+        if before_grace_container:
+            first_element = abjad.get.leaf(before_grace_container, 0)
+        # don't write rests (simply write empty space)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Rest"), first_element)
+        abjad.attach(
+            abjad.LilyPondLiteral("\\omit Staff.MultiMeasureRest"), first_element
+        )
+        # don't write stems (Rhythm get defined by duration line)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Stem"), first_element)
+        # don't write flags (Rhythm get defined by duration line)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Flag"), first_element)
+        # don't write beams (Rhythm get defined by duration line)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Beam"), first_element)
+        # don't write dots (Rhythm get defined by duration line)
+        abjad.attach(
+            abjad.LilyPondLiteral("\\override Staff.Dots.dot-count = #0"),
+            first_element,
+        )
+        # only write black note heads (Rhythm get defined by duration line)
+        abjad.attach(
+            abjad.LilyPondLiteral("\\override Staff.NoteHead.duration-log = 2"),
+            first_element,
+        )
 
 
 class AddInstrumentName(ProcessAbjadContainerRoutine):

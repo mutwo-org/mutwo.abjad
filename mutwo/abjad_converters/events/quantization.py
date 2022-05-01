@@ -154,10 +154,8 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 
         self._duration_unit = duration_unit
         self._attack_point_optimizer = attack_point_optimizer
-        self._q_schema = (
-            NauertSequentialEventToQuantizedAbjadContainer._make_q_schema(
-                self._time_signature_tuple, search_tree
-            )
+        self._q_schema = NauertSequentialEventToQuantizedAbjadContainer._make_q_schema(
+            self._time_signature_tuple, search_tree
         )
 
     # ###################################################################### #
@@ -244,15 +242,13 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         index_of_previous_q_event: int,
     ) -> tuple[bool, int]:
         if isinstance(abjad_leaf_or_tuplet, abjad.Tuplet):
-            return (
-                NauertSequentialEventToQuantizedAbjadContainer._process_tuplet(
-                    index_list,
-                    abjad_leaf_or_tuplet,
-                    related_abjad_leaves_per_simple_event,
-                    q_event_sequence,
-                    has_tie,
-                    index_of_previous_q_event,
-                )
+            return NauertSequentialEventToQuantizedAbjadContainer._process_tuplet(
+                index_list,
+                abjad_leaf_or_tuplet,
+                related_abjad_leaves_per_simple_event,
+                q_event_sequence,
+                has_tie,
+                index_of_previous_q_event,
             )
 
         else:
@@ -436,8 +432,10 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
     def _add_explicit_beams(
         bar: abjad.Container, meter: abjad.Meter, global_offset: abjad.Offset
     ) -> None:
-        offset_inventory = RMakersSequentialEventToQuantizedAbjadContainer._find_offset_inventory(
-            meter
+        offset_inventory = (
+            RMakersSequentialEventToQuantizedAbjadContainer._find_offset_inventory(
+                meter
+            )
         )
         leaf_offset_list = []
         # don't attach beams on tuplets
@@ -560,12 +558,14 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
         return notes
 
     def _concatenate_adjacent_tuplets_for_one_bar(self, bar: abjad.Container):
-        tuplet_index_tuple = RMakersSequentialEventToQuantizedAbjadContainer._find_tuplet_indices(
-            bar
+        tuplet_index_tuple = (
+            RMakersSequentialEventToQuantizedAbjadContainer._find_tuplet_indices(bar)
         )
         if tuplet_index_tuple:
-            grouped_tuplet_index_list_list = RMakersSequentialEventToQuantizedAbjadContainer._group_tuplet_indices(
-                tuplet_index_tuple
+            grouped_tuplet_index_list_list = (
+                RMakersSequentialEventToQuantizedAbjadContainer._group_tuplet_indices(
+                    tuplet_index_tuple
+                )
             )
             for tuplet_index_list in reversed(grouped_tuplet_index_list_list):
                 if len(tuplet_index_list) > 1:
@@ -765,27 +765,6 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
         )
 
     def _prepare_first_element(self, first_element: abjad.Leaf):
-        # don't write rests (simply write empty space)
-        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Rest"), first_element)
-        abjad.attach(
-            abjad.LilyPondLiteral("\\omit Staff.MultiMeasureRest"), first_element
-        )
-        # don't write stems (Rhythm get defined by duration line)
-        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Stem"), first_element)
-        # don't write flags (Rhythm get defined by duration line)
-        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Flag"), first_element)
-        # don't write beams (Rhythm get defined by duration line)
-        abjad.attach(abjad.LilyPondLiteral("\\omit Staff.Beam"), first_element)
-        # don't write dots (Rhythm get defined by duration line)
-        abjad.attach(
-            abjad.LilyPondLiteral("\\override Staff.Dots.dot-count = #0"),
-            first_element,
-        )
-        # only write black note heads (Rhythm get defined by duration line)
-        abjad.attach(
-            abjad.LilyPondLiteral("\\override Staff.NoteHead.duration-log = 2"),
-            first_element,
-        )
         # set duration line properties
         abjad.attach(
             abjad.LilyPondLiteral(

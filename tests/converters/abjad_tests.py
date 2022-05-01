@@ -574,7 +574,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
             self.assertEqual(indicators0, indicators1)
 
     def test_general_convert_with_lilypond_output(self):
-        # core_eventsally an integration test (testing if the rendered png
+        # an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
         converted_sequential_event = self.complex_converter.convert(
             self.complex_sequential_event
@@ -602,7 +602,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         os.remove(new_png_file_path)
 
     def test_tempo_range_conversion(self):
-        # core_eventsally an integration test (testing if the rendered png
+        # an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
         # -> this tests, if the resulting notation prints tempo ranges
 
@@ -655,7 +655,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         os.remove(new_png_file_path)
 
     def test_duration_line_notation(self):
-        # core_eventsally an integration test (testing if the rendered png
+        # an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
         # -> this tests, if duration lines are printed in a correct manner
 
@@ -704,7 +704,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         os.remove(new_png_file_path)
 
     def test_grace_note_sequential_event_and_after_grace_note_sequential_event(self):
-        # core_eventsally an integration test (testing if the rendered png
+        # an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
         # -> this tests, if the resulting notation prints grace notes and
         # after grace notes
@@ -844,10 +844,56 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         # remove test file
         os.remove(new_png_file_path)
 
+    def test_first_grace_note_has_no_flag(self):
+        converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer()
+        )
+        sequential_event_to_convert = core_events.SequentialEvent(
+            [
+                music_events.NoteLike(
+                    "c",
+                    grace_note_sequential_event=core_events.SequentialEvent(
+                        [music_events.NoteLike("d", fractions.Fraction(1, 8))]
+                    ),
+                )
+            ]
+        )
+
+        converted_sequential_event = converter.convert(sequential_event_to_convert)
+
+        tests_path = "tests/converters"
+        png_file_to_compare_path = "{}/abjad_expected_png_output_for_first_grace_note_with_duration_line_test.png".format(
+            tests_path
+        )
+        new_png_file_path = "{}/abjad_png_output_for_first_grace_note_with_duration_line_test.png".format(
+            tests_path
+        )
+
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        score_block = abjad.Block(name="score")
+        score_block.items.append(
+            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+        )
+        lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
+
+        self.assertTrue(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
+        )
+
+        # remove test file
+        os.remove(new_png_file_path)
+
 
 class NestedComplexEventToAbjadContainerTest(unittest.TestCase):
     def test_nested_conversion(self):
-        # core_eventsally an integration test (testing if the rendered png
+        # an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
 
         nested_score = core_events.TaggedSimultaneousEvent(

@@ -29,7 +29,6 @@ from ..parameters import MutwoLyricToAbjadString
 from .quantization import SequentialEventToQuantizedAbjadContainer
 from .quantization import NauertSequentialEventToQuantizedAbjadContainer
 
-# from .quantization import RMakersSequentialEventToQuantizedAbjadContainer
 from .quantization import (
     NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
 )
@@ -325,7 +324,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             [core_events.SimpleEvent],
             music_parameters.abc.Lyric,
         ] = music_converters.SimpleEventToLyric(),
-        is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool] = None,
+        is_simple_event_rest: typing.Optional[
+            typing.Callable[[core_events.SimpleEvent], bool]
+        ] = None,
         mutwo_pitch_to_abjad_pitch: MutwoPitchToAbjadPitch = MutwoPitchToAbjadPitch(),
         mutwo_volume_to_abjad_attachment_dynamic: typing.Optional[
             MutwoVolumeToAbjadAttachmentDynamic
@@ -358,8 +359,12 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer,
             ),
         ):
+            post_process_abjad_container_routine_sequence = tuple(
+                post_process_abjad_container_routine_sequence
+            )
             post_process_abjad_container_routine_sequence += (
                 abjad_converters.AddDurationLineEngraver(),
+                abjad_converters.PrepareForDurationLineBasedNotation(),
             )
 
         super().__init__(
@@ -1093,16 +1098,12 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainers(
 ):
     def __init__(
         self,
-        tag_to_abjad_converter_dict: dict[
-            str, ComplexEventToAbjadContainer
-        ],
+        tag_to_abjad_converter_dict: dict[str, ComplexEventToAbjadContainer],
         complex_event_to_tag: typing.Callable[
             [core_events.abc.ComplexEvent], str
         ] = lambda complex_event: complex_event.tag,
     ):
-        self._tag_to_abjad_converter_dict = (
-            tag_to_abjad_converter_dict
-        )
+        self._tag_to_abjad_converter_dict = tag_to_abjad_converter_dict
         self._complex_event_to_tag = complex_event_to_tag
 
     def convert(
