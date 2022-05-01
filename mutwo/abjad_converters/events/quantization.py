@@ -23,9 +23,9 @@ from mutwo import core_utilities
 __all__ = (
     "SequentialEventToQuantizedAbjadContainer",
     "NauertSequentialEventToQuantizedAbjadContainer",
-    "NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter",
+    "NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer",
     "RMakersSequentialEventToQuantizedAbjadContainer",
-    "RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter",
+    "RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer",
 )
 
 
@@ -736,7 +736,7 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
     >>> from mutwo.converters.frontends import abjad as mutwo_abjad
     >>> from mutwo.events import basic, music
     >>> converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-    >>>     frontends.abjad.RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
+    >>>     frontends.abjad.RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer(
     >>>        )
     >>>    )
     >>> sequential_event_to_convert = basic.SequentialEvent(
@@ -840,7 +840,7 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
                         )
 
 
-class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
+class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer(
     NauertSequentialEventToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
@@ -874,7 +874,7 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         return quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
 
 
-class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
+class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer(
     RMakersSequentialEventToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
@@ -918,9 +918,9 @@ class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         )
 
 
-NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter._set_docs(
+NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
     NauertSequentialEventToQuantizedAbjadContainer
 )
-RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter._set_docs(
+RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
     RMakersSequentialEventToQuantizedAbjadContainer
 )

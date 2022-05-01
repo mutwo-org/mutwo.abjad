@@ -660,7 +660,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         # -> this tests, if duration lines are printed in a correct manner
 
         converter = abjad_converters.SequentialEventToAbjadVoice(
-            abjad_converters.NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
+            abjad_converters.NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer()
         )
         sequential_event_to_convert = core_events.SequentialEvent(
             [

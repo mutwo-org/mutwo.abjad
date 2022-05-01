@@ -31,10 +31,10 @@ from .quantization import NauertSequentialEventToQuantizedAbjadContainer
 
 # from .quantization import RMakersSequentialEventToQuantizedAbjadContainer
 from .quantization import (
-    NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+    NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
 )
 from .quantization import (
-    RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+    RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer,
 )
 
 
@@ -152,10 +152,10 @@ class ComplexEventToAbjadContainer(core_converters.abc.Converter):
 class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     """Convert :class:`~mutwo.core_events.SequentialEvent` to :class:`abjad.Voice`.
 
-    :param sequential_event_to_quantized_abjad_container_converter: Class which
+    :param sequential_event_to_quantized_abjad_container: Class which
         defines how the Mutwo data will be quantized. See
         :class:`SequentialEventToQuantizedAbjadContainer` for more information.
-    :type sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainer, optional
+    :type sequential_event_to_quantized_abjad_container: SequentialEventToQuantizedAbjadContainer, optional
     :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.core_events.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.music_parameters.abc.Pitch`).
@@ -256,20 +256,20 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         default Mutwo simply checks if 'pitch_list' contain any objects. If not,
         the Event will be interpreted as a rest.
     :type is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool], optional
-    :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
+    :param mutwo_pitch_to_abjad_pitch: Class which defines how to convert
         :class:`mutwo.music_parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
         See :class:`MutwoPitchToAbjadPitch` for more information.
-    :type mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch, optional
-    :param mutwo_volume_to_abjad_attachment_dynamic_converter: Class which defines how
+    :type mutwo_pitch_to_abjad_pitch: MutwoPitchToAbjadPitch, optional
+    :param mutwo_volume_to_abjad_attachment_dynamic: Class which defines how
         to convert :class:`mutwo.music_parameters.abc.Volume` objects to
         :class:`mutwo.converters.frontends.abjad_parameters.Dynamic` objects.
         See :class:`MutwoVolumeToAbjadAttachmentDynamic` for more information.
-    :type mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamic, optional
-    :param tempo_envelope_to_abjad_attachment_tempo_converter: Class which defines how
+    :type mutwo_volume_to_abjad_attachment_dynamic: MutwoVolumeToAbjadAttachmentDynamic, optional
+    :param tempo_envelope_to_abjad_attachment_tempo: Class which defines how
         to convert tempo envelopes to
         :class:`mutwo.converters.frontends.abjad_parameters.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempo` for more information.
-    :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempo, optional
+    :type tempo_envelope_to_abjad_attachment_tempo: TempoEnvelopeToAbjadAttachmentTempo, optional
     :param mutwo_lyric_to_abjad_string: Callable which defines how
         to convert :class:`mutwo.music_parameters.abc.Lyric` to a string.
         Consult :class:`mutwo.abjad_converters.MutwoLyricToAbjadString`
@@ -298,7 +298,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
     def __init__(
         self,
-        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainer = NauertSequentialEventToQuantizedAbjadContainer(),
+        sequential_event_to_quantized_abjad_container: SequentialEventToQuantizedAbjadContainer = NauertSequentialEventToQuantizedAbjadContainer(),
         simple_event_to_pitch_list: typing.Callable[
             [core_events.SimpleEvent], list[music_parameters.abc.Pitch]
         ] = music_converters.SimpleEventToPitchList(),
@@ -326,11 +326,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             music_parameters.abc.Lyric,
         ] = music_converters.SimpleEventToLyric(),
         is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool] = None,
-        mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch = MutwoPitchToAbjadPitch(),
-        mutwo_volume_to_abjad_attachment_dynamic_converter: typing.Optional[
+        mutwo_pitch_to_abjad_pitch: MutwoPitchToAbjadPitch = MutwoPitchToAbjadPitch(),
+        mutwo_volume_to_abjad_attachment_dynamic: typing.Optional[
             MutwoVolumeToAbjadAttachmentDynamic
         ] = MutwoVolumeToAbjadAttachmentDynamic(),
-        tempo_envelope_to_abjad_attachment_tempo_converter: typing.Optional[
+        tempo_envelope_to_abjad_attachment_tempo: typing.Optional[
             TempoEnvelopeToAbjadAttachmentTempo
         ] = ComplexTempoEnvelopeToAbjadAttachmentTempo(),
         mutwo_lyric_to_abjad_string: MutwoLyricToAbjadString = MutwoLyricToAbjadString(),
@@ -352,10 +352,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     ):
         # special treatment for duration line based quantizer
         if isinstance(
-            sequential_event_to_quantized_abjad_container_converter,
+            sequential_event_to_quantized_abjad_container,
             (
-                NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
-                RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+                NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
+                RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer,
             ),
         ):
             post_process_abjad_container_routine_sequence += (
@@ -392,8 +392,8 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             for abjad_attachment_class in self._abjad_attachment_class_sequence
         )
 
-        self._sequential_event_to_quantized_abjad_container_converter = (
-            sequential_event_to_quantized_abjad_container_converter
+        self._sequential_event_to_quantized_abjad_container = (
+            sequential_event_to_quantized_abjad_container
         )
 
         self._simple_event_to_pitch_list = simple_event_to_pitch_list
@@ -420,16 +420,14 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         )
 
         self._is_simple_event_rest = is_simple_event_rest
-        self._mutwo_pitch_to_abjad_pitch_converter = (
-            mutwo_pitch_to_abjad_pitch_converter
-        )
+        self._mutwo_pitch_to_abjad_pitch = mutwo_pitch_to_abjad_pitch
 
-        self._mutwo_volume_to_abjad_attachment_dynamic_converter = (
-            mutwo_volume_to_abjad_attachment_dynamic_converter
+        self._mutwo_volume_to_abjad_attachment_dynamic = (
+            mutwo_volume_to_abjad_attachment_dynamic
         )
-        if tempo_envelope_to_abjad_attachment_tempo_converter:
-            tempo_attachment_tuple = tempo_envelope_to_abjad_attachment_tempo_converter.convert(
-                self._sequential_event_to_quantized_abjad_container_converter.tempo_envelope
+        if tempo_envelope_to_abjad_attachment_tempo:
+            tempo_attachment_tuple = tempo_envelope_to_abjad_attachment_tempo.convert(
+                self._sequential_event_to_quantized_abjad_container.tempo_envelope
             )
         else:
             tempo_attachment_tuple = None
@@ -517,7 +515,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             self._simple_event_to_playing_indicator_collection,
             self._simple_event_to_notation_indicator_collection,
             self._is_simple_event_rest,
-            self._mutwo_pitch_to_abjad_pitch_converter,
+            self._mutwo_pitch_to_abjad_pitch,
         )
         grace_note_sequential_event_container = converter.convert(
             grace_note_sequential_event_or_after_grace_note_sequential_event
@@ -533,9 +531,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     def _volume_to_abjad_attachment(
         self, volume: music_parameters.abc.Volume
     ) -> dict[str, abjad_parameters.abc.AbjadAttachment]:
-        if self._mutwo_volume_to_abjad_attachment_dynamic_converter:
+        if self._mutwo_volume_to_abjad_attachment_dynamic:
             abjad_attachment_dynamic = (
-                self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(volume)
+                self._mutwo_volume_to_abjad_attachment_dynamic.convert(volume)
             )
             if abjad_attachment_dynamic:
                 return {"dynamic": abjad_attachment_dynamic}
@@ -778,7 +776,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             if not is_simple_event_rest:
                 pitch_list = extracted_data[0]
                 abjad_pitch_list = [
-                    self._mutwo_pitch_to_abjad_pitch_converter.convert(pitch)
+                    self._mutwo_pitch_to_abjad_pitch.convert(pitch)
                     for pitch in pitch_list
                 ]
                 self._apply_pitch_list_on_quantized_abjad_leaf(
@@ -837,7 +835,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         (
             quanitisized_abjad_leaf_voice,
             related_abjad_leaf_index_tuple_tuple_per_simple_event,
-        ) = self._sequential_event_to_quantized_abjad_container_converter.convert(
+        ) = self._sequential_event_to_quantized_abjad_container.convert(
             sequential_event_to_convert.set_parameter(  # type: ignore
                 "is_rest",
                 lambda _: next(is_simple_event_rest_per_simple_event_iterator),
@@ -1003,26 +1001,23 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoice):
             music_parameters.NotationIndicatorCollection,
         ],
         is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool],
-        mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitch,
+        mutwo_pitch_to_abjad_pitch: MutwoPitchToAbjadPitch,
     ):
-        def raise_attribute_error(_):
-            raise AttributeError
-
         if is_before:
             abjad_container_class = abjad.BeforeGraceContainer
         else:
             abjad_container_class = abjad.AfterGraceContainer
 
         super().__init__(
-            sequential_event_to_quantized_abjad_container_converter=self.GraceNotesToQuantizedAbjadContainerConverter(),
+            sequential_event_to_quantized_abjad_container=self.GraceNotesToQuantizedAbjadContainerConverter(),
             simple_event_to_pitch_list=simple_event_to_pitch_list,
             simple_event_to_volume=simple_event_to_volume,
             simple_event_to_playing_indicator_collection=simple_event_to_playing_indicator_collection,
             simple_event_to_notation_indicator_collection=simple_event_to_notation_indicator_collection,
             is_simple_event_rest=is_simple_event_rest,
-            mutwo_pitch_to_abjad_pitch_converter=mutwo_pitch_to_abjad_pitch_converter,
-            mutwo_volume_to_abjad_attachment_dynamic_converter=None,
-            tempo_envelope_to_abjad_attachment_tempo_converter=None,
+            mutwo_pitch_to_abjad_pitch=mutwo_pitch_to_abjad_pitch,
+            mutwo_volume_to_abjad_attachment_dynamic=None,
+            tempo_envelope_to_abjad_attachment_tempo=None,
             simple_event_to_grace_note_sequential_event=lambda _: core_events.SequentialEvent(
                 []
             ),
@@ -1098,15 +1093,15 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainers(
 ):
     def __init__(
         self,
-        tag_to_complex_event_to_abjad_container_converter: dict[
+        tag_to_abjad_converter_dict: dict[
             str, ComplexEventToAbjadContainer
         ],
         complex_event_to_tag: typing.Callable[
             [core_events.abc.ComplexEvent], str
         ] = lambda complex_event: complex_event.tag,
     ):
-        self._tag_to_complex_event_to_abjad_container_converter = (
-            tag_to_complex_event_to_abjad_container_converter
+        self._tag_to_abjad_converter_dict = (
+            tag_to_abjad_converter_dict
         )
         self._complex_event_to_tag = complex_event_to_tag
 
@@ -1118,13 +1113,13 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainers(
             tag = self._complex_event_to_tag(complex_event)
             try:
                 complex_event_to_abjad_container_converter = (
-                    self._tag_to_complex_event_to_abjad_container_converter[tag]
+                    self._tag_to_abjad_converter_dict[tag]
                 )
             except KeyError:
                 raise KeyError(
                     f"Found undefined tag '{tag}'."
                     " This object only knows the following tags:"
-                    f" '{self._tag_to_complex_event_to_abjad_container_converter.keys()}'"
+                    f" '{self._tag_to_abjad_converter_dict.keys()}'"
                 )
 
             complex_event_to_abjad_container_converter_list.append(
