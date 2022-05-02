@@ -302,10 +302,12 @@ class Pedal(music_parameters.Pedal, abjad_parameters.abc.ToggleAttachment):
 
 
 class Hairpin(music_parameters.Hairpin, abjad_parameters.abc.ToggleAttachment):
+    niente_literal = abjad.LilyPondLiteral(r"\once \override Hairpin.circled-tip = ##t")
+
     def process_leaf(
         self,
         leaf: abjad.Leaf,
-        previous_attachment: typing.Optional["abjad_parameters.abc.AbjadAttachment"],
+        _: typing.Optional["abjad_parameters.abc.AbjadAttachment"],
     ) -> LeafOrLeafSequence:
         if self.symbol == "!":
             abjad.attach(
@@ -313,11 +315,44 @@ class Hairpin(music_parameters.Hairpin, abjad_parameters.abc.ToggleAttachment):
                 leaf,
             )
         else:
+            if self.niente:
+                abjad.attach(self.niente_literal, leaf)
             abjad.attach(
                 abjad.StartHairpin(self.symbol),
                 leaf,
             )
         return leaf
+
+    def _process_espressivo(
+        self,
+        leaf_tuple: tuple[abjad.Leaf, ...],
+        previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
+    ) -> tuple[abjad.Leaf, ...]:
+        leaf_count = len(leaf_tuple)
+        if leaf_count >= 2:
+            crescendo_leaf = leaf_tuple[0]
+            if self.niente:
+                abjad.attach(self.niente_literal, crescendo_leaf)
+            abjad.attach(abjad.StartHairpin("<"), crescendo_leaf)
+            decrescendo_leaf = leaf_tuple[int(len(leaf_tuple) // 2)]
+            if self.niente:
+                abjad.attach(self.niente_literal, decrescendo_leaf)
+            abjad.attach(abjad.StartHairpin(">"), decrescendo_leaf)
+
+        elif leaf_count == 1:
+            abjad.attach(abjad.Articulation('espressivo'), leaf_tuple[0])
+
+        return leaf_tuple
+
+    def process_leaf_tuple(
+        self,
+        leaf_tuple: tuple[abjad.Leaf, ...],
+        previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
+    ) -> tuple[abjad.Leaf, ...]:
+        if self.symbol == "<>":
+            return self._process_espressivo(leaf_tuple, previous_attachment)
+        else:
+            return super().process_leaf_tuple(leaf_tuple, previous_attachment)
 
 
 class BartokPizzicato(

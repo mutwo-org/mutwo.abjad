@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 
+## [0.9.0] - 2022-05-02
+
+### Changed
+- `Hairpin` attachment
+- changed bad converter names (XToYConverter -> XToY)
+
+
 ## [0.8.0] - 2022-04-18
 
 ### Added

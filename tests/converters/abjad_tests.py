@@ -833,6 +833,74 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         # remove test file
         os.remove(new_png_file_path)
 
+    def test_hairpin_conversion(self):
+        # Integration test!
+
+        converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer()
+        )
+        sequential_event_to_convert = core_events.SequentialEvent(
+            [
+                music_events.NoteLike("c", fractions.Fraction(3, 4)),
+                music_events.NoteLike("d", fractions.Fraction(1, 4)),
+                music_events.NoteLike("e", fractions.Fraction(1, 4)),
+                music_events.NoteLike("e", fractions.Fraction(5, 4)),
+                music_events.NoteLike([], fractions.Fraction(1, 8)),
+            ]
+        )
+
+        sequential_event_to_convert[
+            0
+        ].playing_indicator_collection.hairpin.symbol = "<>"
+        sequential_event_to_convert[
+            0
+        ].playing_indicator_collection.hairpin.niente = True
+        sequential_event_to_convert[1].playing_indicator_collection.hairpin.symbol = "<"
+        sequential_event_to_convert[
+            1
+        ].playing_indicator_collection.hairpin.niente = True
+        sequential_event_to_convert[2].playing_indicator_collection.hairpin.symbol = ">"
+        sequential_event_to_convert[
+            3
+        ].playing_indicator_collection.hairpin.symbol = "<>"
+        sequential_event_to_convert[
+            3
+        ].playing_indicator_collection.hairpin.niente = True
+        sequential_event_to_convert[
+            4
+        ].playing_indicator_collection.hairpin.symbol = "!"
+        converted_sequential_event = converter.convert(sequential_event_to_convert)
+        converted_sequential_event = converter.convert(sequential_event_to_convert)
+
+        tests_path = "tests/converters"
+        png_file_to_compare_path = (
+            "{}/abjad_expected_png_output_for_hairpin_test.png".format(tests_path)
+        )
+        new_png_file_path = "{}/abjad_png_output_for_hairpin_test.png".format(
+            tests_path
+        )
+
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        score_block = abjad.Block(name="score")
+        score_block.items.append(
+            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+        )
+        lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
+
+        self.assertTrue(
+            SequentialEventToAbjadVoiceTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
+        )
+
+        # remove test file
+        os.remove(new_png_file_path)
+
 
 class NestedComplexEventToAbjadContainerTest(unittest.TestCase):
     def test_nested_conversion(self):
