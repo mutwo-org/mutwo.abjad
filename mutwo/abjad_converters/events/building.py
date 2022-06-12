@@ -33,7 +33,7 @@ from .quantization import (
     NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
 )
 from .quantization import (
-    RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer,
+    LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer,
 )
 
 
@@ -356,7 +356,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             sequential_event_to_quantized_abjad_container,
             (
                 NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
-                RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer,
+                LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer,
             ),
         ):
             post_process_abjad_container_routine_sequence = tuple(

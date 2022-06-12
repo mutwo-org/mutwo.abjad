@@ -11,7 +11,6 @@ except ImportError:
 
 import abjad  # type: ignore
 from abjadext import nauert  # type: ignore
-from abjadext import rmakers  # type: ignore
 import expenvelope  # type: ignore
 import ranges  # type: ignore
 
@@ -24,9 +23,12 @@ __all__ = (
     "SequentialEventToQuantizedAbjadContainer",
     "NauertSequentialEventToQuantizedAbjadContainer",
     "NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer",
-    "RMakersSequentialEventToQuantizedAbjadContainer",
-    "RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer",
+    "LeafMakerSequentialEventToQuantizedAbjadContainer",
+    "LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer",
 )
+
+class NoTimeSignatureError(Exception):
+    pass
 
 
 class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
@@ -52,11 +54,10 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     ):
         n_time_signature_sequence = len(time_signature_sequence)
         if n_time_signature_sequence == 0:
-            message = (
+            raise NoTimeSignatureError(
                 "Found empty sequence for argument 'time_signature_sequence'. Specify at least"
                 " one time signature!"
-            )
-            raise ValueError(message)
+                )
 
         time_signature_tuple = tuple(time_signature_sequence)
         if tempo_envelope is None:
@@ -109,9 +110,9 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         to better represent metrical structures within bars. If no optimizer is desired
         this argument can be set to ``None``.
 
-    Unlike :class:`RMakersSequentialEventToQuantizedAbjadContainer` this converter
+    Unlike :class:`LeafMakerSequentialEventToQuantizedAbjadContainer` this converter
     supports nested tuplets and ties across tuplets. But this converter is much slower
-    than the :class:`RMakersSequentialEventToQuantizedAbjadContainer`. Because the
+    than the :class:`LeafMakerSequentialEventToQuantizedAbjadContainer`. Because the
     converter depends on the abjad extension `nauert` its quality is dependent on the
     inner mechanism of the used package. Because the quantization made by the `nauert`
     package can be somewhat indeterministic a lot of tweaking may be necessary for
@@ -374,10 +375,10 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         )
 
 
-class RMakersSequentialEventToQuantizedAbjadContainer(
+class LeafMakerSequentialEventToQuantizedAbjadContainer(
     SequentialEventToQuantizedAbjadContainer
 ):
-    """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjadext.rmakers`.
+    """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjad.LeafMaker`.
 
     :param time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted
@@ -394,9 +395,9 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
     :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
     has several known limitations:
 
-        1. :class:`RMakersSequentialEventToQuantizedAbjadContainer` doesn't
+        1. :class:`LeafMakerSequentialEventToQuantizedAbjadContainer` doesn't
            support nested tuplets.
-        2. :class:`RMakersSequentialEventToQuantizedAbjadContainer` doesn't
+        2. :class:`LeafMakerSequentialEventToQuantizedAbjadContainer` doesn't
            support ties across tuplets with different prolation (or across tuplets
            and not-tuplet notation). If ties are desired the user has to build them
            manually before passing the :class:`~mutwo.core_events.SequentialEvent`
@@ -408,6 +409,10 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
     def __init__(
         self, *args, do_rewrite_meter: bool = True, add_beams: bool = True, **kwargs
     ):
+        self._leaf_maker = abjad.LeafMaker(
+            forbidden_note_duration=abjad.Duration(8, 1),
+            forbidden_rest_duration=abjad.Duration(8, 1),
+        )
         super().__init__(*args, **kwargs)
         self._do_rewrite_meter = do_rewrite_meter
         self._add_beams = add_beams
@@ -433,7 +438,7 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
         bar: abjad.Container, meter: abjad.Meter, global_offset: abjad.Offset
     ) -> None:
         offset_inventory = (
-            RMakersSequentialEventToQuantizedAbjadContainer._find_offset_inventory(
+            LeafMakerSequentialEventToQuantizedAbjadContainer._find_offset_inventory(
                 meter
             )
         )
@@ -527,49 +532,35 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
     #                       private methods                                  #
     # ###################################################################### #
 
-    def _make_notes(
+    def _make_note_tuple(
         self, sequential_event_to_convert: core_events.SequentialEvent
-    ) -> abjad.Selection:
-        stack = rmakers.stack(
-            rmakers.note(),
-            rmakers.force_rest(
-                lambda _: abjad.select(_)
-                .logical_ties()
-                .get(
-                    [
-                        index
-                        for index, event in enumerate(sequential_event_to_convert)
-                        if event.is_rest
-                    ]
-                ),
-            ),
-        )
-        notes = stack(
-            tuple(
-                map(
-                    lambda duration: (
-                        fractions.Fraction(duration).numerator,
-                        fractions.Fraction(duration).denominator,
-                    ),
-                    sequential_event_to_convert.get_parameter("duration"),
-                )
+    ) -> tuple[abjad.Leaf, ...]:
+        pitch_list = [
+            None if event.is_rest else "c" for event in sequential_event_to_convert
+        ]
+        # It has to be a list! Otherwise abjad will raise an exception.
+        duration_list = list(
+            map(
+                lambda duration: abjad.Duration(duration),
+                sequential_event_to_convert.get_parameter("duration"),
             )
         )
-        return notes
+        note_tuple = tuple(self._leaf_maker(pitch_list, duration_list))
+        return note_tuple
 
     def _concatenate_adjacent_tuplets_for_one_bar(self, bar: abjad.Container):
         tuplet_index_tuple = (
-            RMakersSequentialEventToQuantizedAbjadContainer._find_tuplet_indices(bar)
+            LeafMakerSequentialEventToQuantizedAbjadContainer._find_tuplet_indices(bar)
         )
         if tuplet_index_tuple:
             grouped_tuplet_index_list_list = (
-                RMakersSequentialEventToQuantizedAbjadContainer._group_tuplet_indices(
+                LeafMakerSequentialEventToQuantizedAbjadContainer._group_tuplet_indices(
                     tuplet_index_tuple
                 )
             )
             for tuplet_index_list in reversed(grouped_tuplet_index_list_list):
                 if len(tuplet_index_list) > 1:
-                    RMakersSequentialEventToQuantizedAbjadContainer._concatenate_adjacent_tuplets_for_one_group(
+                    LeafMakerSequentialEventToQuantizedAbjadContainer._concatenate_adjacent_tuplets_for_one_group(
                         bar, tuplet_index_list
                     )
 
@@ -602,11 +593,7 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
         difference = time_signature.duration - abjad.get.duration(last_bar)
 
         if difference:
-            stack = rmakers.stack(
-                rmakers.note(),
-                rmakers.force_rest(lambda _: abjad.select(_).logical_ties()[:]),
-            )
-            last_bar.extend(stack((difference,)))
+            last_bar.extend(self._leaf_maker([None], [difference]))
             abjad.Meter.rewrite_meter(
                 last_bar[:], time_signature, maximum_dot_count=self._maximum_dot_count
             )
@@ -615,11 +602,11 @@ class RMakersSequentialEventToQuantizedAbjadContainer(
         self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> abjad.Voice:
         # first build notes
-        notes = self._make_notes(sequential_event_to_convert)
+        note_tuple = self._make_note_tuple(sequential_event_to_convert)
 
         # split notes by time signatures
         notes_split_by_time_signature_sequence = abjad.mutate.split(
-            notes,
+            note_tuple,
             [time_signature.duration for time_signature in self._time_signature_tuple],
             cyclic=True,
         )
@@ -733,15 +720,21 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
     **Example:**
 
     >>> import abjad
-    >>> from mutwo.converters.frontends import abjad as mutwo_abjad
-    >>> from mutwo.events import basic, music
-    >>> converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-    >>>     frontends.abjad.RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer(
+    >>> from mutwo import abjad_converters
+    >>> from mutwo import core_events
+    >>> converter = abjad_converters.SequentialEventToAbjadVoiceConverter(
+    >>>     abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
     >>>        )
     >>>    )
-    >>> sequential_event_to_convert = basic.SequentialEvent(
-    >>>     [music.NoteLike("c", 0.125), music.NoteLike("d", 1), music.NoteLike([], 0.125), music.NoteLike("e", 0.16666), music.NoteLike("e", 0.08333333333333333)]
-    >>>    )
+    >>> sequential_event_to_convert = core_events.SequentialEvent(
+    >>>     [
+    >>>         music_events.NoteLike("c", 0.125),
+    >>>         music_events.NoteLike("d", 1),
+    >>>         music_events.NoteLike([], 0.125),
+    >>>         music_events.NoteLike("e", 0.16666),
+    >>>         music_events.NoteLike("e", 0.08333333333333333)
+    >>>     ]
+    >>> )
     >>> converted_sequential_event = converter.convert(sequential_event_to_convert)
     >>> converted_sequential_event.consists_commands.append("Duration_line_engraver")
     """
@@ -853,8 +846,8 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer(
         return quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
 
 
-class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer(
-    RMakersSequentialEventToQuantizedAbjadContainer,
+class LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
+    LeafMakerSequentialEventToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
     def __init__(
@@ -900,6 +893,6 @@ class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer(
 NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
     NauertSequentialEventToQuantizedAbjadContainer
 )
-RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
-    RMakersSequentialEventToQuantizedAbjadContainer
+LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
+    LeafMakerSequentialEventToQuantizedAbjadContainer
 )

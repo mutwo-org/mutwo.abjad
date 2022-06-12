@@ -12,13 +12,16 @@ If one wants to build complete scores from within mutwo, the module offers the
 
 1. Indicators attached to rests which follow another rest won't be translated to
    `abjad`. This behaviour happens because the
-   :class:`~mutwo.converters.frontends.SequentialEventToAbjadVoiceConverter`
+   :class:`~mutwo.abjad_converters.SequentialEventToAbjadVoiceConverter`
    ties rests before converting the data to `abjad` objects.
 
 2. Quantization can be slow and not precise. Try both quantization classes.
    Change the parameters. Use different settings and classes for different
    parts of your music.
 """
+
+# Apply monkey patch
+from mutwo_third_party import abjad
 
 from . import configurations
 
@@ -29,3 +32,8 @@ from .events import *
 
 # Force flat structure
 del events, parameters, process_container_routines
+
+# Remove unused third party import
+# XXX: We have to import it because otherwise the
+# monkey patches won't be applied.
+del abjad
