@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 
+## [0.10.0] - 2022-06-12
+
+### Changed
+- `abjad_converters.RMakersSequentialEventToQuantizedAbjadContainer` to `abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer`
+- `abjad_converters.RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainer` to `abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer`
+
+### Fixed
+- quantization of very long leafs by `abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer`
+
+### Removed
+- `abjad-ext-rmakers` dependency
+
+### Added
+- monkey patches for `abjad` in `mutwo_third_party/abjad`
+
+
 ## [0.9.0] - 2022-05-02
 
 ### Changed
