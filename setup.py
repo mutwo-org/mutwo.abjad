@@ -16,7 +16,7 @@ extras_require = {
         "nose",
         "coveralls",
         "pillow>=8.2.0, <9.0.0",
-        "mutwo.ext-ekmelily>=0.6.2, <0.7.0",
+        "mutwo.ekmelily>=0.7.0, <1.0.0",
     ]
 }
 
@@ -41,8 +41,8 @@ setuptools.setup(
     setup_requires=[],
     install_requires=[
         # Mutwo dependencies
-        "mutwo.ext-core>=0.59.0, <0.60.0",
-        "mutwo.ext-music>=0.16.0, <0.17.0",
+        "mutwo.core>=0.61.2, <1.00.0",
+        "mutwo.music>=0.17.0, <1.0.0",
         # Abjad dependencies
         "abjad>=3.4.0, <3.5.0",
         "abjad-ext-nauert>=3.4.0, <3.5.0",

@@ -11,7 +11,6 @@ except ImportError:
 
 import abjad  # type: ignore
 from abjadext import nauert  # type: ignore
-import expenvelope  # type: ignore
 import ranges  # type: ignore
 
 from mutwo import core_converters
@@ -27,6 +26,7 @@ __all__ = (
     "LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer",
 )
 
+
 class NoTimeSignatureError(Exception):
     pass
 
@@ -39,7 +39,7 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :param tempo_envelope: Defines the tempo of the converted music. This is an
-        :class:`expenvelope.Envelope` object which durations are beats and which
+        :class:`core_events.TempoEnvelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
         or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
@@ -50,27 +50,29 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
             abjad.TimeSignature((4, 4)),
         ),
-        tempo_envelope: expenvelope.Envelope = None,
+        tempo_envelope: core_events.TempoEnvelope = None,
     ):
         n_time_signature_sequence = len(time_signature_sequence)
         if n_time_signature_sequence == 0:
             raise NoTimeSignatureError(
                 "Found empty sequence for argument 'time_signature_sequence'. Specify at least"
                 " one time signature!"
-                )
+            )
 
         time_signature_tuple = tuple(time_signature_sequence)
         if tempo_envelope is None:
-            tempo_envelope = expenvelope.Envelope.from_points(
-                (0, core_parameters.TempoPoint(120)),
-                (0, core_parameters.TempoPoint(120)),
+            tempo_envelope = core_events.TempoEnvelope(
+                (
+                    (0, core_parameters.TempoPoint(120)),
+                    (0, core_parameters.TempoPoint(120)),
+                )
             )
 
         self._time_signature_tuple = time_signature_tuple
         self._tempo_envelope = tempo_envelope
 
     @property
-    def tempo_envelope(self) -> expenvelope.Envelope:
+    def tempo_envelope(self) -> core_events.TempoEnvelope:
         return self._tempo_envelope
 
     # ###################################################################### #
@@ -99,7 +101,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         interpreted). Can either be 'beats' (default) or 'miliseconds'.
         WARNING: 'miliseconds' isn't working properly yet!
     :param tempo_envelope: Defines the tempo of the converted music. This is an
-        :class:`expenvelope.Envelope` object which durations are beats and which
+        :class:`core_events.TempoEnvelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
         or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
@@ -129,7 +131,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
             abjad.TimeSignature((4, 4)),
         ),
         duration_unit: str = "beats",  # for future: typing.Literal["beats", "miliseconds"]
-        tempo_envelope: expenvelope.Envelope = None,
+        tempo_envelope: core_events.TempoEnvelope = None,
         attack_point_optimizer: typing.Optional[
             nauert.AttackPointOptimizer
         ] = nauert.MeasurewiseAttackPointOptimizer(),
@@ -324,7 +326,9 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 
         for nth_simple_event, simple_event in enumerate(sequential_event):
             if simple_event.is_rest:
-                duration_list[nth_simple_event] = -duration_list[nth_simple_event]
+                duration_list[nth_simple_event] = (
+                    core_parameters.DirectDuration(0) - duration_list[nth_simple_event]
+                )
 
         if self._duration_unit == "beats":
             return nauert.QEventSequence.from_tempo_scaled_durations(
@@ -386,7 +390,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :param tempo_envelope: Defines the tempo of the converted music. This is an
-        :class:`expenvelope.Envelope` object which durations are beats and which
+        :class:`core_events.TempoEnvelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
         or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope
         has been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.

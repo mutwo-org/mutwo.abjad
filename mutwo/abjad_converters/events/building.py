@@ -575,7 +575,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         ] = []
         for absolute_time, tempo_attachment in self._tempo_attachment_tuple:
             closest_leaf = core_utilities.find_closest_index(
-                absolute_time, absolute_time_per_leaf
+                absolute_time.duration, absolute_time_per_leaf
             )
             # special case:
             # check for stop dynamic change indication
@@ -650,7 +650,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 )
             )
             for nth_event, tempo_attachment in tempo_attachment_data:
-                tempo_attachment.process_leaf_tuple((leaves[nth_event],), None)
+                try:
+                    tempo_attachment.process_leaf_tuple((leaves[nth_event],), None)
+                except abjad.exceptions.PersistentIndicatorError:
+                    pass
 
     def _apply_abjad_parameters_on_quantized_abjad_leaves(
         self,

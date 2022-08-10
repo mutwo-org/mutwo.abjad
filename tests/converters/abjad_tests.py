@@ -6,7 +6,6 @@ from PIL import Image  # type: ignore
 from PIL import ImageChops  # type: ignore
 
 import abjad  # type: ignore
-import expenvelope  # type: ignore
 
 try:
     import quicktions as fractions  # type: ignore
@@ -17,6 +16,7 @@ from mutwo import abjad_converters
 from mutwo import abjad_parameters
 from mutwo import core_events
 from mutwo import core_parameters
+from mutwo import core_utilities
 from mutwo import music_events
 from mutwo import music_parameters
 
@@ -188,12 +188,16 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             )
 
     def test_shall_write_metronome_mark(self):
-        tempo_envelope_to_convert = expenvelope.Envelope.from_levels_and_durations(
-            levels=[
-                core_parameters.TempoPoint(bpm)
-                for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
-            ],
-            durations=[2, 2, 2, 2, 0, 2, 0],
+        duration_list = [2, 2, 2, 2, 0, 2, 0]
+        absolute_duration_list = list(
+            core_utilities.accumulate_from_zero(duration_list)
+        )
+        value_list = [
+            core_parameters.TempoPoint(bpm)
+            for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
+        ]
+        tempo_envelope_to_convert = core_events.Envelope(
+            tuple(zip(absolute_duration_list, value_list))
         )
         for tempo_point_index, shall_write_metronome_mark in (
             (1, False),
@@ -205,8 +209,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
                 abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                     tempo_envelope_to_convert,
                     tempo_point_index,
-                    tempo_envelope_to_convert.levels[tempo_point_index],
-                    tempo_envelope_to_convert.levels,
+                    tempo_envelope_to_convert.value_tuple[tempo_point_index],
+                    tempo_envelope_to_convert.value_tuple,
                 ),
                 shall_write_metronome_mark,
             )
@@ -280,14 +284,18 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             )
 
     def test_process_tempo_event(self):
-        tempo_envelope_to_convert = expenvelope.Envelope.from_levels_and_durations(
-            levels=[
-                core_parameters.TempoPoint(bpm)
-                for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
-            ],
-            durations=[2, 2, 2, 2, 0, 2, 0],
+        duration_list = [2, 2, 2, 2, 0, 2, 0]
+        absolute_duration_list = list(
+            core_utilities.accumulate_from_zero(duration_list)
         )
-        tempo_point_tuple = tuple(tempo_envelope_to_convert.levels)
+        value_list = [
+            core_parameters.TempoPoint(bpm)
+            for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
+        ]
+        tempo_envelope_to_convert = core_events.Envelope(
+            tuple(zip(absolute_duration_list, value_list))
+        )
+        tempo_point_tuple = tempo_envelope_to_convert.value_tuple
         tempo_attachments = (
             (
                 0,
@@ -465,8 +473,8 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
                         (3, 4),
                     )
                 ],
-                tempo_envelope=expenvelope.Envelope.from_levels_and_durations(
-                    levels=(120, 120, 130, 130, 100), durations=(3, 2, 2.75, 0)
+                tempo_envelope=core_events.Envelope(
+                    ((0, 120), (3, 120), (5, 130), (7.75, 130), (7.75, 100))
                 ),
             )
         )
@@ -479,7 +487,9 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         expected_abjad_voice = abjad.Voice(
             [
                 abjad.score.Container("c'2. a'4"),
-                abjad.score.Container([abjad.Tuplet(components="g'4 es'8 r8 r1")]),
+                abjad.score.Container(
+                    [abjad.Tuplet(components="g'4 es'8"), abjad.Rest("r2.")]
+                ),
             ]
         )
         abjad.attach(abjad.TimeSignature((4, 4)), expected_abjad_voice[0][0])
@@ -490,6 +500,14 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         abjad.attach(abjad.Dynamic("mf"), expected_abjad_voice[0][0])
 
         converted_sequential_event = self.converter.convert(self.sequential_event)
+
+        print(converted_sequential_event)
+
+        for bar in converted_sequential_event:
+            print(bar)
+            for leaf in bar:
+                print(leaf)
+            print("")
 
         # complex comparison because == raises Error (although leaves are equal)
         for component0, component1 in zip(
@@ -549,12 +567,11 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         # is equal to the previously rendered and manually checked png)
         # -> this tests, if the resulting notation prints tempo ranges
 
-        tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
-            levels=[
-                core_parameters.TempoPoint((30, 50), 2),
-                core_parameters.TempoPoint((30, 50), 2),
-            ],
-            durations=[2],
+        tempo_envelope = core_events.Envelope(
+            (
+                (0, core_parameters.TempoPoint((30, 50), 2)),
+                (2, core_parameters.TempoPoint((30, 50), 2)),
+            )
         )
         converter = abjad_converters.SequentialEventToAbjadVoice(
             abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(

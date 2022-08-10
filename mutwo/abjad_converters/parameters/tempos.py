@@ -6,11 +6,10 @@ try:
 except ImportError:
     import fractions  # type: ignore
 
-import expenvelope  # type: ignore
-
 from mutwo import abjad_parameters
 from mutwo import core_converters
 from mutwo import core_constants
+from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
@@ -30,7 +29,7 @@ class TempoEnvelopeToAbjadAttachmentTempo(core_converters.abc.Converter):
 
     @abc.abstractmethod
     def convert(
-        self, tempo_envelope_to_convert: expenvelope.Envelope
+        self, tempo_envelope_to_convert: core_events.TempoEnvelope
     ) -> tuple[tuple[core_constants.Real, abjad_parameters.Tempo], ...]:
         # return tuple filled with subtuples (leaf_index, abjad_parameters.Tempo)
         raise NotImplementedError()
@@ -71,10 +70,10 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
         dynamic_change_indication = None
         if next_tempo_point:
             absolute_tempo_for_current_tempo_point = (
-                tempo_point.absolute_tempo_in_beat_per_minute
+                tempo_point.absolute_tempo_in_beats_per_minute
             )
             absolute_tempo_for_next_tempo_point = (
-                next_tempo_point.absolute_tempo_in_beat_per_minute
+                next_tempo_point.absolute_tempo_in_beats_per_minute
             )
             if (
                 absolute_tempo_for_current_tempo_point
@@ -91,7 +90,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
 
     @staticmethod
     def _shall_write_metronome_mark(
-        tempo_envelope_to_convert: expenvelope.Envelope,
+        tempo_envelope_to_convert: core_events.TempoEnvelope,
         tempo_point_index: int,
         tempo_point: core_parameters.TempoPoint,
         tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
@@ -99,7 +98,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
         write_metronome_mark = True
         for previous_tempo_point, previous_tempo_point_duration in zip(
             reversed(tempo_point_tuple[:tempo_point_index]),
-            reversed(tempo_envelope_to_convert.durations[:tempo_point_index]),
+            reversed(
+                tempo_envelope_to_convert.get_parameter("duration")[:tempo_point_index]
+            ),
         ):
             # make sure the previous tempo point could have been written
             # down (longer duration than minimal duration)
@@ -108,8 +109,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
                 # beats per minute than the current event, there is no
                 # need to write it down again
                 if (
-                    previous_tempo_point.absolute_tempo_in_beat_per_minute
-                    == tempo_point.absolute_tempo_in_beat_per_minute
+                    previous_tempo_point.absolute_tempo_in_beats_per_minute
+                    == tempo_point.absolute_tempo_in_beats_per_minute
                 ):
                     write_metronome_mark = False
                     break
@@ -179,7 +180,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
 
     @staticmethod
     def _process_tempo_event(
-        tempo_envelope_to_convert: expenvelope.Envelope,
+        tempo_envelope_to_convert: core_events.TempoEnvelope,
         tempo_point_index: int,
         tempo_point: core_parameters.TempoPoint,
         tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
@@ -200,6 +201,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
                 tempo_point, next_tempo_point
             )
         )
+
         write_metronome_mark = (
             ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
                 tempo_envelope_to_convert,
@@ -241,11 +243,11 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     # ###################################################################### #
 
     def convert(
-        self, tempo_envelope_to_convert: expenvelope.Envelope
+        self, tempo_envelope_to_convert: core_events.TempoEnvelope
     ) -> tuple[tuple[core_constants.Real, abjad_parameters.Tempo], ...]:
         tempo_point_tuple = (
             ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
-                tuple(tempo_envelope_to_convert.levels)
+                tuple(tempo_envelope_to_convert.value_tuple)
             )
         )
 
@@ -254,21 +256,23 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
         ] = []
         for tempo_point_index, absolute_time, duration, tempo_point in zip(
             range(len(tempo_point_tuple)),
-            core_utilities.accumulate_from_zero(tempo_envelope_to_convert.durations),
-            tuple(tempo_envelope_to_convert.durations) + (1,),
+            core_utilities.accumulate_from_n(
+                tempo_envelope_to_convert.get_parameter("duration"),
+                core_parameters.DirectDuration(0),
+            ),
+            tuple(tempo_envelope_to_convert.get_parameter("duration")) + (1,),
             tempo_point_tuple,
         ):
 
-            if duration > 0:
-                tempo_attachment = (
-                    ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
-                        tempo_envelope_to_convert,
-                        tempo_point_index,
-                        tempo_point,
-                        tempo_point_tuple,
-                        tuple(tempo_attachment_list),
-                    )
+            tempo_attachment = (
+                ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
+                    tempo_envelope_to_convert,
+                    tempo_point_index,
+                    tempo_point,
+                    tempo_point_tuple,
+                    tuple(tempo_attachment_list),
                 )
-                tempo_attachment_list.append((absolute_time, tempo_attachment))
+            )
+            tempo_attachment_list.append((absolute_time, tempo_attachment))
 
         return tuple(tempo_attachment_list)
