@@ -30,8 +30,14 @@ from .process_container_routines import *
 from .parameters import *
 from .events import *
 
+from . import events, parameters, process_container_routines
+
+from mutwo import core_utilities
+
+__all__ = core_utilities.get_all(events, parameters, process_container_routines)
+
 # Force flat structure
-del events, parameters, process_container_routines
+del core_utilities, events, parameters, process_container_routines
 
 # Remove unused third party import
 # XXX: We have to import it because otherwise the

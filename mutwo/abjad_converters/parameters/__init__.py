@@ -5,8 +5,14 @@ from .pitches import *
 from .tempos import *
 from .volumes import *
 
+from . import lyrics, pitches, tempos, volumes
+
+from mutwo import core_utilities
+
+__all__ = core_utilities.get_all(lyrics, pitches, tempos, volumes)
+
 # Force flat structure
-del lyrics, pitches, tempos, volumes
+del core_utilities, lyrics, pitches, tempos, volumes
 
 
 # Only import if mutwo.ext-ekmelily has been installed
@@ -24,5 +30,10 @@ except ImportError:
     del logging
 else:
     from .heji import *
+
+    from . import heji
+
+    __all__ += heji.__all__
+
     # Cleanup
     del heji
