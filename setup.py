@@ -21,7 +21,7 @@ extras_require = {
 }
 
 setuptools.setup(
-    name="mutwo.ext-abjad",
+    name="mutwo.abjad",
     version=VERSION,
     license="GPL",
     description="abjad extension for event based framework mutwo",
@@ -29,7 +29,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     author="Levin Eric Zimmermann",
     author_email="levin.eric.zimmermann@posteo.eu",
-    url="https://github.com/mutwo-org/mutwo.ext-abjad",
+    url="https://github.com/mutwo-org/mutwo.abjad",
     project_urls={"Documentation": "https://mutwo.readthedocs.io/en/latest/"},
     packages=[
         package
