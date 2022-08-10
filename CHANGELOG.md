@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 
+## [0.11.0] - 2022-08-10
+
+### Changed
+- `mutwo.ext-abjad` to `mutwo.abjad`
+- `expenvelope.Envelope` to `core_events.TempoEnvelope`
+
+
 ## [0.10.0] - 2022-06-12
 
 ### Changed
