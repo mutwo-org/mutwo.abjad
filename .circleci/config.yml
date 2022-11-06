@@ -1,25 +1,42 @@
 version: 2.1
-
+orbs:
+  nix: eld/nix@1.0.0
 jobs:
+  install-nix:
+    steps:
+      - nix/install
   build_test:
     docker:
       - image: cimg/python:3.10
     steps:
       - checkout
       - run: sudo apt-get update && sudo apt-get upgrade
-      - run: wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.2-1.linux-64.sh && sh lilypond-2.22.2-1.linux-64.sh --batch
       - run:
           name: Run tests
           command: |
-            sudo apt-get install espeak-ng mbrola mbrola-en1
-            pip3 install virtualenv
-            TEST_VIRTUALENV_DIR=mutwo_test
-            mkdir $TEST_VIRTUALENV_DIR
-            virtualenv $TEST_VIRTUALENV_DIR/mutwo_test
-            source $TEST_VIRTUALENV_DIR/mutwo_test/bin/activate
-            pip3 install .[testing]
+            cat >shell.nix <<'EOF'
+            { pkgs ? import <nixpkgs> {} }:
+            let
+            
+              mutwo-abjad-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.abjad/archive/main.tar.gz";
+              mutwo-abjad = import (mutwo-abjad-archive + "/default.nix");
+            
+              myPython = pkgs.python310.buildEnv.override {
+                extraLibs = with pkgs; [
+                  mutwo-abjad
+                ];
+              };
+            
+            in
+            
+              pkgs.mkShell {
+                buildInputs = with pkgs; [
+                  myPython
+                ];
+              }
+            EOF
+            nix-shell shell.nix
             pytest
-            deactivate
   pypi_publish:
     docker:
       - image: cimg/python:3.10
@@ -40,6 +57,7 @@ jobs:
 workflows:
   build_test_publish:
     jobs:
+      - install-nix
       - build_test:
           filters:
             tags:
