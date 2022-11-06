@@ -149,33 +149,42 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
     def test_convert_tempo_point_tuple(self):
         self.assertEqual(
             abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
-                (60, 120, core_parameters.TempoPoint(120, reference=4))
+                (60, 120, core_parameters.DirectTempoPoint(120, reference=4))
             ),
             (
-                core_parameters.TempoPoint(60),
-                core_parameters.TempoPoint(120),
-                core_parameters.TempoPoint(120, reference=4),
+                core_parameters.DirectTempoPoint(60),
+                core_parameters.DirectTempoPoint(120),
+                core_parameters.DirectTempoPoint(120, reference=4),
             ),
         )
 
     def test_find_dynamic_change_indication(self):
         for tempo_point_tuple, expected_dynamic_change_indication in (
             (
-                (core_parameters.TempoPoint(120), core_parameters.TempoPoint(130)),
+                (
+                    core_parameters.DirectTempoPoint(120),
+                    core_parameters.DirectTempoPoint(130),
+                ),
                 "acc.",
             ),
             (
-                (core_parameters.TempoPoint(120), core_parameters.TempoPoint(110)),
+                (
+                    core_parameters.DirectTempoPoint(120),
+                    core_parameters.DirectTempoPoint(110),
+                ),
                 "rit.",
             ),
             (
-                (core_parameters.TempoPoint(120), core_parameters.TempoPoint(120)),
+                (
+                    core_parameters.DirectTempoPoint(120),
+                    core_parameters.DirectTempoPoint(120),
+                ),
                 None,
             ),
             (
                 (
-                    core_parameters.TempoPoint(120),
-                    core_parameters.TempoPoint(60, reference=2),
+                    core_parameters.DirectTempoPoint(120),
+                    core_parameters.DirectTempoPoint(60, reference=2),
                 ),
                 None,
             ),
@@ -193,7 +202,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             core_utilities.accumulate_from_zero(duration_list)
         )
         value_list = [
-            core_parameters.TempoPoint(bpm)
+            core_parameters.DirectTempoPoint(bpm)
             for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
         ]
         tempo_envelope_to_convert = core_events.Envelope(
@@ -243,7 +252,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
         ) in (
             (
                 True,
-                core_parameters.TempoPoint(
+                core_parameters.DirectTempoPoint(
                     60, reference=2, textual_indication="ordinary"
                 ),
                 False,
@@ -251,7 +260,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ),
             (
                 True,
-                core_parameters.TempoPoint(
+                core_parameters.DirectTempoPoint(
                     120, reference=1, textual_indication="faster"
                 ),
                 False,
@@ -259,7 +268,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ),
             (
                 False,
-                core_parameters.TempoPoint(
+                core_parameters.DirectTempoPoint(
                     120, reference=1, textual_indication="faster"
                 ),
                 False,
@@ -267,7 +276,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ),
             (
                 False,
-                core_parameters.TempoPoint(
+                core_parameters.DirectTempoPoint(
                     120, reference=1, textual_indication="faster"
                 ),
                 True,
@@ -289,7 +298,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             core_utilities.accumulate_from_zero(duration_list)
         )
         value_list = [
-            core_parameters.TempoPoint(bpm)
+            core_parameters.DirectTempoPoint(bpm)
             for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
         ]
         tempo_envelope_to_convert = core_events.Envelope(
@@ -374,6 +383,12 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
                 ),
                 current_tempo_attachment,
             )
+
+
+def get_tests_path() -> str:
+    # return "/tmp"
+    return "/".join(os.path.abspath(__file__).split("/")[:-1])
+    # return "/home/levinericzimmermann/Programming/mutwo.abjad/tests/converters"
 
 
 class SequentialEventToAbjadVoiceTest(unittest.TestCase):
@@ -540,7 +555,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         converted_sequential_event = self.complex_converter.convert(
             self.complex_sequential_event
         )
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
         new_png_file_path = "{}/abjad_png_output.png".format(tests_path)
         lilypond_file = abjad.LilyPondFile()
@@ -569,8 +584,8 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         tempo_envelope = core_events.Envelope(
             (
-                (0, core_parameters.TempoPoint((30, 50), 2)),
-                (2, core_parameters.TempoPoint((30, 50), 2)),
+                (0, core_parameters.DirectTempoPoint((30, 50), 2)),
+                (2, core_parameters.DirectTempoPoint((30, 50), 2)),
             )
         )
         converter = abjad_converters.SequentialEventToAbjadVoice(
@@ -587,7 +602,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         )
         converted_sequential_event = converter.convert(sequential_event_to_convert)
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = (
             "{}/abjad_expected_png_output_for_tempo_range_test.png".format(tests_path)
         )
@@ -636,7 +651,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         )
         converted_sequential_event = converter.convert(sequential_event_to_convert)
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = (
             "{}/abjad_expected_png_output_for_duration_line_test.png".format(tests_path)
         )
@@ -710,7 +725,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         )
         converted_sequential_event = converter.convert(sequential_event_to_convert)
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = "{}/abjad_expected_png_output_for_grace_note_sequential_event_test.png".format(
             tests_path
         )
@@ -777,7 +792,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         )
         converted_sequential_event = converter.convert(sequential_event_to_convert)
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = (
             "{}/abjad_expected_png_output_for_lyric_test.png".format(tests_path)
         )
@@ -821,7 +836,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         converted_sequential_event = converter.convert(sequential_event_to_convert)
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = "{}/abjad_expected_png_output_for_first_grace_note_with_duration_line_test.png".format(
             tests_path
         )
@@ -887,7 +902,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         converted_sequential_event = converter.convert(sequential_event_to_convert)
         converted_sequential_event = converter.convert(sequential_event_to_convert)
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = (
             "{}/abjad_expected_png_output_for_hairpin_test.png".format(tests_path)
         )
@@ -1020,7 +1035,7 @@ class NestedComplexEventToAbjadContainerTest(unittest.TestCase):
         # check if abjad container name is correct
         self.assertEqual(abjad_score.name, "Integrating duo")
 
-        tests_path = "tests/converters"
+        tests_path = get_tests_path()
         png_file_to_compare_path = (
             "{}/abjad_expected_png_output_for_nested_complex_event_test.png".format(
                 tests_path

@@ -52,20 +52,20 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     @staticmethod
     def _convert_tempo_point_tuple(
         tempo_point_tuple: tuple[
-            typing.Union[core_constants.Real, core_parameters.TempoPoint], ...
+            typing.Union[core_constants.Real, core_parameters.abc.TempoPoint], ...
         ]
-    ) -> tuple[core_parameters.TempoPoint, ...]:
+    ) -> tuple[core_parameters.abc.TempoPoint, ...]:
         return tuple(
             tempo_point
-            if isinstance(tempo_point, core_parameters.TempoPoint)
-            else core_parameters.TempoPoint(float(tempo_point))
+            if isinstance(tempo_point, core_parameters.abc.TempoPoint)
+            else core_parameters.DirectTempoPoint(float(tempo_point))
             for tempo_point in tempo_point_tuple
         )
 
     @staticmethod
     def _find_dynamic_change_indication(
-        tempo_point: core_parameters.TempoPoint,
-        next_tempo_point: typing.Optional[core_parameters.TempoPoint],
+        tempo_point: core_parameters.abc.TempoPoint,
+        next_tempo_point: typing.Optional[core_parameters.abc.TempoPoint],
     ) -> typing.Optional[str]:
         dynamic_change_indication = None
         if next_tempo_point:
@@ -92,8 +92,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     def _shall_write_metronome_mark(
         tempo_envelope_to_convert: core_events.TempoEnvelope,
         tempo_point_index: int,
-        tempo_point: core_parameters.TempoPoint,
-        tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
+        tempo_point: core_parameters.abc.TempoPoint,
+        tempo_point_tuple: tuple[core_parameters.abc.TempoPoint, ...],
     ) -> bool:
         write_metronome_mark = True
         for previous_tempo_point, previous_tempo_point_duration in zip(
@@ -140,7 +140,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     @staticmethod
     def _find_metronome_mark_values(
         write_metronome_mark: bool,
-        tempo_point: core_parameters.TempoPoint,
+        tempo_point: core_parameters.abc.TempoPoint,
         stop_dynamic_change_indicaton: bool,
     ) -> tuple[
         typing.Optional[tuple[int, int]],
@@ -182,15 +182,15 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentT
     def _process_tempo_event(
         tempo_envelope_to_convert: core_events.TempoEnvelope,
         tempo_point_index: int,
-        tempo_point: core_parameters.TempoPoint,
-        tempo_point_tuple: tuple[core_parameters.TempoPoint, ...],
+        tempo_point: core_parameters.abc.TempoPoint,
+        tempo_point_tuple: tuple[core_parameters.abc.TempoPoint, ...],
         tempo_attachment_tuple: tuple[
             tuple[core_constants.Real, abjad_parameters.Tempo], ...
         ],
     ) -> abjad_parameters.Tempo:
         try:
             next_tempo_point: typing.Optional[
-                core_parameters.TempoPoint
+                core_parameters.abc.TempoPoint
             ] = tempo_point_tuple[tempo_point_index + 1]
         except IndexError:
             next_tempo_point = None

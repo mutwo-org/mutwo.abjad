@@ -41,7 +41,7 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`core_events.TempoEnvelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope has
+        or :class:`~mutwo.core_parameters.abc.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
     """
 
@@ -63,8 +63,8 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         if tempo_envelope is None:
             tempo_envelope = core_events.TempoEnvelope(
                 (
-                    (0, core_parameters.TempoPoint(120)),
-                    (0, core_parameters.TempoPoint(120)),
+                    (0, core_parameters.DirectTempoPoint(120)),
+                    (0, core_parameters.DirectTempoPoint(120)),
                 )
             )
 
@@ -103,7 +103,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`core_events.TempoEnvelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope has
+        or :class:`~mutwo.core_parameters.abc.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
     :param attack_point_optimizer: Optionally the user can pass a
         :class:`nauert.AttackPointOptimizer` object. Attack point optimizer help to
@@ -392,7 +392,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`core_events.TempoEnvelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.core_parameters.TempoPoint` objects. If no tempo envelope
+        or :class:`~mutwo.core_parameters.abc.TempoPoint` objects. If no tempo envelope
         has been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
 
     This method is significantly faster than the
