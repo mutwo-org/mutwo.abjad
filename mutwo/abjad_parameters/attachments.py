@@ -16,11 +16,11 @@ LeafOrLeafSequence = typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]
 
 class Arpeggio(music_parameters.Arpeggio, abjad_parameters.abc.BangFirstAttachment):
     _string_to_direction = {
-        "up": abjad.enums.Up,
-        "down": abjad.enums.Down,
-        "center": abjad.enums.Center,
-        "^": abjad.enums.Up,
-        "_": abjad.enums.Down,
+        "up": abjad.enums.UP,
+        "down": abjad.enums.DOWN,
+        "center": abjad.enums.CENTER,
+        "^": abjad.enums.UP,
+        "_": abjad.enums.DOWN,
     }
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
@@ -48,8 +48,9 @@ class Trill(music_parameters.Trill, abjad_parameters.abc.BangFirstAttachment):
 class Cue(music_parameters.Cue, abjad_parameters.abc.BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.Markup(contents=f"\\rounded-box {{ {self.nth_cue} }}", direction="^"),
+            abjad.Markup(string=rf"\markup \rounded-box {{ {self.nth_cue} }}"),
             leaf,
+            direction=abjad.enums.UP,
         )
         return leaf
 
@@ -77,7 +78,7 @@ class WoodwindFingering(
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         fingering = abjad.LilyPondLiteral(
-            f"^\\markup {self._get_markup_content()}", format_slot="after"
+            f"^\\markup {self._get_markup_content()}", site="after"
         )
         abjad.attach(fingering, leaf)
         return leaf
@@ -86,7 +87,7 @@ class WoodwindFingering(
 class Tremolo(music_parameters.Tremolo, abjad_parameters.abc.BangEachAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.StemTremolo(self.n_flags * (2 ** leaf.written_duration.flag_count)),
+            abjad.StemTremolo(self.n_flags * (2**leaf.written_duration.flag_count)),
             leaf,
         )
         return leaf
@@ -214,30 +215,21 @@ class StringContactPoint(
         self,
         leaf: abjad.Leaf,
         previous_attachment: typing.Optional["abjad_parameters.abc.AbjadAttachment"],
-        string_contact_point_markup: abjad.Markup,
+        string_contact_point_markup_string: str,
     ):
         if previous_attachment:
             if previous_attachment.contact_point == "pizzicato":  # type: ignore
-                string_contact_point_markup = abjad.Markup(
-                    [
-                        abjad.markups.MarkupCommand(
-                            "caps",
-                            "arco {}".format(
-                                " ".join(
-                                    string_contact_point_markup.contents[0].arguments
-                                )
-                            ),
-                        )
-                    ]
+                string_contact_point_markup_string = (
+                    rf"\caps {{ \arco {string_contact_point_markup_string} }}"
                 )
 
+        final_markup = abjad.Markup(
+            rf"\markup \fontsize #-2.4 {{ {string_contact_point_markup_string} }}",
+        )
         abjad.attach(
-            abjad.Markup(
-                [abjad.markups.MarkupCommand("fontsize", -2.4)]
-                + string_contact_point_markup.contents,
-                direction="up",
-            ),
+            final_markup,
             leaf,
+            direction=abjad.enums.UP,
         )
 
     def process_leaf(
@@ -249,9 +241,9 @@ class StringContactPoint(
         if contact_point in self._abbreviation_to_string_contact_point:
             contact_point = self._abbreviation_to_string_contact_point[contact_point]
         try:
-            string_contact_point_markup = self._string_contact_point_class(
+            string_contact_point_markup_string = self._string_contact_point_class(
                 contact_point
-            ).markup
+            ).markup_string
         except AssertionError:
             warnings.warn(
                 f"Can't find contact point '{self.contact_point}' "
@@ -259,7 +251,7 @@ class StringContactPoint(
             )
         else:
             self._attach_string_contact_point(
-                leaf, previous_attachment, string_contact_point_markup
+                leaf, previous_attachment, string_contact_point_markup_string
             )
         return leaf
 
@@ -340,7 +332,7 @@ class Hairpin(music_parameters.Hairpin, abjad_parameters.abc.ToggleAttachment):
             abjad.attach(abjad.StartHairpin(">"), decrescendo_leaf)
 
         elif leaf_count == 1:
-            abjad.attach(abjad.Articulation('espressivo'), leaf_tuple[0])
+            abjad.attach(abjad.Articulation("espressivo"), leaf_tuple[0])
 
         return leaf_tuple
 
@@ -361,7 +353,7 @@ class BartokPizzicato(
 ):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.LilyPondLiteral("\\snappizzicato", format_slot="after"),
+            abjad.LilyPondLiteral("\\snappizzicato", site="after"),
             leaf,
         )
         return leaf
@@ -373,7 +365,7 @@ class BreathMark(
 ):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.LilyPondLiteral("\\breathe", format_slot="before"),
+            abjad.LilyPondLiteral("\\breathe", site="before"),
             leaf,
         )
         return leaf
@@ -394,7 +386,7 @@ class NaturalHarmonic(
 ):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.LilyPondLiteral("\\flageolet", directed="up", format_slot="after"),
+            abjad.LilyPondLiteral("\\flageolet", directed="up", site="after"),
             leaf,
         )
 
@@ -407,7 +399,7 @@ class Prall(
 ):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.LilyPondLiteral("^\\prall", format_slot="after"),
+            abjad.LilyPondLiteral("^\\prall", site="after"),
             leaf,
         )
         return leaf
@@ -573,7 +565,7 @@ class Ottava(music_parameters.Ottava, abjad_parameters.abc.ToggleAttachment):
         previous_attachment: typing.Optional["abjad_parameters.abc.AbjadAttachment"],
     ) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.Ottava(self.n_octaves, format_slot="before"),
+            abjad.Ottava(self.n_octaves, site="before"),
             leaf,
         )
         return leaf
@@ -592,10 +584,7 @@ class Ottava(music_parameters.Ottava, abjad_parameters.abc.ToggleAttachment):
 
 class Markup(music_parameters.Markup, abjad_parameters.abc.BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
-        abjad.attach(
-            abjad.Markup(self.content, direction=self.direction),
-            leaf,
-        )
+        abjad.attach(abjad.Markup(self.content), leaf, direction=self.direction)
         return leaf
 
 
@@ -641,24 +630,19 @@ class Ornamentation(
 
     def _make_markup(self) -> abjad.Markup:
         return abjad.Markup(
-            [
-                abjad.markups.MarkupCommand("vspace", -0.25),
-                abjad.markups.MarkupCommand("fontsize", -4),
-                abjad.markups.MarkupCommand("rounded-box", ["{}".format(self.n_times)]),
-                abjad.markups.MarkupCommand("hspace", -0.4),
-                abjad.markups.MarkupCommand(
-                    "path",
-                    0.25,
-                    abjad.LilyPondLiteral(
-                        self._direction_to_ornamentation_command[self.direction]  # type: ignore
-                    ),
-                ),
-            ],
-            direction="up",
+            r"\vspace #-0.25 { \fontsize #-4 { "
+            rf"\rounded-box {{ {self.n_times} "
+            r"\hspace #-0.4 \path 0.25 "
+            f"{self._direction_to_ornamentation_command[self.direction]}"
+            "}}}"
         )
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
-        abjad.attach(self._make_markup(), leaf)
+        abjad.attach(
+            self._make_markup(),
+            leaf,
+            direction=abjad.enums.UP,
+        )
         return leaf
 
 

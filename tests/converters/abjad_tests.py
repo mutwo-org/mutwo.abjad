@@ -40,7 +40,7 @@ def run_if_ekmelily_is_available(method_to_wrap: typing.Callable):
 class MutwoPitchToAbjadPitchTest(unittest.TestCase):
     def test_convert(self):
         converter = abjad_converters.MutwoPitchToAbjadPitch()
-        for mutwo_pitch, expected_abajd_pitch in (
+        for mutwo_pitch, expected_abjad_pitch in (
             (
                 music_parameters.WesternPitch("ds", 4),
                 abjad.NamedPitch("ds'"),
@@ -62,7 +62,9 @@ class MutwoPitchToAbjadPitchTest(unittest.TestCase):
                 abjad.NumberedPitch(4),
             ),
         ):
-            self.assertEqual(converter.convert(mutwo_pitch), expected_abajd_pitch)
+            self.assertEqual(
+                converter.convert(mutwo_pitch).number, expected_abjad_pitch.number
+            )
 
 
 class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
@@ -526,8 +528,8 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         # complex comparison because == raises Error (although leaves are equal)
         for component0, component1 in zip(
-            abjad.select(expected_abjad_voice).components(),
-            abjad.select(converted_sequential_event).components(),
+            abjad.select.components(expected_abjad_voice),
+            abjad.select.components(converted_sequential_event),
         ):
             self.assertEqual(type(component0), type(component1))
             if hasattr(component0, "written_duration"):
@@ -560,9 +562,9 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         new_png_file_path = "{}/abjad_png_output.png".format(tests_path)
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
-        score_block.items.append([abjad.Staff([converted_sequential_event])])
+        score_block.items.append(abjad.Staff([converted_sequential_event]))
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True
@@ -612,9 +614,9 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
-        score_block.items.append([abjad.Staff([converted_sequential_event])])
+        score_block.items.append(abjad.Staff([converted_sequential_event]))
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True
@@ -661,9 +663,9 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
-        score_block.items.append([abjad.Staff([converted_sequential_event])])
+        score_block.items.append(abjad.Staff([converted_sequential_event]))
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True
@@ -737,10 +739,10 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
         score_block.items.append(
-            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+            abjad.Score([abjad.Staff([converted_sequential_event])])
         )
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
@@ -800,10 +802,10 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
         score_block.items.append(
-            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+            abjad.Score([abjad.Staff([converted_sequential_event])])
         )
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
@@ -846,10 +848,10 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
         score_block.items.append(
-            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+            abjad.Score([abjad.Staff([converted_sequential_event])])
         )
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
@@ -912,10 +914,10 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         score_block = abjad.Block(name="score")
         score_block.items.append(
-            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+            abjad.Score([abjad.Staff([converted_sequential_event])])
         )
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
@@ -1047,7 +1049,7 @@ class NestedComplexEventToAbjadContainerTest(unittest.TestCase):
 
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
-        header_block.tagline = abjad.Markup("---integration-test---")
+        header_block.items.append('tagline = "---integration-test---"')
         lilypond_file.items.extend((header_block, abjad_score))
         abjad.persist.as_png(
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True

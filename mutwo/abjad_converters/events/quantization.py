@@ -453,7 +453,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
             and leaf_or_tuplet.written_duration < fractions.Fraction(1, 4),
             bar,
         )
-        leaf_selection = abjad.select(relevant_bar_items).leaves()
+        leaf_selection = abjad.select.leaves(relevant_bar_items)
         for leaf in leaf_selection:
             offset = abjad.get.timespan(leaf).start_offset - global_offset
             leaf_offset_list.append(offset)
@@ -617,10 +617,10 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         bar_list = []
         for selection in notes_split_by_time_signature_sequence:
             try:
-                bar = abjad.Container(selection.items, simultaneous=False)
+                bar = abjad.Container(selection, simultaneous=False)
             except Exception:
                 bar = abjad.Container(
-                    abjad.mutate.copy(selection).items, simultaneous=False
+                    abjad.mutate.copy(selection), simultaneous=False
                 )
             bar_list.append(bar)
         voice = abjad.Voice(bar_list)
@@ -802,7 +802,7 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
                         abjad.detach(abjad.Tie(), first_element)
 
                     abjad.attach(
-                        abjad.LilyPondLiteral("\\-", format_slot="after"), first_element
+                        abjad.LilyPondLiteral("\\-", site="after"), first_element
                     )
 
                     for indices in abjad_leaves_indices[1:]:

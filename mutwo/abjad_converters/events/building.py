@@ -462,7 +462,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         abjad_voice: abjad.Voice,
     ) -> tuple[fractions.Fraction, ...]:
         absolute_time_per_leaf_list: list[fractions.Fraction] = []
-        for leaf in abjad.select(abjad_voice).leaves():
+        for leaf in abjad.select.leaves(abjad_voice):
             start, _ = abjad.get.timespan(leaf).offsets
             absolute_time_per_leaf_list.append(
                 fractions.Fraction(start.numerator, start.denominator)
@@ -643,7 +643,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         quanitisized_abjad_leaf_voice: abjad.Voice,
     ):
         if self._tempo_attachment_tuple:
-            leaves = abjad.select(quanitisized_abjad_leaf_voice).leaves()
+            leaves = abjad.select.leaves(quanitisized_abjad_leaf_voice)
             tempo_attachment_data = (
                 self._get_tempo_attachment_tuple_for_quantized_abjad_leaves(
                     quanitisized_abjad_leaf_voice
@@ -825,7 +825,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             abjad.attach(
                 abjad.LilyPondLiteral(
                     "\\addlyrics { " + lyric_content + " }",
-                    format_slot="absolute_after",
+                    site="absolute_after",
                 ),
                 voice_to_apply_lyrics_to,
             )

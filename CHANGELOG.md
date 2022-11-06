@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Dropped
+- python 3.9 support
+
+### Changed
+- from abjad 3.4 to abjad 3.7 (actually abjad 3.7 is the last version which support lilypond 2.22.X)
+
 
 ## [0.11.0] - 2022-08-10
 
