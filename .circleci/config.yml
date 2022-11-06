@@ -3,6 +3,8 @@ orbs:
   nix: eld/nix@1.0.0
 jobs:
   install-nix:
+    machine:
+      image: ubuntu-2004:202111-02
     steps:
       - nix/install
   build_test:
