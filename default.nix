@@ -3,25 +3,25 @@ with pkgs.python310Packages;
 
 let
 
-  mutwo-core-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.core/archive/28a13e348876fa07929f5fd4f3953fee624c255c.tar.gz";
+  mutwo-core-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.core/archive/61ebb657ef5806eb067f5df6885254fdbae8f44c.tar.gz";
   mutwo-core = import (mutwo-core-archive + "/default.nix");
 
-  mutwo-music-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.music/archive/725462d2342b0a27d88a38272b0ad93848d87399.tar.gz";
+  mutwo-music-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.music/archive/d90b6db7d433d64c25f039adcd6b41075c05c013.tar.gz";
   mutwo-music = import (mutwo-music-archive + "/default.nix");
 
-  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/5344389ebd60ffe91671e36094d873ce532a90b7.tar.gz";
+  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/6d30ef1f7c5a51ff86d16c0d81e6b2b7bc0a72ab.tar.gz";
   mutwo-ekmelily = import (mutwo-ekmelily-archive + "/default.nix");
 
   quicktions = pkgs.python310Packages.buildPythonPackage rec {
     name = "quicktions";
     src = fetchPypi {
       pname = name;
-      version = "1.10";
-      sha256 = "sha256-Oy072x22dBvFHOHbmmWdkcUpdCC5GmIAnILJdKNlwO4=";
+      version = "1.13";
+      sha256 = "sha256-HzmMN1sAUjsSgy7vNvX/hq49LZmSnTQYbamjRoXeaL0=";
     };
     doCheck = true;
     propagatedBuildInputs = [
-      python310Packages.cython
+      python310Packages.cython_3
       python310Packages.codecov
     ];
   };
@@ -54,8 +54,8 @@ let
     name = "uqbar";
     src = fetchPypi {
       pname = name;
-      version = "0.4.8";
-      sha256 = "sha256-Jb+rQ7XWflB2KyHaSfx9hDlAa3yjGwY/PjQpmUnxpeY=";
+      version = "0.5.9";
+      sha256 = "sha256-0G02Amj8qB81DD0E1whPNYq9xfU6JeXrKuEW8F9HhQY=";
     };
     propagatedBuildInputs = [
       python310Packages.sphinx_rtd_theme
@@ -76,12 +76,18 @@ let
     name = "abjad";
     src = fetchPypi {
       pname = name;
-      version = "3.4";
-      sha256 = "sha256-yXohy0IMIzLYazjcCCWx3zTjWAM+oMc4TK3XNyapFno=";
+      version = "3.7";
+      sha256 = "sha256-3N/Z6UgBG8Wi+hWKvuBWss42rlwaivsmHlrfr+Y8/us=";
     };
+    patchPhase = ''
+        # Remove useless sphinx-autodoc-typehints dependency.
+        #     (we don't need to build docs here)
+        # See:
+        #   https://github.com/Abjad/abjad/blob/v3.7/setup.py#L84
+        sed -i '84d' setup.py
+    '';
     propagatedBuildInputs = [
       quicktions
-      sphinx-autodoc-typehints
       uqbar
       ply
       python310Packages.black
@@ -101,8 +107,8 @@ let
     name = "abjad-ext-nauert";
     src = fetchPypi {
       pname = name;
-      version = "3.4";
-      sha256 = "sha256-3fWr1Q/lFnuFRXnvulJDrwlWI3WCeEA8bEngdUZv1yo=";
+      version = "3.7";
+      sha256 = "sha256-+RHZPQQPNCv2AJKHX+8YEif4ZFS/2XuUO17EsY+Qg5Q=";
     };
     doCheck = true;
     propagatedBuildInputs = [
@@ -125,8 +131,8 @@ in
     src = fetchFromGitHub {
       owner = "mutwo-org";
       repo = name;
-      rev = "53a7ffd8112d2ae1097dd3c59eebf9df03c3d917";
-      sha256 = "sha256-GDI5vi6JTygZ0U0zSyOdneT+x81XyFBMn4dtCZ9JRYg=";
+      rev = "f2d0fc9c50ba8a10420dbfb4cc7240e093c30e87";
+      sha256 = "sha256-MrkGsqCM1E56MTpkB9VaY0CKYnCv7zrLULoWmc9p3Sg=";
     };
     checkInputs = [
       python310Packages.pytest
