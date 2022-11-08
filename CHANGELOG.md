@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.0] - 2022-11-08
+
+### Added
+
+#### `abjad_converters.SequentialEventToQuantizedAbjadContainer`
+- `event_to_tempo_envelope` argument in init
+- `event_to_time_signature_tuple` argument in init
+
+#### `abjad_converters.SequentialEventToAbjadVoice`
+- `default_tempo_envelope` to init
+- `event_to_tempo_envelope` to init
+
+### Changed
+#### `abjad_converters.SequentialEventToQuantizedAbjadContainer`
+- `time_signature_sequence` argument to `default_time_signature_sequence`
+
+### Removed
+#### `abjad_converters.SequentialEventToQuantizedAbjadContainer`
+- `tempo_envelope` argument
+
+
 ## [0.12.0] - 2022-11-06
 
 ### Dropped
