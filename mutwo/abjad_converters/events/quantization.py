@@ -31,49 +31,55 @@ class NoTimeSignatureError(Exception):
     pass
 
 
+# XXX: In the future `default_tempo_envelope` should be set to `None` and
+# `mutwo` should, by default, use `event_to_tempo_envelope`. Then
+# `default_tempo_envelope` should be removed completely.
 class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` objects.
 
-    :param time_signature_sequence: Set time signatures to divide the quantized abjad data
+    :param default_time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
-    :param tempo_envelope: Defines the tempo of the converted music. This is an
-        :class:`core_events.TempoEnvelope` object which durations are beats and which
-        levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.core_parameters.abc.TempoPoint` objects. If no tempo envelope has
-        been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
+    :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
+    :param event_to_time_signature_tuple: Function which extracts a
+        `tuple[abjad.TimeSignature, ...]` from a :class:`mutwo.core_events.abc.Event`.
+        If set to `None` `mutwo` falls back to `default_time_signature_sequence`.
+        Default to `None`.
     """
 
     def __init__(
         self,
-        time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
+        default_time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
             abjad.TimeSignature((4, 4)),
         ),
-        tempo_envelope: core_events.TempoEnvelope = None,
+        event_to_time_signature_tuple: typing.Optional[
+            typing.Callable[
+                [core_events.abc.Event],
+                typing.Optional[tuple[abjad.TimeSignature, ...]],
+            ]
+        ] = None,
     ):
-        n_time_signature_sequence = len(time_signature_sequence)
-        if n_time_signature_sequence == 0:
+        default_time_signature_sequence_count = len(default_time_signature_sequence)
+        if default_time_signature_sequence_count == 0:
             raise NoTimeSignatureError(
-                "Found empty sequence for argument 'time_signature_sequence'. Specify at least"
-                " one time signature!"
+                "Found empty sequence for argument "
+                "'default_time_signature_sequence_count'. "
+                "Specify at least one time signature!"
             )
 
-        time_signature_tuple = tuple(time_signature_sequence)
-        if tempo_envelope is None:
-            tempo_envelope = core_events.TempoEnvelope(
-                (
-                    (0, core_parameters.DirectTempoPoint(120)),
-                    (0, core_parameters.DirectTempoPoint(120)),
-                )
-            )
+        default_time_signature_tuple = tuple(default_time_signature_sequence)
+        self._default_time_signature_tuple = default_time_signature_tuple
 
-        self._time_signature_tuple = time_signature_tuple
-        self._tempo_envelope = tempo_envelope
+        self._event_to_time_signature_tuple = event_to_time_signature_tuple
 
-    @property
-    def tempo_envelope(self) -> core_events.TempoEnvelope:
-        return self._tempo_envelope
+    def _get_time_signature_tuple(
+        self, event: core_events.abc.Event
+    ) -> tuple[abjad.TimeSignature, ...]:
+        if self._event_to_time_signature_tuple:
+            if time_signature_tuple := self._event_to_time_signature_tuple(event):
+                return time_signature_tuple
+        return self._default_time_signature_tuple
 
     # ###################################################################### #
     #               public methods for interaction with the user             #
@@ -83,7 +89,7 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...]]:
-        raise NotImplementedError
+        ...
 
 
 class NauertSequentialEventToQuantizedAbjadContainer(
@@ -100,11 +106,6 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         :attr:`~mutwo.events.abc.Event.duration` attribute will be
         interpreted). Can either be 'beats' (default) or 'miliseconds'.
         WARNING: 'miliseconds' isn't working properly yet!
-    :param tempo_envelope: Defines the tempo of the converted music. This is an
-        :class:`core_events.TempoEnvelope` object which durations are beats and which
-        levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.core_parameters.abc.TempoPoint` objects. If no tempo envelope has
-        been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
     :param attack_point_optimizer: Optionally the user can pass a
         :class:`nauert.AttackPointOptimizer` object. Attack point optimizer help to
         split events and tie them for better looking notation. The default attack point
@@ -127,39 +128,36 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 
     def __init__(
         self,
-        time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
+        default_time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
             abjad.TimeSignature((4, 4)),
         ),
         duration_unit: str = "beats",  # for future: typing.Literal["beats", "miliseconds"]
-        tempo_envelope: core_events.TempoEnvelope = None,
         attack_point_optimizer: typing.Optional[
             nauert.AttackPointOptimizer
         ] = nauert.MeasurewiseAttackPointOptimizer(),
         search_tree: typing.Optional[nauert.SearchTree] = None,
+        **kwargs,
     ):
         if duration_unit == "miliseconds":
             # warning for not well implemented miliseconds conversion
 
-            message = (
+            warnings.warn(
                 "The current implementation can't apply tempo changes for duration unit"
                 " 'miliseconds' yet! Furthermore to quantize via duration_unit"
                 " 'miliseconds' isn't well tested yet and may return unexpected"
                 " results."
             )
-            warnings.warn(message)
 
-        time_signature_tuple = tuple(time_signature_sequence)
+        default_time_signature_tuple = tuple(default_time_signature_sequence)
         # nauert will raise an error if there is only one time signature
-        if len(time_signature_tuple) == 1:
-            time_signature_tuple += time_signature_tuple
+        if len(default_time_signature_tuple) == 1:
+            default_time_signature_tuple += default_time_signature_tuple
 
-        super().__init__(time_signature_tuple, tempo_envelope)
+        super().__init__(default_time_signature_tuple, **kwargs)
 
         self._duration_unit = duration_unit
         self._attack_point_optimizer = attack_point_optimizer
-        self._q_schema = NauertSequentialEventToQuantizedAbjadContainer._make_q_schema(
-            self._time_signature_tuple, search_tree
-        )
+        self._search_tree = search_tree
 
     # ###################################################################### #
     #                          static methods                                #
@@ -319,6 +317,11 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     #                         private methods                                #
     # ###################################################################### #
 
+    def _get_q_schema(self, event: core_events.abc.Event) -> nauert.MeasurewiseQSchema:
+        return NauertSequentialEventToQuantizedAbjadContainer._make_q_schema(
+            self._get_time_signature_tuple(event), self._search_tree
+        )
+
     def _sequential_event_to_q_event_sequence(
         self, sequential_event: core_events.SequentialEvent
     ) -> nauert.QEventSequence:
@@ -346,12 +349,14 @@ class NauertSequentialEventToQuantizedAbjadContainer(
             raise NotImplementedError(message)
 
     def _q_event_sequence_to_quanitisized_abjad_leaf_voice(
-        self, q_event_sequence: nauert.QEventSequence
+        self,
+        q_event_sequence: nauert.QEventSequence,
+        q_schema: nauert.MeasurewiseQSchema,
     ) -> abjad.Voice:
         quantizer = nauert.Quantizer()
         return quantizer(
             q_event_sequence,
-            q_schema=self._q_schema,
+            q_schema=q_schema,
             attach_tempos=True if self._duration_unit == "miliseconds" else False,
             attack_point_optimizer=self._attack_point_optimizer,
         )
@@ -366,8 +371,11 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         q_event_sequence = self._sequential_event_to_q_event_sequence(
             sequential_event_to_convert
         )
+        q_schema = self._get_q_schema(sequential_event_to_convert)
         quanitisized_abjad_leaf_voice = (
-            self._q_event_sequence_to_quanitisized_abjad_leaf_voice(q_event_sequence)
+            self._q_event_sequence_to_quanitisized_abjad_leaf_voice(
+                q_event_sequence, q_schema
+            )
         )
 
         related_abjad_leaves_per_simple_event = NauertSequentialEventToQuantizedAbjadContainer._make_related_abjad_leaves_per_simple_event(
@@ -389,11 +397,6 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         :class:`~mutwo.core_events.SequentialEvent` is longer than the sum of
         all passed time signatures, the last time signature
         will be repeated for the remaining bars.
-    :param tempo_envelope: Defines the tempo of the converted music. This is an
-        :class:`core_events.TempoEnvelope` object which durations are beats and which
-        levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`~mutwo.core_parameters.abc.TempoPoint` objects. If no tempo envelope
-        has been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
 
     This method is significantly faster than the
     :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
@@ -619,9 +622,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
             try:
                 bar = abjad.Container(selection, simultaneous=False)
             except Exception:
-                bar = abjad.Container(
-                    abjad.mutate.copy(selection), simultaneous=False
-                )
+                bar = abjad.Container(abjad.mutate.copy(selection), simultaneous=False)
             bar_list.append(bar)
         voice = abjad.Voice(bar_list)
         if self._do_rewrite_meter:
@@ -697,6 +698,11 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
+        # FIXME(bad style)
+        self._time_signature_tuple = self._get_time_signature_tuple(
+            sequential_event_to_convert
+        )
+
         voice = self._make_voice(sequential_event_to_convert)
         related_abjad_leaves_per_simple_event = (
             self._make_related_abjad_leaves_per_simple_event(voice)

@@ -475,7 +475,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         # initialise complex converter and sequential event for complex tests
         cls.complex_converter = abjad_converters.SequentialEventToAbjadVoice(
             abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
-                time_signature_sequence=[
+                default_time_signature_sequence=[
                     abjad.TimeSignature(ts)
                     for ts in (
                         (4, 4),
@@ -490,10 +490,10 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
                         (3, 4),
                     )
                 ],
-                tempo_envelope=core_events.Envelope(
-                    ((0, 120), (3, 120), (5, 130), (7.75, 130), (7.75, 100))
-                ),
-            )
+            ),
+            default_tempo_envelope=core_events.Envelope(
+                ((0, 120), (3, 120), (5, 130), (7.75, 130), (7.75, 100))
+            ),
         )
         cls.complex_sequential_event = (
             SequentialEventToAbjadVoiceTest._make_complex_sequential_event()
@@ -591,9 +591,8 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
             )
         )
         converter = abjad_converters.SequentialEventToAbjadVoice(
-            abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
-                tempo_envelope=tempo_envelope
-            )
+            abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(),
+            default_tempo_envelope=tempo_envelope,
         )
         sequential_event_to_convert = core_events.SequentialEvent(
             [

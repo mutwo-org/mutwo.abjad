@@ -16,6 +16,7 @@ from mutwo import abjad_converters
 from mutwo import abjad_parameters
 from mutwo import core_converters
 from mutwo import core_events
+from mutwo import core_parameters
 from mutwo import core_utilities
 from mutwo import music_converters
 from mutwo import music_parameters
@@ -155,6 +156,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         defines how the Mutwo data will be quantized. See
         :class:`SequentialEventToQuantizedAbjadContainer` for more information.
     :type sequential_event_to_quantized_abjad_container: SequentialEventToQuantizedAbjadContainer, optional
+    :param default_tempo_envelope: Fallback value in case `event_to_tempo_envelope`
+        is set to `None` or returns `None`. This is the default for now, but likely
+        to be removed in the future. If possible, better use
+        `event_to_tempo_envelope`.
+    :type default_tempo_envelope: core_events.TempoEnvelope
     :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.core_events.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.music_parameters.abc.Pitch`).
@@ -274,6 +280,12 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         Consult :class:`mutwo.abjad_converters.MutwoLyricToAbjadString`
         for more information.
     :type mutwo_lyric_to_abjad_string: MutwoLyricToAbjadString
+    :param event_to_tempo_envelope: A function which extracts a
+        :class:`mutwo.core_events.TempoEnvelope` from a
+        :class:`mutwo.core_events.abc.Event`. If set to `None` or if the
+        function returns `None` mutwo falls back to `default_tempo_envelope`.
+        Default to ``None``, but this will likely change in the future.
+    :type event_to_tempo_envelope: typing.Optional[typing.Callable[[core_events.abc.Event], typing.Optional[core_events.TempoEnvelope]]]
     :param abjad_attachment_class_sequence: A tuple which contains all available abjad attachment classes
         which shall be used by the converter.
     :type abjad_attachment_class_sequence: typing.Sequence[abjad_parameters.abc.AbjadAttachment], optional
@@ -298,6 +310,12 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     def __init__(
         self,
         sequential_event_to_quantized_abjad_container: SequentialEventToQuantizedAbjadContainer = NauertSequentialEventToQuantizedAbjadContainer(),
+        default_tempo_envelope: core_events.TempoEnvelope = core_events.TempoEnvelope(
+            (
+                (0, core_parameters.DirectTempoPoint(120)),
+                (0, core_parameters.DirectTempoPoint(120)),
+            )
+        ),
         simple_event_to_pitch_list: typing.Callable[
             [core_events.SimpleEvent], list[music_parameters.abc.Pitch]
         ] = music_converters.SimpleEventToPitchList(),
@@ -335,6 +353,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             TempoEnvelopeToAbjadAttachmentTempo
         ] = ComplexTempoEnvelopeToAbjadAttachmentTempo(),
         mutwo_lyric_to_abjad_string: MutwoLyricToAbjadString = MutwoLyricToAbjadString(),
+        event_to_tempo_envelope: typing.Optional[
+            typing.Callable[
+                [core_events.abc.Event], typing.Optional[core_events.TempoEnvelope]
+            ]
+        ] = None,
         abjad_attachment_class_sequence: typing.Sequence[
             typing.Type[abjad_parameters.abc.AbjadAttachment]
         ] = None,
@@ -430,13 +453,12 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         self._mutwo_volume_to_abjad_attachment_dynamic = (
             mutwo_volume_to_abjad_attachment_dynamic
         )
-        if tempo_envelope_to_abjad_attachment_tempo:
-            tempo_attachment_tuple = tempo_envelope_to_abjad_attachment_tempo.convert(
-                self._sequential_event_to_quantized_abjad_container.tempo_envelope
-            )
-        else:
-            tempo_attachment_tuple = None
-        self._tempo_attachment_tuple = tempo_attachment_tuple
+        self._tempo_envelope_to_abjad_attachment_tempo = (
+            tempo_envelope_to_abjad_attachment_tempo
+        )
+
+        self._default_tempo_envelope = default_tempo_envelope
+        self._event_to_tempo_envelope = event_to_tempo_envelope
 
         self._mutwo_lyric_to_abjad_string = mutwo_lyric_to_abjad_string
 
@@ -448,10 +470,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
     @staticmethod
     def _detect_abjad_event_type(pitch_list: list[music_parameters.abc.Pitch]) -> type:
-        n_pitches = len(pitch_list)
-        if n_pitches == 0:
+        pitch_count = len(pitch_list)
+        if pitch_count == 0:
             abjad_event_type = abjad.Rest
-        elif n_pitches == 1:
+        elif pitch_count == 1:
             abjad_event_type = abjad.Note
         else:
             abjad_event_type = abjad.Chord
@@ -487,6 +509,14 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     # ###################################################################### #
     #                          private methods                               #
     # ###################################################################### #
+
+    def _get_tempo_envelope(
+        self, event: core_events.abc.Event
+    ) -> core_events.TempoEnvelope:
+        if self._event_to_tempo_envelope:
+            if tempo_envelope := self._event_to_tempo_envelope(event):
+                return tempo_envelope
+        return self._default_tempo_envelope
 
     def _indicator_collection_to_abjad_parameters(
         self,
@@ -547,6 +577,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     def _get_tempo_attachment_tuple_for_quantized_abjad_leaves(
         self,
         abjad_voice: abjad.Voice,
+        tempo_attachment_tuple: tuple[
+            tuple[core_parameters.abc.Duration, abjad_parameters.Tempo], ...
+        ],
     ) -> tuple[
         tuple[
             int,
@@ -573,7 +606,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 ],
             ]
         ] = []
-        for absolute_time, tempo_attachment in self._tempo_attachment_tuple:
+        for absolute_time, tempo_attachment in tempo_attachment_tuple:
             closest_leaf = core_utilities.find_closest_index(
                 absolute_time.duration, absolute_time_per_leaf
             )
@@ -641,12 +674,18 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     def _apply_tempos_on_quantized_abjad_leaves(
         self,
         quanitisized_abjad_leaf_voice: abjad.Voice,
+        tempo_envelope: core_events.TempoEnvelope,
     ):
-        if self._tempo_attachment_tuple:
+        tempo_attachment_tuple = None
+        if self._tempo_envelope_to_abjad_attachment_tempo:
+            tempo_attachment_tuple = (
+                self._tempo_envelope_to_abjad_attachment_tempo.convert(tempo_envelope)
+            )
+        if tempo_attachment_tuple:
             leaves = abjad.select.leaves(quanitisized_abjad_leaf_voice)
             tempo_attachment_data = (
                 self._get_tempo_attachment_tuple_for_quantized_abjad_leaves(
-                    quanitisized_abjad_leaf_voice
+                    quanitisized_abjad_leaf_voice, tempo_attachment_tuple
                 )
             )
             for nth_event, tempo_attachment in tempo_attachment_data:
@@ -903,7 +942,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 extracted_data_per_simple_event
             )
         )
-        self._apply_tempos_on_quantized_abjad_leaves(quanitisized_abjad_leaf_voice)
+        tempo_envelope = self._get_tempo_envelope(sequential_event_to_convert)
+        self._apply_tempos_on_quantized_abjad_leaves(
+            quanitisized_abjad_leaf_voice, tempo_envelope
+        )
         self._apply_abjad_parameters_on_quantized_abjad_leaves(
             quanitisized_abjad_leaf_voice,
             related_abjad_leaf_index_tuple_tuple_per_simple_event,
