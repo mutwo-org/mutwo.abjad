@@ -3,13 +3,13 @@ with pkgs.python310Packages;
 
 let
 
-  mutwo-core-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.core/archive/61ebb657ef5806eb067f5df6885254fdbae8f44c.tar.gz";
+  mutwo-core-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.core/archive/83efe12fb98119e03db833c231f9c87956577b3f.tar.gz";
   mutwo-core = import (mutwo-core-archive + "/default.nix");
 
-  mutwo-music-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.music/archive/d90b6db7d433d64c25f039adcd6b41075c05c013.tar.gz";
+  mutwo-music-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.music/archive/6a5f2ca81e6e4e06b7ad4d6f46b0361ceaca4ea1.tar.gz";
   mutwo-music = import (mutwo-music-archive + "/default.nix");
 
-  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/6d30ef1f7c5a51ff86d16c0d81e6b2b7bc0a72ab.tar.gz";
+  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/e466119683d076b60c7e65b2570fdefc8382fe3a.tar.gz";
   mutwo-ekmelily = import (mutwo-ekmelily-archive + "/default.nix");
 
   quicktions = pkgs.python310Packages.buildPythonPackage rec {
