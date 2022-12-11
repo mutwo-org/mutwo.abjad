@@ -3,7 +3,7 @@ with pkgs.python310Packages;
 
 let
 
-  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/727c4bdbd039712fa05ec44b0bb5a7b0f66e51e0.tar.gz";
+  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/0f80aea5a06e356f3fa2009dcf93b1412c0a1d1b.tar.gz";
   mutwo-ekmelily = import (mutwo-ekmelily-archive + "/default.nix");
 
   quicktions = pkgs.python310Packages.buildPythonPackage rec {
