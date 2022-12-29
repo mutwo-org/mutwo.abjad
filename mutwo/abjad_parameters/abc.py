@@ -1,3 +1,4 @@
+from __future__ import annotations
 import abc
 import dataclasses
 import typing
@@ -23,7 +24,7 @@ class AbjadAttachment(abc.ABC):
     @classmethod
     def from_indicator_collection(
         cls, indicator_collection: music_parameters.abc.IndicatorCollection, **kwargs
-    ) -> typing.Optional["AbjadAttachment"]:
+    ) -> typing.Optional[AbjadAttachment]:
         """Initialize :class:`AbjadAttachment` from :class:`~mutwo.parameters.abc.IndicatorCollection`.
 
         If no suitable :class:`~mutwo.parameters.abc.Indicator` could be found in the collection
@@ -42,9 +43,9 @@ class AbjadAttachment(abc.ABC):
     def process_leaf_tuple(
         self,
         leaf_tuple: tuple[abjad.Leaf, ...],
-        previous_attachment: typing.Optional["AbjadAttachment"],
+        previous_attachment: typing.Optional[AbjadAttachment],
     ) -> tuple[abjad.Leaf, ...]:
-        raise NotImplementedError()
+        ...
 
     @property
     def is_active(self) -> bool:
@@ -63,14 +64,14 @@ class ToggleAttachment(AbjadAttachment):
 
     @abc.abstractmethod
     def process_leaf(
-        self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
-        raise NotImplementedError()
+        self, leaf: abjad.Leaf, previous_attachment: typing.Optional[AbjadAttachment]
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
+        ...
 
     def process_leaf_tuple(
         self,
         leaf_tuple: tuple[abjad.Leaf, ...],
-        previous_attachment: typing.Optional["AbjadAttachment"],
+        previous_attachment: typing.Optional[AbjadAttachment],
     ) -> tuple[abjad.Leaf, ...]:
         if previous_attachment != self:
             return (
@@ -92,33 +93,29 @@ class BangAttachment(AbjadAttachment):
 
     @abc.abstractmethod
     def process_first_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
-        raise NotImplementedError()
+        ...
 
     @abc.abstractmethod
     def process_last_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
-        raise NotImplementedError()
+        ...
 
     @abc.abstractmethod
     def process_central_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
-        raise NotImplementedError()
+        ...
 
     def process_leaf_tuple(
         self,
         leaf_tuple: tuple[abjad.Leaf, ...],
-        previous_attachment: typing.Optional["AbjadAttachment"],
+        previous_attachment: typing.Optional[AbjadAttachment],
     ) -> tuple[abjad.Leaf, ...]:
-        n_leaf_tuple = len(leaf_tuple)
-
         new_leaf_list = []
 
-        if n_leaf_tuple > 0:
+        if (leaf_count := len(leaf_tuple)) > 0:
             new_leaf_list.append(self.process_first_leaf(leaf_tuple[0]))
-
-        if n_leaf_tuple > 2:
+        if leaf_count > 2:
             for leaf in leaf_tuple[1:-1]:
                 new_leaf_list.append(self.process_central_leaf(leaf))
-
-        if n_leaf_tuple > 1:
+        if leaf_count > 1:
             new_leaf_list.append(self.process_last_leaf(leaf_tuple[-1]))
 
         return tuple(new_leaf_list)
@@ -128,22 +125,22 @@ class BangEachAttachment(BangAttachment):
     @abc.abstractmethod
     def process_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
-        raise NotImplementedError()
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
+        ...
 
     def process_first_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
         return self.process_leaf(leaf)
 
     def process_last_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
         return self.process_leaf(leaf)
 
     def process_central_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
         return self.process_leaf(leaf)
 
 
@@ -151,22 +148,22 @@ class BangFirstAttachment(BangAttachment):
     @abc.abstractmethod
     def process_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
-        raise NotImplementedError()
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
+        ...
 
     def process_first_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
         return self.process_leaf(leaf)
 
     def process_last_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
         return leaf
 
     def process_central_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
         return leaf
 
 
@@ -174,8 +171,8 @@ class BangLastAttachment(BangAttachment):
     @abc.abstractmethod
     def process_leaf(
         self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
-        raise NotImplementedError()
+    ) -> abjad.Leaf | typing.Sequence[abjad.Leaf]:
+        ...
 
     def process_first_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         return leaf
@@ -189,10 +186,9 @@ class BangLastAttachment(BangAttachment):
     def process_leaf_tuple(
         self,
         leaf_tuple: tuple[abjad.Leaf, ...],
-        previous_attachment: typing.Optional["AbjadAttachment"],
+        previous_attachment: typing.Optional[AbjadAttachment],
     ) -> tuple[abjad.Leaf, ...]:
-        n_leaf_tuple = len(leaf_tuple)
-        if n_leaf_tuple > 0:
+        if len(leaf_tuple) > 0:
             return leaf_tuple[:-1] + (self.process_last_leaf(leaf_tuple[-1]),)
         else:
             return leaf_tuple
