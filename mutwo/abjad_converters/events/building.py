@@ -525,7 +525,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         attachment_dict = {}
         for abjad_attachment_class in self._abjad_attachment_class_sequence:
             abjad_attachment = abjad_attachment_class.from_indicator_collection(
-                indicator_collection
+                indicator_collection,
+                is_simple_event_rest=self._is_simple_event_rest,
+                mutwo_pitch_to_abjad_pitch=self._mutwo_pitch_to_abjad_pitch,
+                mutwo_volume_to_abjad_attachment_dynamic=self._mutwo_volume_to_abjad_attachment_dynamic,
+                mutwo_lyric_to_abjad_string=self._mutwo_lyric_to_abjad_string,
             )
             if abjad_attachment:
                 attachment_dict.update(

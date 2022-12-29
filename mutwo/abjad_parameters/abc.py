@@ -5,6 +5,7 @@ import typing
 
 import abjad
 
+from mutwo import core_events
 from mutwo import core_utilities
 from mutwo import music_parameters
 
@@ -15,6 +16,21 @@ class AbjadAttachment(abc.ABC):
 
     indicator: typing.Optional[
         music_parameters.abc.PlayingIndicator | music_parameters.abc.NotationIndicator
+    ] = None
+    is_simple_event_rest: typing.Optional[
+        typing.Callable[[core_events.SimpleEvent], bool]
+    ] = None
+    mutwo_pitch_to_abjad_pitch: typing.Optional[
+        typing.Callable[[music_parameters.abc.Pitch], abjad.Pitch]
+    ] = None
+    mutwo_pitch_to_abjad_pitch: typing.Optional[
+        typing.Callable[[music_parameters.abc.Pitch], abjad.Pitch]
+    ] = None
+    mutwo_volume_to_abjad_attachment_dynamic: typing.Optional[
+        typing.Callable[[music_parameters.abc.Volume], abjad.Dynamic]
+    ] = None
+    mutwo_lyric_to_abjad_string: typing.Optional[
+        typing.Callable[[music_parameters.abc.Lyric], str]
     ] = None
 
     @classmethod
