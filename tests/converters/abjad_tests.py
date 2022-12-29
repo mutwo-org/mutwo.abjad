@@ -99,15 +99,12 @@ class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
 class MutwoVolumeToAbjadAttachmentDynamicTest(unittest.TestCase):
     def test_convert(self):
         converter = abjad_converters.MutwoVolumeToAbjadAttachmentDynamic()
+        d = abjad_parameters.Dynamic
+        wv, dv = music_parameters.WesternVolume, music_parameters.DecibelVolume
         for mutwo_volume, expected_abjad_parameter in (
-            (music_parameters.WesternVolume("mf"), abjad_parameters.Dynamic("mf")),
-            (music_parameters.WesternVolume("fff"), abjad_parameters.Dynamic("fff")),
-            (
-                music_parameters.DecibelVolume(-6),
-                abjad_parameters.Dynamic(
-                    music_parameters.WesternVolume.from_decibel(-6).name
-                ),
-            ),
+            (wv("mf"), d(dynamic_indicator="mf")),
+            (wv("fff"), d(dynamic_indicator="fff")),
+            (dv(-6), d(dynamic_indicator=wv.from_decibel(-6).name)),
         ):
             self.assertEqual(
                 converter.convert(mutwo_volume),
