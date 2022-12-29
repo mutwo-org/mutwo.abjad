@@ -1,4 +1,5 @@
 import abc
+import dataclasses
 import typing
 
 import abjad
@@ -7,8 +8,13 @@ from mutwo import core_utilities
 from mutwo import music_parameters
 
 
+@dataclasses.dataclass()
 class AbjadAttachment(abc.ABC):
     """Abstract base class for all Abjad attachments."""
+
+    indicator: typing.Optional[
+        music_parameters.abc.PlayingIndicator | music_parameters.abc.NotationIndicator
+    ] = None
 
     @classmethod
     def get_class_name(cls):
@@ -16,7 +22,7 @@ class AbjadAttachment(abc.ABC):
 
     @classmethod
     def from_indicator_collection(
-        cls, indicator_collection: music_parameters.abc.IndicatorCollection
+        cls, indicator_collection: music_parameters.abc.IndicatorCollection, **kwargs
     ) -> typing.Optional["AbjadAttachment"]:
         """Initialize :class:`AbjadAttachment` from :class:`~mutwo.parameters.abc.IndicatorCollection`.
 
@@ -30,11 +36,7 @@ class AbjadAttachment(abc.ABC):
         except AttributeError:
             return None
 
-        # typing will run a correct error:
-        # to make this method working, we also need to inherit
-        # the inherited subclass from a mutwo.parameters.abc.Indicator
-        # class
-        return cls(**indicator.get_arguments_dict())  # type: ignore
+        return cls(indicator, **kwargs)
 
     @abc.abstractmethod
     def process_leaf_tuple(
@@ -45,9 +47,8 @@ class AbjadAttachment(abc.ABC):
         raise NotImplementedError()
 
     @property
-    @abc.abstractmethod
     def is_active(self) -> bool:
-        raise NotImplementedError()
+        return self.indicator.is_active
 
 
 class ToggleAttachment(AbjadAttachment):
