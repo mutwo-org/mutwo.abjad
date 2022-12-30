@@ -39,7 +39,7 @@ setuptools.setup(
     install_requires=[
         # Mutwo dependencies
         "mutwo.core>=1.0.0, <2.0.0",
-        "mutwo.music>=0.19.0, <1.0.0",
+        "mutwo.music>=0.19.0, <0.21.0",
         # Abjad dependencies
         "abjad>=3.7.0, <3.8.0",
         "abjad-ext-nauert>=3.7.0, <3.8.0",
