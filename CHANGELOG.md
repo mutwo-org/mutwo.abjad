@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.14.0] - 2022-12-31
+
 ### Added
 - `replace_leaf_by_leaf` property for all abjad attachments
+- `NaturalHarmonicNodeList` attachment
+
+### Changed
+- internal structure of abjad attachments: see [here](https://github.com/mutwo-org/mutwo.abjad/commit/7a6dcfb3969349a3c867bf808f214e005a0bd472).
+
+### Removed
+- `NaturalHarmonic` attachment
+- `PreciseNaturalHarmonic` attachment
 
 
 ## [0.13.0] - 2022-11-08
