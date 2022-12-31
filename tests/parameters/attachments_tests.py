@@ -67,6 +67,37 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         )
 
     @t(RESET_TESTS)
+    def test_natural_harmonic_node_list(self):
+        def e(*node, **kwargs):
+            e = n("c", f(5, 16))
+            nhn_l = e.playing_indicator_collection.natural_harmonic_node_list
+            for v, k in kwargs.items():
+                setattr(nhn_l, v, k)
+            nhn_l.extend(node)
+            return e
+
+        h0_tuple = music_parameters.String(
+            music_parameters.JustIntonationPitch("3/4"),
+            music_parameters.WesternPitch("g", 3),
+        ).natural_harmonic_tuple
+
+        h1_tuple = music_parameters.String(
+            music_parameters.JustIntonationPitch("9/8"),
+            music_parameters.WesternPitch("d", 4),
+        ).natural_harmonic_tuple
+
+        return dict(
+            ev=seq(
+                [
+                    e(h0_tuple[0].node_tuple[0], parenthesize_lower_note_head=True),
+                    n(),
+                    e(h0_tuple[1].node_tuple[0], h1_tuple[1].node_tuple[0]),
+                    e(h0_tuple[0].node_tuple[0], write_string=False),
+                ]
+            )
+        )
+
+    @t(RESET_TESTS)
     def test_string_contact_point(self):
         def e(name):
             return mp(

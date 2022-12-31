@@ -135,6 +135,119 @@ class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
         return leaf
 
 
+class NaturalHarmonicNodeList(abjad_parameters.abc.AbjadAttachment):
+    replace_leaf_by_leaf = False
+
+    def process_leaf_tuple(
+        self,
+        leaf_tuple: tuple[abjad.Leaf, ...],
+        previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
+    ) -> typing.Sequence[abjad.Leaf]:
+        if len((indicator := self.indicator)) > 2:
+            warnings.warn(
+                "Can only represent double harmonics, "
+                "but not triple or more. The following nodes "
+                f"are ignored:\n\n\t{self.indicator[2:]}"
+            )
+            indicator = indicator[:2]
+
+        stem_direction_tuple = self._node_tuple_to_stem_direction_tuple(
+            tuple(indicator)
+        )
+
+        # We put each harmonic into its own voice, because we
+        # don't want to have all harmonics on the same stem,
+        # because then it's not clear for the player which node
+        # on which string she or he needs to play. If the stems
+        # are separated this is very clear.
+        container = abjad.Container([], simultaneous=True)
+        for node, stem_direction in zip(indicator, stem_direction_tuple):
+            voice = abjad.Voice([])
+            for leaf in leaf_tuple:
+                leaf = self._leaf_to_chord(leaf)
+                self._process_leaf(leaf, node, stem_direction)
+                voice.append(leaf)
+            container.append(voice)
+        return container
+
+    def _process_leaf(
+        self,
+        leaf_to_process: abjad.Chord,
+        node: music_parameters.NaturalHarmonic.Node,
+        stem_direction: bool | type[None],
+    ):
+        m2a = self.mutwo_pitch_to_abjad_pitch
+        pitch_segment = [m2a(node.pitch)]
+
+        if self.indicator.write_string:
+            pitch_segment.insert(0, m2a(node.string.tuning_original))
+
+        leaf_to_process.written_pitches = abjad.PitchSegment(pitch_segment)
+
+        if self.indicator.write_string and self.indicator.parenthesize_lower_note_head:
+            leaf_to_process.note_heads[0].is_parenthesized = True
+
+        if self.indicator.harmonic_note_head_style:
+            set_note_head_style(
+                leaf_to_process, note_head_index=int(self.indicator.write_string)
+            )
+
+        if stem_direction in (True, False):
+            abjad.attach(
+                abjad.LilyPondLiteral(
+                    r"\once \override Staff.Stem.thickness = 2"
+                    "\n"
+                    r"\once \override Voice.Stem.direction = "
+                    f"{[-1, 1][int(stem_direction)]}",
+                    site="before",
+                ),
+                leaf_to_process,
+            )
+
+        if stem_direction is False:
+            abjad.attach(
+                abjad.LilyPondLiteral(
+                    r"\once \override NoteColumn #'force-hshift = #1.5", site="before"
+                ),
+                leaf_to_process,
+            )
+
+    @staticmethod
+    def _node_tuple_to_stem_direction_tuple(
+        node_tuple: tuple[music_parameters.NaturalHarmonic.Node]
+        | tuple[
+            music_parameters.NaturalHarmonic.Node, music_parameters.NaturalHarmonic.Node
+        ]
+    ) -> tuple[bool | type[None], ...]:
+        if (node_count := len(node_tuple)) == 2:
+            node0, node1 = node_tuple  # type: ignore
+            if node0.pitch > node1.pitch:
+                stem_direction_tuple = (False, True)
+            elif node0.pitch == node1.pitch:
+                stem_direction_tuple = (True, True)
+            else:
+                stem_direction_tuple = (True, False)
+        elif node_count == 1:
+            stem_direction_tuple = (None,)  # type: ignore
+        else:
+            raise NotImplementedError(node_count)
+        return stem_direction_tuple
+
+    @staticmethod
+    def _leaf_to_chord(leaf: abjad.Leaf) -> abjad.Chord:
+        if isinstance(leaf, abjad.Chord):
+            return abjad.mutate.copy(leaf)
+        else:
+            new_abjad_leaf = abjad.Chord(
+                "c",
+                leaf.written_duration,
+            )
+            for indicator in abjad.get.indicators(leaf):
+                if type(indicator) != dict:
+                    abjad.attach(indicator, new_abjad_leaf)
+            return new_abjad_leaf
+
+
 class StringContactPoint(abjad_parameters.abc.ToggleAttachment):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
