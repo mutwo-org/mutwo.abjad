@@ -3,7 +3,7 @@ with pkgs.python310Packages;
 
 let
 
-  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/b69eae1fb6ba7faa1e5f77a41cf4efcd0687fef4.tar.gz";
+  mutwo-ekmelily-archive = builtins.fetchTarball "https://github.com/mutwo-org/mutwo.ekmelily/archive/0623cd2104a25665336ca4272c8970548831f6ea.tar.gz";
   mutwo-ekmelily = import (mutwo-ekmelily-archive + "/default.nix");
 
   quicktions = pkgs.python310Packages.buildPythonPackage rec {
@@ -125,8 +125,8 @@ in
     src = fetchFromGitHub {
       owner = "mutwo-org";
       repo = name;
-      rev = "861d157c4d94fd2e1dab920c47f29581fe05ee99";
-      sha256 = "sha256-u1QB35BFUPT4mfk3ZyI8Df0/lGnT37oKW1xXis7QOu8=";
+      rev = "ad1b402228924e90024c55caebc5380aea83a56f";
+      sha256 = "sha256-gdXAwhvE66c8Oc8zbwdp12mGkfUrqlQ4wfrg7arZArQ=";
     };
     checkInputs = [
       python310Packages.pytest
