@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `replace_leaf_by_leaf` property for all abjad attachments
+
+
 ## [0.13.0] - 2022-11-08
 
 ### Added

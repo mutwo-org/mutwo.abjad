@@ -34,6 +34,21 @@ class AbjadAttachment(abc.ABC):
     ] = None
 
     @classmethod
+    @property
+    def replace_leaf_by_leaf(cls) -> bool:
+        """Communicate expected return type of process_leaf_tuple
+
+        Set to ``True`` if 'process_leaf_tuple' returns a sequence of
+        abjad leaves with an equal length to the provided leaf_tuple
+        and where each new leaf replaces the respective old leaf at
+        the same position.
+        Set to ``True`` if 'process_leaf_tuple' returns a new abjad
+        object which is set at the position of the old first leaf and
+        if all other old leaves are supposed to be deleted.
+        """
+        return True
+
+    @classmethod
     def get_class_name(cls):
         return core_utilities.camel_case_to_snake_case(cls.__name__)
 

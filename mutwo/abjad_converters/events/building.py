@@ -708,6 +708,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             tuple[typing.Optional[abjad_parameters.abc.AbjadAttachment], ...], ...
         ],
     ) -> None:
+
+        index_tuple_to_remove_list: list[tuple[int, ...]] = []
+
         for abjad_parameters_per_type in abjad_parameters_per_type_per_event_tuple:
             previous_attachment = None
             for related_abjad_leaf_index_tuple_tuple, attachment in zip(
@@ -715,26 +718,61 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 abjad_parameters_per_type,
             ):
                 if attachment and attachment.is_active:
-                    abjad_leaves = tuple(
-                        core_utilities.get_nested_item_from_index_sequence(
-                            index_tuple,
+                    index_tuple_to_remove_list.extend(
+                        self._apply_abjad_attachment(
+                            attachment,
+                            previous_attachment,
                             quanitisized_abjad_leaf_voice,
+                            related_abjad_leaf_index_tuple_tuple,
                         )
-                        for index_tuple in related_abjad_leaf_index_tuple_tuple
                     )
-                    processed_abjad_leaves = attachment.process_leaf_tuple(
-                        abjad_leaves, previous_attachment
-                    )
-                    for processed_abjad_leaf, index_tuple in zip(
-                        processed_abjad_leaves, related_abjad_leaf_index_tuple_tuple
-                    ):
-                        core_utilities.set_nested_item_from_index_sequence(
-                            index_tuple,
-                            quanitisized_abjad_leaf_voice,
-                            processed_abjad_leaf,
-                        )
-
                     previous_attachment = attachment
+
+        for index_tuple in reversed(index_tuple_to_remove_list):
+            core_utilities.del_nested_item_from_index_sequence(
+                index_tuple, quanitisized_abjad_leaf_voice
+            )
+
+    def _apply_abjad_attachment(
+        self,
+        attachment: abjad_parameters.abc.AbjadAttachment,
+        previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
+        quanitisized_abjad_leaf_voice: abjad.Voice,
+        related_abjad_leaf_index_tuple_tuple,
+    ) -> tuple[tuple[int, ...]]:
+        abjad_leaf_tuple = tuple(
+            core_utilities.get_nested_item_from_index_sequence(
+                index_tuple,
+                quanitisized_abjad_leaf_voice,
+            )
+            for index_tuple in related_abjad_leaf_index_tuple_tuple
+        )
+        processed_abjad_leaf_tuple = attachment.process_leaf_tuple(
+            abjad_leaf_tuple, previous_attachment
+        )
+        if attachment.replace_leaf_by_leaf:
+            assert len(processed_abjad_leaf_tuple) == len(
+                related_abjad_leaf_index_tuple_tuple
+            ), f"Attachment '{attachment}' returned bad abjad_leaf_tuple!"
+        else:
+            processed_abjad_leaf_tuple = (processed_abjad_leaf_tuple,) + (
+                (None,) * (len(related_abjad_leaf_index_tuple_tuple) - 1)
+            )
+        index_tuple_to_remove_list = []
+        for processed_abjad_leaf, index_tuple in zip(
+            processed_abjad_leaf_tuple, related_abjad_leaf_index_tuple_tuple
+        ):
+            if processed_abjad_leaf is None:
+                # We can't immediately call __delitem__, because
+                # this would confuse all other indices!
+                index_tuple_to_remove_list.append(index_tuple)
+            else:
+                core_utilities.set_nested_item_from_index_sequence(
+                    index_tuple,
+                    quanitisized_abjad_leaf_voice,
+                    processed_abjad_leaf,
+                )
+        return tuple(index_tuple_to_remove_list)
 
     def _extract_pitch_list_and_volume_from_simple_event(
         self, simple_event: core_events.SimpleEvent
