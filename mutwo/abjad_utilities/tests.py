@@ -15,6 +15,7 @@ import abjad
 
 from mutwo import abjad_converters
 from mutwo import core_events
+from mutwo import music_events
 
 
 __all__ = ("AbjadTestCase", "run_if_ekmelily_available")
@@ -62,7 +63,8 @@ class AbjadTestCase(unittest.TestCase):
         ),
         tolerance: float = 0.1,
     ):
-        converted_event = converter.convert(ev)
+
+        converted_event = converter.convert(_parse_event(ev))
 
         base_p = self.base_path
         file_ok_path = f"{base_p}{os.sep}{name}_ok.png"
@@ -92,7 +94,21 @@ class AbjadTestCase(unittest.TestCase):
         else:
             self.assertImagesEqual(image_ok, image_test)
 
-        os.remove(file_test_path)
+        if not reset_tests:
+            os.remove(file_test_path)
+
+
+def _parse_event(ev):
+    match ev:
+        case music_events.NoteLike():
+            ev = core_events.SequentialEvent([ev])
+        case core_events.SequentialEvent():
+            ev = ev
+        case core_events.SimultaneousEvent():
+            ev = ev
+        case _:
+            raise NotImplementedError(type(ev))
+    return ev
 
 
 def root_mean_square_difference(image0: Image, image1: Image):
