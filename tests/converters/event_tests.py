@@ -115,37 +115,6 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         )
 
     @t(RESET_TESTS)
-    def test_hairpin(self):
-        def h(simple_event):
-            return simple_event.playing_indicator_collection.hairpin
-
-        e = seq(
-            [
-                n("c", f(3, 4)),
-                n("d", f(1, 4)),
-                n("e", f(1, 4)),
-                n("e", f(5, 4)),
-                n([], f(1, 8)),
-            ]
-        )
-
-        h(e[0]).symbol = "<>"
-        h(e[0]).niente = True
-        h(e[1]).symbol = "<"
-        h(e[1]).niente = True
-        h(e[2]).symbol = ">"
-        h(e[3]).symbol = "<>"
-        h(e[3]).niente = True
-        h(e[4]).symbol = "!"
-
-        return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer()
-            ),
-            ev=e,
-        )
-
-    @t(RESET_TESTS)
     def test_duration_line(self):
         return dict(
             converter=abjad_converters.SequentialEventToAbjadVoice(
