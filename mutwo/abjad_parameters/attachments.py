@@ -45,9 +45,7 @@ class Trill(abjad_parameters.abc.BangFirstAttachment):
 class Cue(abjad_parameters.abc.BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.Markup(
-                rf"\markup \rounded-box {{ {self.indicator.cue_count} }}"
-            ),
+            abjad.Markup(rf"\markup \rounded-box {{ {self.indicator.index} }}"),
             leaf,
             direction=abjad.enums.UP,
         )
@@ -321,7 +319,7 @@ class BreathMark(
 class Fermata(abjad_parameters.abc.BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.Fermata(self.indicator.fermata_type),
+            abjad.Fermata(self.indicator.type),
             leaf,
         )
         return leaf
@@ -495,7 +493,7 @@ class Ottava(abjad_parameters.abc.ToggleAttachment):
         previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
     ) -> LeafOrLeafSequence:
         abjad.attach(
-            abjad.Ottava(self.indicator.n_octaves, site="before"),
+            abjad.Ottava(self.indicator.octave_count, site="before"),
             leaf,
         )
         return leaf
@@ -506,7 +504,7 @@ class Ottava(abjad_parameters.abc.ToggleAttachment):
         previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
     ) -> tuple[abjad.Leaf, ...]:
         # don't attach ottava = 0 at start (this is the default notation)
-        if previous_attachment is not None or self.indicator.n_octaves != 0:
+        if previous_attachment is not None or self.indicator.octave_count != 0:
             return super().process_leaf_tuple(leaf_tuple, previous_attachment)
         else:
             return leaf_tuple

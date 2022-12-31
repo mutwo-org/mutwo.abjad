@@ -354,11 +354,11 @@ def _make_complex_sequential_event() -> core_events.SequentialEvent[
     e[2].playing_indicator_collection.bartok_pizzicato.is_active = True
     e[3].volume = "fff"
     e[4].volume = "fff"
-    e[7].playing_indicator_collection.fermata.fermata_type = "fermata"
-    e[9].notation_indicator_collection.ottava.n_octaves = -1
+    e[7].playing_indicator_collection.fermata.type = "fermata"
+    e[9].notation_indicator_collection.ottava.octave_count = -1
     e[9].playing_indicator_collection.string_contact_point.contact_point = "sul tasto"
     e[11].playing_indicator_collection.string_contact_point.contact_point = "sul tasto"
-    e[11].notation_indicator_collection.ottava.n_octaves = -2
+    e[11].notation_indicator_collection.ottava.octave_count = -2
     e[12].playing_indicator_collection.string_contact_point.contact_point = "pizzicato"
     return e
 

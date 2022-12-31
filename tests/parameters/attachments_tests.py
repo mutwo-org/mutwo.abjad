@@ -93,7 +93,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
     @t(RESET_TESTS)
     def test_cue(self):
-        return dict(ev=mp(n("c", f(7, 8)), lambda p: setattr(p.cue, "cue_count", 4)))
+        return dict(ev=mp(n("c", f(7, 8)), lambda p: setattr(p.cue, "index", 4)))
 
     @t(RESET_TESTS)
     def test_woodwind_fingering(self):
@@ -182,9 +182,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     @t(RESET_TESTS)
     def test_fermata(self):
         def e(type):
-            return mp(
-                n("c", f(7, 8)), lambda p: setattr(p.fermata, "fermata_type", type)
-            )
+            return mp(n("c", f(7, 8)), lambda p: setattr(p.fermata, "type", type))
 
         return dict(ev=seq([e("fermata"), e("longfermata")]))
 
@@ -246,7 +244,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         return dict(
             ev=mn(
                 n(music_parameters.WesternPitch("c", 6), f(5, 16)),
-                lambda n: setattr(n.ottava, "n_octaves", 1),
+                lambda n: setattr(n.ottava, "octave_count", 1),
             )
         )
 
