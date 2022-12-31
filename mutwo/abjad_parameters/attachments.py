@@ -98,35 +98,31 @@ class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
         # return True if artifical_harmonic can be attached and False if
         # artifical harmonic can't be attached
 
-        if isinstance(leaf, abjad.Chord):
-            try:
-                assert len(leaf.note_heads) == 1
-            except AssertionError:
+        match leaf:
+            case abjad.Chord():
+                if len(leaf.note_heads) != 1:
+                    warnings.warn(
+                        "Can't attach artifical harmonic on chord with more or less"
+                        " than one pitch!"
+                    )
+                    return leaf, False
+                return leaf, True
+            case abjad.Note():
+                new_abjad_leaf = abjad.Chord(
+                    [leaf.written_pitch],
+                    leaf.written_duration,
+                )
+                for indicator in abjad.get.indicators(leaf):
+                    if type(indicator) != dict:
+                        abjad.attach(indicator, new_abjad_leaf)
+
+                return new_abjad_leaf, True
+            case _:
                 warnings.warn(
-                    "Can't attach artifical harmonic on chord with more or less"
-                    " than one pitch!"
+                    f"Can't attach artifical harmonic on abjad leaf "
+                    f"'{leaf}' of type '{type(leaf)}'!"
                 )
                 return leaf, False
-
-            return leaf, True
-
-        elif isinstance(leaf, abjad.Note):
-            new_abjad_leaf = abjad.Chord(
-                [leaf.written_pitch],
-                leaf.written_duration,
-            )
-            for indicator in abjad.get.indicators(leaf):
-                if type(indicator) != dict:
-                    abjad.attach(indicator, new_abjad_leaf)
-
-            return new_abjad_leaf, True
-
-        else:
-            warnings.warn(
-                f"Can't attach artifical harmonic on abjad leaf "
-                f"'{leaf}' of type '{type(leaf)}'!"
-            )
-            return leaf, False
 
     def _get_second_pitch(self, abjad_pitch: abjad.Pitch) -> abjad.Pitch:
         return abjad_pitch + self.indicator.semitone_count
