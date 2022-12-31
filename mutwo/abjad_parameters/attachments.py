@@ -558,11 +558,12 @@ class Ornamentation(abjad_parameters.abc.BangFirstAttachment):
 
     def _make_markup(self) -> abjad.Markup:
         return abjad.Markup(
+            r"\markup { "
             r"\vspace #-0.25 { \fontsize #-4 { "
             rf"\rounded-box {{ {self.indicator.count} "
-            r"\hspace #-0.4 \path 0.25 "
+            r"\hspace #-0.4 \path #0.25 "
             f"{self._direction_to_ornamentation_command[self.indicator.direction]}"
-            "}}}"
+            "}}}}"
         )
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
