@@ -51,6 +51,7 @@ class AbjadTestCase(unittest.TestCase):
         header_block.items.append('tagline = "---integration-test---"')
         self.lilypond_file = abjad.LilyPondFile()
         self.score_block = abjad.Block(name="score")
+        self.lilypond_file.items.append(r'\include "lilypond-book-preamble.ly"')
         self.lilypond_file.items.extend([header_block, self.score_block])
 
     def _test(
