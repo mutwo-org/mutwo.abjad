@@ -133,7 +133,7 @@ class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
             first_pitch = leaf.note_heads[0].written_pitch
             second_pitch = self._get_second_pitch(first_pitch)
             leaf.written_pitches = abjad.PitchSegment([first_pitch, second_pitch])
-            set_note_head_style(leaf)
+            set_note_head_style(leaf, note_head_index=1)
         return leaf
 
 
@@ -721,8 +721,13 @@ class AfterGraceNoteSequentialEvent(abjad_parameters.abc.BangLastAttachment):
         return leaf
 
 
-def set_note_head_style(leaf: abjad.Chord, style: str = "#'harmonic"):
-    abjad.tweak(leaf.note_heads[1]).NoteHead.style = style
+def set_note_head_style(
+    leaf: abjad.Chord, note_head_index: int = 0, style: str = "#'harmonic"
+):
+    abjad.tweak(
+        leaf.note_heads[note_head_index],
+        abjad.Tweak(rf"\tweak NoteHead.style {style}"),
+    )
 
 
 # Auto define all due to many classes
