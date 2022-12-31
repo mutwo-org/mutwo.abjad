@@ -25,7 +25,7 @@ class Arpeggio(abjad_parameters.abc.BangFirstAttachment):
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         direction = self.indicator.direction
-        direction = getattr(self._string_to_direction, direction, direction)
+        direction = self._string_to_direction.get(direction, direction)
         abjad.attach(abjad.Arpeggio(direction=direction), leaf)
         return leaf
 
@@ -46,7 +46,7 @@ class Cue(abjad_parameters.abc.BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
             abjad.Markup(
-                string=rf"\markup \rounded-box {{ {self.indicator.nth_cue} }}"
+                rf"\markup \rounded-box {{ {self.indicator.cue_count} }}"
             ),
             leaf,
             direction=abjad.enums.UP,
@@ -85,7 +85,7 @@ class Tremolo(abjad_parameters.abc.BangEachAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(
             abjad.StemTremolo(
-                self.indicator.n_flags * (2**leaf.written_duration.flag_count)
+                self.indicator.flag_count * (2**leaf.written_duration.flag_count)
             ),
             leaf,
         )
@@ -93,10 +93,6 @@ class Tremolo(abjad_parameters.abc.BangEachAttachment):
 
 
 class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
-    @staticmethod
-    def _change_note_head_style(leaf: abjad.Chord) -> None:
-        abjad.tweak(leaf.note_heads[1]).NoteHead.style = "#'harmonic"
-
     @staticmethod
     def _convert_and_test_leaf(leaf: abjad.Leaf) -> tuple[abjad.Leaf, bool]:
         # return True if artifical_harmonic can be attached and False if
@@ -133,7 +129,7 @@ class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
             return leaf, False
 
     def _get_second_pitch(self, abjad_pitch: abjad.Pitch) -> abjad.Pitch:
-        return abjad_pitch + self.indicator.n_semitones
+        return abjad_pitch + self.indicator.semitone_count
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         leaf, is_attachable = ArtificalHarmonic._convert_and_test_leaf(leaf)
@@ -141,45 +137,7 @@ class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
             first_pitch = leaf.note_heads[0].written_pitch
             second_pitch = self._get_second_pitch(first_pitch)
             leaf.written_pitches = abjad.PitchSegment([first_pitch, second_pitch])
-            ArtificalHarmonic._change_note_head_style(leaf)
-        return leaf
-
-
-class PreciseNaturalHarmonic(abjad_parameters.abc.BangEachAttachment):
-    @staticmethod
-    def _convert_leaf(leaf: abjad.Leaf) -> tuple[abjad.Leaf, bool]:
-        if isinstance(leaf, abjad.Chord):
-            return leaf
-
-        else:
-            new_abjad_leaf = abjad.Chord(
-                "c",
-                leaf.written_duration,
-            )
-            for indicator in abjad.get.indicators(leaf):
-                if type(indicator) != dict:
-                    abjad.attach(indicator, new_abjad_leaf)
-
-            return new_abjad_leaf
-
-    def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
-        if isinstance(leaf, (abjad.Chord, abjad.Note)):
-            leaf = PreciseNaturalHarmonic._convert_leaf(leaf)
-            leaf.written_pitches = abjad.PitchSegment(
-                [
-                    self.indicator.string_pitch,
-                    abjad.NamedPitch(
-                        self.indicator.string_pitch.name,
-                        octave=self.indicator.octave.number + 1,
-                    ),
-                ]
-            )
-            leaf.note_heads[1]._written_pitch = self.indicator.played_pitch
-            if self.indicator.harmonic_note_head_style:
-                ArtificalHarmonic._change_note_head_style(leaf)
-            if self.indicator.parenthesize_lower_note_head:
-                leaf.note_heads[0].is_parenthesized = True
-
+            set_note_head_style(leaf)
         return leaf
 
 
@@ -370,18 +328,6 @@ class Fermata(abjad_parameters.abc.BangFirstAttachment):
             abjad.Fermata(self.indicator.fermata_type),
             leaf,
         )
-        return leaf
-
-
-class NaturalHarmonic(
-    abjad_parameters.abc.BangFirstAttachment,
-):
-    def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
-        abjad.attach(
-            abjad.LilyPondLiteral(r"\flageolet", directed="up", site="after"),
-            leaf,
-        )
-
         return leaf
 
 
@@ -617,7 +563,7 @@ class Ornamentation(abjad_parameters.abc.BangFirstAttachment):
     def _make_markup(self) -> abjad.Markup:
         return abjad.Markup(
             r"\vspace #-0.25 { \fontsize #-4 { "
-            rf"\rounded-box {{ {self.indicator.n_times} "
+            rf"\rounded-box {{ {self.indicator.count} "
             r"\hspace #-0.4 \path 0.25 "
             f"{self._direction_to_ornamentation_command[self.indicator.direction]}"
             "}}}"
@@ -777,6 +723,10 @@ class AfterGraceNoteSequentialEvent(abjad_parameters.abc.BangLastAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
         abjad.attach(self._after_grace_note_sequential_event, leaf)
         return leaf
+
+
+def set_note_head_style(leaf: abjad.Chord, style: str = "#'harmonic"):
+    abjad.tweak(leaf.note_heads[1]).NoteHead.style = style
 
 
 # Auto define all due to many classes
