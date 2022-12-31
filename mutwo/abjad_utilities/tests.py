@@ -25,10 +25,10 @@ class AbjadTestCase(unittest.TestCase):
     base_path = f"tests{os.sep}img"
 
     @staticmethod
-    def t(reset_tests: bool = False):
+    def t(reset_tests: bool = False, remove_ly: bool = True):
         def t(test_method: typing.Callable):
             return lambda self: self._test(
-                test_method.__name__, reset_tests, **test_method(self)
+                test_method.__name__, reset_tests, remove_ly, **test_method(self)
             )
 
         return t
@@ -57,6 +57,7 @@ class AbjadTestCase(unittest.TestCase):
         self,
         name: str,
         reset_tests: bool = False,
+        remove_ly: bool = True,
         converter: abjad_converters.SequentialEventToAbjadVoice = abjad_converters.SequentialEventToAbjadVoice(),
         ev: core_events.abc.Event = core_events.SequentialEvent(
             [core_events.SimpleEvent(1)]
@@ -84,7 +85,7 @@ class AbjadTestCase(unittest.TestCase):
         self.score_block.items.append(item)
 
         abjad.persist.as_png(
-            self.lilypond_file, png_file_path=file_test_path, remove_ly=True
+            self.lilypond_file, png_file_path=file_test_path, remove_ly=remove_ly
         )
 
         image_ok, image_test = (Image.open(p) for p in (file_ok_path, file_test_path))
