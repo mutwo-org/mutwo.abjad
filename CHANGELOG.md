@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `with_duration_line` attribute to all abjad attachments
 
+### Fixed
+- natural harmonic node list indicator for duration line based notation
+- duplicate indicators for double harmonics
+
 
 ## [0.14.0] - 2022-12-31
 

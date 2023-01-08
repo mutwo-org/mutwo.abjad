@@ -68,6 +68,26 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
     @t(RESET_TESTS)
     def test_natural_harmonic_node_list(self):
+        return dict(
+            ev=self._get_natural_harmonic_node_list_ev(),
+        )
+
+    @t(RESET_TESTS)
+    def test_natural_harmonic_node_list_with_duration_line(self):
+        return dict(
+            ev=self._get_natural_harmonic_node_list_ev(),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer()
+            ),
+        )
+
+    @t(RESET_TESTS)
+    def test_first_natural_harmonic_node_list_without_duplicates(self):
+        return dict(
+            ev=self._get_natural_harmonic_node_list_ev()[2:3],
+        )
+
+    def _get_natural_harmonic_node_list_ev(self):
         def e(*node, **kwargs):
             e = n("c", f(5, 16))
             nhn_l = e.playing_indicator_collection.natural_harmonic_node_list
@@ -86,15 +106,13 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             music_parameters.WesternPitch("d", 4),
         ).natural_harmonic_tuple
 
-        return dict(
-            ev=seq(
-                [
-                    e(h0_tuple[0].node_tuple[0], parenthesize_lower_note_head=True),
-                    n(),
-                    e(h0_tuple[1].node_tuple[0], h1_tuple[1].node_tuple[0]),
-                    e(h0_tuple[0].node_tuple[0], write_string=False),
-                ]
-            )
+        return seq(
+            [
+                e(h0_tuple[0].node_tuple[0], parenthesize_lower_note_head=True),
+                n(),
+                e(h0_tuple[1].node_tuple[0], h1_tuple[1].node_tuple[0]),
+                e(h0_tuple[0].node_tuple[0], write_string=False),
+            ]
         )
 
     @t(RESET_TESTS)

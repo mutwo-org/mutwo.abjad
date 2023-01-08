@@ -161,10 +161,15 @@ class NaturalHarmonicNodeList(abjad_parameters.abc.AbjadAttachment):
         # on which string she or he needs to play. If the stems
         # are separated this is very clear.
         container = abjad.Container([], simultaneous=True)
-        for node, stem_direction in zip(indicator, stem_direction_tuple):
+        for index, data in enumerate(zip(indicator, stem_direction_tuple)):
+            node, stem_direction = data
             voice = abjad.Voice([])
+            if self.with_duration_line:
+                voice.consists_commands.append("Duration_line_engraver")
             for leaf in leaf_tuple:
                 leaf = self._leaf_to_chord(leaf)
+                if index > 0:  # Avoid indicator duplicates!
+                    self._detach_all_indicators(leaf)
                 self._process_leaf(leaf, node, stem_direction)
                 voice.append(leaf)
             container.append(voice)
@@ -204,6 +209,18 @@ class NaturalHarmonicNodeList(abjad_parameters.abc.AbjadAttachment):
                 leaf_to_process,
             )
 
+            if self.with_duration_line:
+                abjad.attach(
+                    abjad.LilyPondLiteral(
+                        r"\once \override Staff.Stem.duration-log = 2"
+                        "\n"
+                        r"\once \undo \omit Staff.Stem"
+                        "\n",
+                        site="before",
+                    ),
+                    leaf_to_process,
+                )
+
         if stem_direction is False:
             abjad.attach(
                 abjad.LilyPondLiteral(
@@ -211,6 +228,10 @@ class NaturalHarmonicNodeList(abjad_parameters.abc.AbjadAttachment):
                 ),
                 leaf_to_process,
             )
+
+    def _detach_all_indicators(self, leaf_to_process: abjad.Chord):
+        for indicator in abjad.get.indicators(leaf_to_process):
+            abjad.detach(indicator, leaf_to_process)
 
     @staticmethod
     def _node_tuple_to_stem_direction_tuple(
