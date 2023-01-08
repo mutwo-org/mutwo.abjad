@@ -374,14 +374,15 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             abjad_converters.ProcessAbjadContainerRoutine
         ] = tuple([]),
     ):
-        # special treatment for duration line based quantizer
-        if isinstance(
+        self._with_duration_line = isinstance(
             sequential_event_to_quantized_abjad_container,
             (
                 NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
                 LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer,
             ),
-        ):
+        )
+        # special treatment for duration line based quantizer
+        if self._with_duration_line:
             post_process_abjad_container_routine_sequence = tuple(
                 post_process_abjad_container_routine_sequence
             )
@@ -530,6 +531,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 mutwo_pitch_to_abjad_pitch=self._mutwo_pitch_to_abjad_pitch,
                 mutwo_volume_to_abjad_attachment_dynamic=self._mutwo_volume_to_abjad_attachment_dynamic,
                 mutwo_lyric_to_abjad_string=self._mutwo_lyric_to_abjad_string,
+                with_duration_line=self._with_duration_line,
             )
             if abjad_attachment:
                 attachment_dict.update(

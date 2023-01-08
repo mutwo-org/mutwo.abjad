@@ -32,6 +32,7 @@ class AbjadAttachment(abc.ABC):
     mutwo_lyric_to_abjad_string: typing.Optional[
         typing.Callable[[music_parameters.abc.Lyric], str]
     ] = None
+    with_duration_line: bool = False
 
     @classmethod
     @property
