@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.15.0] - 2023-01-08
+
 ### Added
 - `with_duration_line` attribute to all abjad attachments
 
