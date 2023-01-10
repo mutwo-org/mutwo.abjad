@@ -241,7 +241,7 @@ class _StringContactPoint:
                     }
 
         """
-        string = rf"\markup {self.markup_string}"
+        string = rf"^ \markup {{ {self.markup_string} }}"
         markup = abjad.Markup(string)
         return markup
 
