@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get update && sudo apt-get upgrade
-      - run: wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.2-1.linux-64.sh && sh lilypond-2.22.2-1.linux-64.sh --batch
+      - run: sudo apt install lilypond
       - run:
           name: Run tests
           command: |
