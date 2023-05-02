@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - conversion of microtonal `WesternPitch`
 
+### Added
+- `duration_line_engraver` and `prepare_for_duration_line_based_notation` arguments for `SequentialEventToAbjadVoice` for more flexible duration line based setups
+
 
 ## [0.15.0] - 2023-01-08
 

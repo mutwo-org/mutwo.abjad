@@ -293,6 +293,17 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         rests that last a complete bar with multimeasure rests (rests with uppercase
         "R" in Lilypond). Default to ``True``.
     :type write_multimeasure_rests: bool
+    :param duration_line_engraver: If `sequential_event_to_quantized_abjad_container` is
+        any duration line based converter, the converter adds
+        :class:`mutwo.abjad_converters.AddDurationLineEngraver` to
+        `post_process_abjad_container_routine_sequence`. Default to ``True``.
+    :type duration_line_engraver: bool
+    :param prepare_for_duration_line_based_notation: If
+        `sequential_event_to_quantized_abjad_container` is
+        any duration line based converter, the converter adds
+        :class:`mutwo.abjad_converters.PrepareForDurationLineBasedNotation` to
+        `post_process_abjad_container_routine_sequence`. Default to ``True``.
+    :type prepare_for_duration_line_based_notation: bool
     """
 
     ExtractedData = tuple[
@@ -373,6 +384,8 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         post_process_abjad_container_routine_sequence: typing.Sequence[
             abjad_converters.ProcessAbjadContainerRoutine
         ] = tuple([]),
+        duration_line_engraver: bool = True,
+        prepare_for_duration_line_based_notation: bool = True,
     ):
         self._with_duration_line = isinstance(
             sequential_event_to_quantized_abjad_container,
@@ -383,13 +396,21 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         )
         # special treatment for duration line based quantizer
         if self._with_duration_line:
-            post_process_abjad_container_routine_sequence = tuple(
+            post_process_abjad_container_routine_sequence = list(
                 post_process_abjad_container_routine_sequence
             )
-            post_process_abjad_container_routine_sequence += (
-                abjad_converters.AddDurationLineEngraver(),
-                abjad_converters.PrepareForDurationLineBasedNotation(),
-            )
+            if duration_line_engraver:
+                post_process_abjad_container_routine_sequence.append(
+                    abjad_converters.AddDurationLineEngraver()
+                )
+            if prepare_for_duration_line_based_notation:
+                post_process_abjad_container_routine_sequence.append(
+                    abjad_converters.PrepareForDurationLineBasedNotation()
+                )
+
+        post_process_abjad_container_routine_sequence = tuple(
+            post_process_abjad_container_routine_sequence
+        )
 
         super().__init__(
             abjad_container_class,
