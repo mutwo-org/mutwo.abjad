@@ -1,6 +1,7 @@
 import typing
 
 import abjad
+import quicktions as fractions
 
 from mutwo import ekmelily_converters
 from mutwo import music_parameters
@@ -135,6 +136,13 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
         )
         self._prime_to_heji_accidental_name = prime_to_heji_accidental_name
 
+        self._mutwo_pitch_to_abjad_pitch = MutwoPitchToAbjadPitch(
+            # When using HEJI we usually alter Lilypond to no longer support
+            # quarter tones. Therefore we need to explicitly specify that
+            # any WesternPitch is rounded to half tones.
+            (fractions.Fraction(1, 1),)
+        )
+
     def _find_western_octave_for_just_intonation_pitch(
         self,
         pitch_to_convert: music_parameters.JustIntonationPitch,
@@ -240,6 +248,6 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
         if isinstance(pitch_to_convert, music_parameters.JustIntonationPitch):
             abjad_pitch = self._convert_just_intonation_pitch(pitch_to_convert)
         else:
-            abjad_pitch = MutwoPitchToAbjadPitch().convert(pitch_to_convert)
+            abjad_pitch = self._mutwo_pitch_to_abjad_pitch.convert(pitch_to_convert)
 
         return abjad_pitch

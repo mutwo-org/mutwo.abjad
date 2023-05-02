@@ -26,6 +26,14 @@ class MutwoPitchToAbjadPitchTest(unittest.TestCase):
                 abjad.NamedPitch("gf''"),
             ),
             (
+                music_parameters.WesternPitch("gts", 5),
+                abjad.NamedPitch("g''"),
+            ),
+            (
+                music_parameters.WesternPitch("dqs", 4),
+                abjad.NamedPitch("dqs'"),
+            ),
+            (
                 music_parameters.JustIntonationPitch("3/2", concert_pitch=262),
                 abjad.NumberedPitch(7),
             ),
@@ -56,6 +64,7 @@ class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
                 abjad.lilypond(expected_abjad_pitch),
             )
         for mutwo_pitch, expected_lilypond_string in (
+            # JustIntonationPitch conversion
             (music_parameters.JustIntonationPitch("5/4"), "eoaa'"),
             (music_parameters.JustIntonationPitch("7/4"), "bfoba'"),
             (music_parameters.JustIntonationPitch("7/6"), "efoba'"),
@@ -65,6 +74,12 @@ class MutwoPitchToHEJIAbjadPitchTest(unittest.TestCase):
             (music_parameters.JustIntonationPitch("9/4"), "d''"),
             (music_parameters.JustIntonationPitch("32/33"), "cuca'"),
             (music_parameters.JustIntonationPitch("49/50"), "dffuabobb'"),
+            # Any other pitch object conversion
+            (music_parameters.WesternPitch("cqs"), "cs'"),
+            (music_parameters.WesternPitch("cts"), "c'"),
+            (music_parameters.WesternPitch("cs"), "cs'"),
+            (music_parameters.DirectPitch(440), "a'"),
+            (music_parameters.DirectPitch(445), "a'"),
         ):
             self.assertEqual(
                 abjad.lilypond(converter.convert(mutwo_pitch)),
