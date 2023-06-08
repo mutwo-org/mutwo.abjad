@@ -24,6 +24,7 @@ If one wants to build complete scores from within mutwo, the module offers the
 from mutwo_third_party import abjad
 
 from . import configurations
+from . import constants
 
 from .process_container_routines import *
 

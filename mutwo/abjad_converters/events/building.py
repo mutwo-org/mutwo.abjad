@@ -515,8 +515,26 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
     @staticmethod
     def _replace_rests_with_full_measure_rests(abjad_voice: abjad.Voice) -> None:
+        def ok(indicator_sequence) -> bool:
+            for indicator in indicator_sequence:
+                if isinstance(
+                    indicator,
+                    abjad_converters.constants.INEFFECTIVE_INDICATOR_FOR_MULTIMEASURE_REST_TUPLE,
+                ):
+                    return False
+            return True
+
         for bar in abjad_voice:
-            if all((isinstance(item, abjad.Rest) for item in bar)):
+            # We can only replace rests with multi measure rests if certain
+            # requirments apply:
+            # First ensure we only have rests in this bar.
+            # Then we need to ensure that none of those rests have an
+            # indicator: if they would have an indicator it would be
+            # lost, because MultiMeasureRest can't print plenty of
+            # attachments (for instance fermata).
+            if all((isinstance(item, abjad.Rest) for item in bar)) and all(
+                [ok(abjad.get.indicators(item)) for item in bar]
+            ):
                 duration = sum((item.written_duration for item in bar))
                 numerator, denominator = duration.numerator, duration.denominator
                 abjad.mutate.replace(

@@ -135,6 +135,46 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         )
 
     @t(RESET_TESTS)
+    def test_multimeasure_rest(self):
+        """Test that mutwo.abjad creats MultimeasureRest for empty bar"""
+        ev = seq(
+            [
+                n(duration=fractions.Fraction(3, 4)),
+            ]
+        )
+        return dict(
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+                    default_time_signature_sequence=(abjad.TimeSignature((3, 4)),)
+                )
+            ),
+            ev=ev,
+        )
+
+    @t(RESET_TESTS)
+    def test_multimeasure_rest_with_indicators(self):
+        """Test that indicators survive on a multi measure rest
+
+        For some reasons it's not possible to place indicators on multi measure
+        rests. Therefore mutwo.abjad needs to ensure not to place multi measure
+        rests in places where indicators were added.
+        """
+        ev = seq(
+            [
+                n(duration=fractions.Fraction(3, 4)),
+            ]
+        )
+        ev[0].playing_indicator_collection.fermata.type = "fermata"
+        return dict(
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+                    default_time_signature_sequence=(abjad.TimeSignature((3, 4)),)
+                )
+            ),
+            ev=ev,
+        )
+
+    @t(RESET_TESTS)
     def test_nested_event(self):
         return dict(converter=_make_nested_converter(), ev=_make_nested_event())
 
