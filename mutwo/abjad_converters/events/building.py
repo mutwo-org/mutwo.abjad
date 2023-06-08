@@ -752,6 +752,25 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
         index_tuple_to_remove_list: list[tuple[int, ...]] = []
 
+        # All indicators which don't replace leaf-by-leaf can
+        # potentially break indicators which do replace leaf-by-leaf:
+        # Because the second category expects leaf-only input, but the
+        # first category may create outputs which break with this rule.
+        # To fix this we ensure that all leaf-by-leaf indicators are applied
+        # before more complex converters start.
+
+        def filter_key(abjad_parameters_per_type):
+            abjad_parameters_per_type = tuple(filter(bool, abjad_parameters_per_type))
+            if abjad_parameters_per_type:
+                return int(abjad_parameters_per_type[0].replace_leaf_by_leaf is False)
+            else:
+                return 0
+
+        abjad_parameters_per_type_per_event_tuple = sorted(
+            abjad_parameters_per_type_per_event_tuple,
+            key=filter_key,
+        )
+
         for abjad_parameters_per_type in abjad_parameters_per_type_per_event_tuple:
             previous_attachment = None
             for related_abjad_leaf_index_tuple_tuple, attachment in zip(
