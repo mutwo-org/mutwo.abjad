@@ -137,6 +137,8 @@ class ArtificalHarmonic(abjad_parameters.abc.BangEachAttachment):
 
 class NaturalHarmonicNodeList(abjad_parameters.abc.AbjadAttachment):
     replace_leaf_by_leaf = False
+    # Some indicators are needed for both elements!
+    disallow_detach_indicator_list = [abjad.LilyPondLiteral(r"\-", site="after")]
 
     def process_leaf_tuple(
         self,
@@ -231,7 +233,8 @@ class NaturalHarmonicNodeList(abjad_parameters.abc.AbjadAttachment):
 
     def _detach_all_indicators(self, leaf_to_process: abjad.Chord):
         for indicator in abjad.get.indicators(leaf_to_process):
-            abjad.detach(indicator, leaf_to_process)
+            if indicator not in self.disallow_detach_indicator_list:
+                abjad.detach(indicator, leaf_to_process)
 
     @staticmethod
     def _node_tuple_to_stem_direction_tuple(
