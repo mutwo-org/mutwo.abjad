@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.16.0] - 2023-06-08
+
 ### Fixed
 - conversion of microtonal `WesternPitch`
 - fermata attachment on multimeasure rest (disappeared before)

@@ -1,4 +1,4 @@
-MAJOR, MINOR, PATCH = 0, 15, 0
+MAJOR, MINOR, PATCH = 0, 16, 0
 
 VERSION = f"{MAJOR}.{MINOR}.{PATCH}"
 """The version of the package ``mutwo.abjad``."""
