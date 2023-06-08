@@ -304,8 +304,9 @@ class StringContactPoint(abjad_parameters.abc.ToggleAttachment):
                     rf"\caps {{ \arco {string_contact_point_markup_string} }}"
                 )
 
-        final_markup = abjad.Markup(
-            rf"\markup \fontsize #-2.4 {{ {string_contact_point_markup_string} }}",
+        final_markup = abjad.LilyPondLiteral(
+            rf"^ \markup \fontsize #-2.4 {{ {string_contact_point_markup_string} }}",
+            site="absolute_after",
         )
         abjad.attach(
             final_markup,

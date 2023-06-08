@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - conversion of microtonal `WesternPitch`
 - fermata attachment on multimeasure rest (disappeared before)
 - printing of duration lines for both natural harmonic items
+- string contact point which was sometimes written below the staff instead of above the staff
 
 ### Added
 - `duration_line_engraver` and `prepare_for_duration_line_based_notation` arguments for `SequentialEventToAbjadVoice` for more flexible duration line based setups
