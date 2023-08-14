@@ -8,16 +8,16 @@ __all__ = ("MutwoVolumeToAbjadAttachmentDynamic",)
 
 
 class MutwoVolumeToAbjadAttachmentDynamic(core_converters.abc.Converter):
-    """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.abjad_parameters.Dynamic`.
+    """Convert Mutwo Volume objects to :class:`~mutwo.abjad_parameters.Dynamic`.
 
     This default class simply checks if the passed Mutwo object belongs to
-    :class:`mutwo.ext.parameters.volumes.WesternVolume`. If it does, Mutwo
+    :class:`mutwo.music_parameters.WesternVolume`. If it does, Mutwo
     will initialise the :class:`Tempo` object from the :attr:`name` attribute.
     Otherwise Mutwo will first initialise a :class:`WesternVolume` object via
-    its py:method:`mutwo.ext.parameters.volumes.WesternVolume.from_amplitude` method.
+    its py:method:`mutwo.music_parameters.WesternVolume.from_amplitude` method.
 
-    Hairpins aren't notated with the aid of :class:`mutwo.ext.parameters.abc.Volume`
-    objects, but with :class:`mutwo.ext.parameters.playing_indicators.Hairpin`.
+    Hairpins aren't notated with the aid of :class:`mutwo.music_parameters.abc.Volume`
+    objects, but with :class:`mutwo.music_parameters.Hairpin`.
     """
 
     def convert(

@@ -57,9 +57,9 @@ class AbjadAttachment(abc.ABC):
     def from_indicator_collection(
         cls, indicator_collection: music_parameters.abc.IndicatorCollection, **kwargs
     ) -> typing.Optional[AbjadAttachment]:
-        """Initialize :class:`AbjadAttachment` from :class:`~mutwo.parameters.abc.IndicatorCollection`.
+        """Initialize :class:`AbjadAttachment` from :class:`~mutwo.music_parameters.abc.IndicatorCollection`.
 
-        If no suitable :class:`~mutwo.parameters.abc.Indicator` could be found in the collection
+        If no suitable :class:`~mutwo.music_parameters.abc.Indicator` could be found in the collection
         the method will simply return None.
         """
 

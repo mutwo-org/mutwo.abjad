@@ -103,7 +103,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         will be repeated for the remaining bars.
     :param duration_unit: This defines the `duration_unit` of the passed
         :class:`~mutwo.core_events.SequentialEvent` (how the
-        :attr:`~mutwo.events.abc.Event.duration` attribute will be
+        :attr:`~mutwo.core_events.abc.Event.duration` attribute will be
         interpreted). Can either be 'beats' (default) or 'miliseconds'.
         WARNING: 'miliseconds' isn't working properly yet!
     :param attack_point_optimizer: Optionally the user can pass a

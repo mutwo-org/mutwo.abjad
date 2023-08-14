@@ -20,7 +20,7 @@ __all__ = (
 
 
 class TempoEnvelopeToAbjadAttachmentTempo(core_converters.abc.Converter):
-    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_parameters.Tempo`.
+    """Convert tempo envelope to :class:`~mutwo.abjad_parameters.Tempo`.
 
     Abstract base class for tempo envelope conversion. See
     :class:`ComplexTempoEnvelopeToAbjadAttachmentTempo` for a concrete
@@ -36,7 +36,7 @@ class TempoEnvelopeToAbjadAttachmentTempo(core_converters.abc.Converter):
 
 
 class ComplexTempoEnvelopeToAbjadAttachmentTempo(TempoEnvelopeToAbjadAttachmentTempo):
-    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_parameters.Tempo`.
+    """Convert tempo envelope to :class:`~mutwo.abjad_parameters.Tempo`.
 
     This object tries to intelligently set correct tempo abjad_parameters to an
     :class:`abjad.Voice` object, appropriate to Western notation standards.

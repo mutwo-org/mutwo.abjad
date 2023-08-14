@@ -22,7 +22,7 @@ class MutwoPitchToAbjadPitch(core_converters.abc.Converter):
     :type allowed_division_sequence: typing.Sequence[fractions.Fraction]
 
     This default class simply checks if the passed Mutwo object belongs to
-    :class:`mutwo.ext.parameters.pitches.WesternPitch`. If it does, Mutwo
+    :class:`mutwo.music_parameters.WesternPitch`. If it does, Mutwo
     will initialise the Abjad Pitch from the :attr:`name` attribute.
     Otherwise Mutwo will simply initialise the Abjad Pitch from the
     objects :attr:`frequency` attribute.

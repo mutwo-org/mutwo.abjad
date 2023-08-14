@@ -165,9 +165,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         :class:`mutwo.core_events.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.music_parameters.abc.Pitch`).
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
-        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
-        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        :attr:`~mutwo.music_events.NoteLike.pitch_list` attribute
+        (because by default :class:`mutwo.music_events.NoteLike` objects are expected).
+        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
         with a different name for their pitch property, this argument
         should be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
@@ -177,9 +177,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         :class:`mutwo.core_events.SimpleEvent` in the purpose of generating dynamic
         indicators. The function should return an object that inherits from
         :class:`mutwo.music_parameters.abc.Volume`. By default it asks the Event for
-        its :attr:`~mutwo.events.music.NoteLike.volume` attribute (because by default
-        :class:`mutwo.events.music.NoteLike` objects are expected).
-        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        its :attr:`~mutwo.music_events.NoteLike.volume` attribute (because by default
+        :class:`mutwo.music_events.NoteLike` objects are expected).
+        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
         with a different name for their volume property, this argument should
         be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
@@ -192,10 +192,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         object filled with
         :class:`~mutwo.core_events.SimpleEvent`.
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.grace_note_sequential_event`
-        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        :attr:`~mutwo.music_events.NoteLike.grace_note_sequential_event`
+        attribute (because by default :class:`mutwo.music_events.NoteLike`
         objects are expected).
-        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
         with a different name for their `grace_note_sequential_event` property, this argument
         should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no grace_note_sequential_event can be
@@ -208,10 +208,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         object filled with
         :class:`~mutwo.core_events.SimpleEvent`.
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.after_grace_note_sequential_event`
-        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        :attr:`~mutwo.music_events.NoteLike.after_grace_note_sequential_event`
+        attribute (because by default :class:`mutwo.music_events.NoteLike`
         objects are expected).
-        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
         with a different name for their `after_grace_note_sequential_event` property, this
         argument should be overridden. If the function call
         raises an :obj:`AttributeError` (e.g. if no after_grace_note_sequential_event can be
@@ -222,10 +222,10 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         :class:`mutwo.core_events.SimpleEvent` a
         :class:`mutwo.music_parameters.playing_indicators.PlayingIndicatorCollection`
         object. By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
-        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        :attr:`~mutwo.music_events.NoteLike.playing_indicator_collection`
+        attribute (because by default :class:`mutwo.music_events.NoteLike`
         objects are expected).
-        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
         with a different name for their playing_indicators property, this argument
         should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
@@ -236,8 +236,8 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         :class:`mutwo.core_events.SimpleEvent` a
         :class:`mutwo.music_parameters.notation_indicators.NotationIndicatorCollection`
         object. By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.notation_indicators`
-        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
+        :attr:`~mutwo.music_events.NoteLike.notation_indicators`
+        (because by default :class:`mutwo.music_events.NoteLike` objects are expected).
         When using different Event classes than ``NoteLike`` with a different name for
         their playing_indicators property, this argument should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
@@ -248,9 +248,9 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         :class:`mutwo.core_events.SimpleEvent` in the purpose of generating lyrics.
         The function should return an object that inherits from
         :class:`mutwo.music_parameters.abc.Lyric`. By default it asks the Event for
-        its :attr:`~mutwo.events.music.NoteLike.lyric` attribute (because by default
-        :class:`mutwo.events.music.NoteLike` objects are expected).
-        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        its :attr:`~mutwo.music_events.NoteLike.lyric` attribute (because by default
+        :class:`mutwo.music_events.NoteLike` objects are expected).
+        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
         with a different name for their lyric property, this argument should
         be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no lyric can be
@@ -267,12 +267,12 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     :type mutwo_pitch_to_abjad_pitch: MutwoPitchToAbjadPitch, optional
     :param mutwo_volume_to_abjad_attachment_dynamic: Class which defines how
         to convert :class:`mutwo.music_parameters.abc.Volume` objects to
-        :class:`mutwo.converters.frontends.abjad_parameters.Dynamic` objects.
+        :class:`mutwo.abjad_parameters.Dynamic` objects.
         See :class:`MutwoVolumeToAbjadAttachmentDynamic` for more information.
     :type mutwo_volume_to_abjad_attachment_dynamic: MutwoVolumeToAbjadAttachmentDynamic, optional
     :param tempo_envelope_to_abjad_attachment_tempo: Class which defines how
         to convert tempo envelopes to
-        :class:`mutwo.converters.frontends.abjad_parameters.Tempo` objects.
+        :class:`mutwo.abjad_parameters.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempo` for more information.
     :type tempo_envelope_to_abjad_attachment_tempo: TempoEnvelopeToAbjadAttachmentTempo, optional
     :param mutwo_lyric_to_abjad_string: Callable which defines how
