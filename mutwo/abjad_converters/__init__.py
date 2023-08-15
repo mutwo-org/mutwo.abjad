@@ -4,15 +4,15 @@ The following converter classes help to quantize and translate Mutwo data to
 Western notation. Due to the complex nature of this task, Mutwo tries to offer as
 many optional arguments as possible through which the user can affect the conversion
 routines. The most important class and best starting point for organising a conversion
-setting is :class:`SequentialEventToAbjadVoiceConverter`.
+setting is :class:`SequentialEventToAbjadVoice`.
 If one wants to build complete scores from within mutwo, the module offers the
-:class:`NestedComplexEventToAbjadContainerConverter`.
+:class:`NestedComplexEventToAbjadContainer`.
 
 **Known bugs and limitations:**
 
 1. Indicators attached to rests which follow another rest won't be translated to
-   `abjad`. This behaviour happens because the
-   :class:`~mutwo.abjad_converters.SequentialEventToAbjadVoiceConverter`
+   `abjad`. This behaviour happens because
+   :class:`~mutwo.abjad_converters.SequentialEventToAbjadVoice`
    ties rests before converting the data to `abjad` objects.
 
 2. Quantization can be slow and not precise. Try both quantization classes.
