@@ -43,6 +43,8 @@ setuptools.setup(
         # Abjad dependencies
         "abjad>=3.7.0, <3.9.0",
         "abjad-ext-nauert>=3.7.0, <3.8.0",
+        # Other dependencies
+        "python-ranges>=1.2.0, <2.0.0",
     ],
     extras_require=extras_require,
     python_requires=">=3.10, <4",
