@@ -1,7 +1,11 @@
 import typing
 
 import abjad  # type: ignore
-import quicktions as fractions
+
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
 
 from mutwo import core_converters
 from mutwo import music_parameters

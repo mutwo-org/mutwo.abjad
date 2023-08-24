@@ -2,7 +2,11 @@ import os
 import typing
 
 import abjad
-import quicktions as fractions
+
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
 
 from mutwo import abjad_converters
 from mutwo import abjad_utilities
