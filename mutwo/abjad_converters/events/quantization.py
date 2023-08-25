@@ -97,10 +97,11 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 ):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` objects via :mod:`abjadext.nauert`.
 
-    :param time_signature_sequence: Set time signatures to divide the quantized abjad data
+    :param default_time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
+    :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
     :param duration_unit: This defines the `duration_unit` of the passed
         :class:`~mutwo.core_events.SequentialEvent` (how the
         :attr:`~mutwo.core_events.abc.Event.duration` attribute will be
@@ -392,11 +393,12 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
 ):
     """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjad.LeafMaker`.
 
-    :param time_signature_sequence: Set time signatures to divide the quantized abjad data
+    :param default_time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted
         :class:`~mutwo.core_events.SequentialEvent` is longer than the sum of
         all passed time signatures, the last time signature
         will be repeated for the remaining bars.
+    :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
 
     This method is significantly faster than the
     :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
