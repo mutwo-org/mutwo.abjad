@@ -629,7 +629,17 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         voice = abjad.Voice(bar_list)
         if self._do_rewrite_meter:
             self._rewrite_meter(voice)
-        self._concatenate_adjacent_tuplets(voice)
+        # XXX: _concatenate_adjacent_tuplets is buggy!!
+        #
+        #       die funktion fuehrt dazu, dass wo normalerweise NOTES sind ploetzlich
+        #       RESTS sind, und da wo normalerwiese RESTS sind ploetzlich NOTES sind!
+        #       das ist ein extrem schwierig zu verstehender/entdeckender bug und sollte
+        #       UNBEDINGT GEFIXT werden!!!
+        #
+        #       ES MUSS NOCH HERAUSGEFUNDEN WERDEN, WELCHE ART VON EVENTS ZU DEM
+        #       BUG FUEHREN!!
+        #
+        # self._concatenate_adjacent_tuplets(voice)
         return voice
 
     def _get_data_for_leaf(
