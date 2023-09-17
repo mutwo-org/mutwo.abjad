@@ -880,10 +880,11 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 related_abjad_leaf_index_tuple, quanitisized_abjad_leaf_voice
             )
             if leaf_class == abjad.Note:
-                # skip don't have note heads
-                if hasattr(abjad_leaf, "note_head"):
+                try:
                     abjad_leaf.note_head._written_pitch = abjad_pitch_list[0]
-
+                except AttributeError:
+                    print("This is perhaps a problem in the quantizer.")
+                    raise
             else:
                 new_abjad_leaf = leaf_class(
                     [abjad.NamedPitch() for _ in abjad_pitch_list],
