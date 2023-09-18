@@ -13,6 +13,7 @@ import abjad  # type: ignore
 from abjadext import nauert  # type: ignore
 import ranges  # type: ignore
 
+from mutwo import abjad_utilities
 from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_parameters
@@ -25,10 +26,6 @@ __all__ = (
     "LeafMakerSequentialEventToQuantizedAbjadContainer",
     "LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer",
 )
-
-
-class NoTimeSignatureError(Exception):
-    pass
 
 
 # XXX: In the future `default_tempo_envelope` should be set to `None` and
@@ -62,11 +59,7 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     ):
         default_time_signature_sequence_count = len(default_time_signature_sequence)
         if default_time_signature_sequence_count == 0:
-            raise NoTimeSignatureError(
-                "Found empty sequence for argument "
-                "'default_time_signature_sequence_count'. "
-                "Specify at least one time signature!"
-            )
+            raise abjad_utilities.NoTimeSignatureError()
 
         default_time_signature_tuple = tuple(default_time_signature_sequence)
         self._default_time_signature_tuple = default_time_signature_tuple

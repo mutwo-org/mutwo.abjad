@@ -13,7 +13,6 @@ except ImportError:
 
 import abjad
 
-from mutwo import abjad_converters
 from mutwo import core_events
 from mutwo import music_events
 
@@ -66,12 +65,23 @@ class AbjadTestCase(unittest.TestCase):
         name: str,
         reset_tests: bool = False,
         remove_ly: bool = True,
-        converter: abjad_converters.SequentialEventToAbjadVoice = abjad_converters.SequentialEventToAbjadVoice(),
+        converter=None,
         ev: core_events.abc.Event = core_events.SequentialEvent(
             [core_events.SimpleEvent(1)]
         ),
         tolerance: float = 0.1,
     ):
+        # XXX: To prevent circular import exception, we can't import
+        # abjad_converters at top-level. The import order is
+        #
+        #   abjad_utilities => abjad_parameters => abjad_converters
+        #
+        # because 'abjad_utilities' provides exceptions to be used
+        # by all other modules.
+        if converter is None:
+            from mutwo import abjad_converters
+
+            converter = abjad_converters.SequentialEventToAbjadVoice()
 
         converted_event = converter.convert(_parse_event(ev))
 
