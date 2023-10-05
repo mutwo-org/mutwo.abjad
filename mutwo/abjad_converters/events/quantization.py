@@ -392,6 +392,11 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
+    :param concatenate_adjacent_tuplets: Set to `True` if quantizer should concatenate
+        adjacent tuplets via :func:`mutwo.abjad_utilities.concatenate_adjacent_tuplets`.
+        Because this function can make processing slower (and may lead to not-yet-fixed
+        bugs) it can be deactivated if not used. Default to `True`.
+    :type concatenate_adjacent_tuplets: bool
 
     This method is significantly faster than the
     :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
@@ -409,13 +414,19 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
     _maximum_dot_count = 1
 
     def __init__(
-        self, *args, do_rewrite_meter: bool = True, add_beams: bool = True, **kwargs
+        self,
+        *args,
+        do_rewrite_meter: bool = True,
+        add_beams: bool = True,
+        concatenate_adjacent_tuplets: bool = True,
+        **kwargs,
     ):
         self._leaf_maker = abjad.LeafMaker(
             forbidden_note_duration=abjad.Duration(8, 1),
             forbidden_rest_duration=abjad.Duration(8, 1),
         )
         super().__init__(*args, **kwargs)
+        self._concatenate_adjacent_tuplets = concatenate_adjacent_tuplets
         self._do_rewrite_meter = do_rewrite_meter
         self._add_beams = add_beams
 
@@ -553,7 +564,8 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         voice = abjad.Voice(bar_list)
         if self._do_rewrite_meter:
             self._rewrite_meter(voice)
-        abjad_utilities.concatenate_adjacent_tuplets(voice)
+        if self._concatenate_adjacent_tuplets:
+            abjad_utilities.concatenate_adjacent_tuplets(voice)
         return voice
 
     def _get_data_for_leaf(
