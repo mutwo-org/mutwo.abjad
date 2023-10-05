@@ -481,55 +481,6 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         global_offset += offset_inventory[-1]
         return global_offset
 
-    @staticmethod
-    def _find_tuplet_indices(bar: abjad.Container) -> tuple[int, ...]:
-        tuplet_index_list = []
-        for index, leaf_or_tuplet in enumerate(bar):
-            if isinstance(leaf_or_tuplet, abjad.Tuplet):
-                tuplet_index_list.append(index)
-
-        return tuple(tuplet_index_list)
-
-    @staticmethod
-    def _group_tuplet_indices(tuplet_index_tuple: tuple[int, ...]) -> list[list[int]]:
-        """Put adjacent tuplet indices into groups."""
-
-        grouped_tuplet_index_list = [[]]
-        last_tuplet_index = None
-        for tuplet_index in tuplet_index_tuple:
-            if last_tuplet_index:
-                difference = tuplet_index - last_tuplet_index
-                if difference == 1:
-                    grouped_tuplet_index_list[-1].append(tuplet_index)
-                else:
-                    grouped_tuplet_index_list.append([tuplet_index])
-            else:
-                grouped_tuplet_index_list[-1].append(tuplet_index)
-            last_tuplet_index = tuplet_index
-        return grouped_tuplet_index_list
-
-    @staticmethod
-    def _concatenate_adjacent_tuplets_for_one_group(
-        bar: abjad.Container, group: list[int]
-    ):
-        implied_prolation_list = [bar[index].implied_prolation for index in group]
-        common_prolation_group_list = [[implied_prolation_list[0], [group[0]]]]
-        for index, prolation in zip(group[1:], implied_prolation_list[1:]):
-            if prolation == common_prolation_group_list[-1][0]:
-                common_prolation_group_list[-1][1].append(index)
-            else:
-                common_prolation_group_list.append([prolation, [index]])
-
-        tuplet_list = []
-        for prolation, tuplet_index_list in common_prolation_group_list:
-            tuplet = abjad.Tuplet(prolation)
-            for tuplet_index in tuplet_index_list:
-                for component in bar[tuplet_index]:
-                    tuplet.append(abjad.mutate.copy(component))
-            tuplet_list.append(tuplet)
-
-        bar[group[0] : group[-1] + 1] = tuplet_list
-
     # ###################################################################### #
     #                       private methods                                  #
     # ###################################################################### #
@@ -549,26 +500,6 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         )
         note_tuple = tuple(self._leaf_maker(pitch_list, duration_list))
         return note_tuple
-
-    def _concatenate_adjacent_tuplets_for_one_bar(self, bar: abjad.Container):
-        tuplet_index_tuple = (
-            LeafMakerSequentialEventToQuantizedAbjadContainer._find_tuplet_indices(bar)
-        )
-        if tuplet_index_tuple:
-            grouped_tuplet_index_list_list = (
-                LeafMakerSequentialEventToQuantizedAbjadContainer._group_tuplet_indices(
-                    tuplet_index_tuple
-                )
-            )
-            for tuplet_index_list in reversed(grouped_tuplet_index_list_list):
-                if len(tuplet_index_list) > 1:
-                    LeafMakerSequentialEventToQuantizedAbjadContainer._concatenate_adjacent_tuplets_for_one_group(
-                        bar, tuplet_index_list
-                    )
-
-    def _concatenate_adjacent_tuplets(self, voice: abjad.Voice) -> abjad.Voice:
-        for bar in voice:
-            self._concatenate_adjacent_tuplets_for_one_bar(bar)
 
     def _rewrite_meter(self, voice: abjad.Voice):
         time_signature_iter = iter(self._time_signature_tuple)
@@ -622,7 +553,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         voice = abjad.Voice(bar_list)
         if self._do_rewrite_meter:
             self._rewrite_meter(voice)
-        self._concatenate_adjacent_tuplets(voice)
+        abjad_utilities.concatenate_adjacent_tuplets(voice)
         return voice
 
     def _get_data_for_leaf(
