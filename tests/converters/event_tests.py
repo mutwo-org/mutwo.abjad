@@ -178,6 +178,146 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     def test_nested_event(self):
         return dict(converter=_make_nested_converter(), ev=_make_nested_event())
 
+    def _test_tuplet(self, ev: core_events.SequentialEvent):
+        return dict(
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+                    default_time_signature_sequence=(abjad.TimeSignature((4, 4)),)
+                )
+            ),
+            ev=ev,
+        )
+
+    @t(RESET_TESTS)
+    def test_tuplet_simple(self):
+        """Test that tuplets work
+
+        Test if a simple tuplet that spans across one bar works.
+        """
+        return self._test_tuplet(
+            seq(
+                [
+                    # We start with very simple tuplets,
+                    # that span across the full bar.
+                    n("c", f(1, 6)),
+                    n("d", f(1, 6)),
+                    n("e", f(1, 12)),
+                    n("f", f(1, 12)),
+                    n("g", f(1, 24)),
+                    n("a", f(1, 12)),
+                    n("b", f(1, 24)),
+                    n("c5", f(1, 6)),
+                    n("d5", f(1, 12)),
+                    n("e5", f(1, 12)),
+                ]
+            )
+        )
+
+    @t(RESET_TESTS)
+    def test_tuplet_two_prolations_in_one_bar(self):
+        """Test if two different tuplets within one bar works."""
+        return self._test_tuplet(
+            seq(
+                [
+                    n("c", f(1, 10)),
+                    n("c", f(1, 10)),
+                    n("c", f(1, 10)),
+                    n("c", f(1, 5)),
+                    n("c", f(1, 6)),
+                    n("d", f(1, 6)),
+                    n("d", f(1, 6)),
+                ]
+            )
+        )
+
+    @t(RESET_TESTS)
+    def test_tuplet_concatenation(self):
+        """Test if follow-up notes concatenate together.
+
+        In some cases, there are multiple easier understandings what a certain
+        duration can be, and in those cases tuplets won't be together, but
+        broke up, even in simple cases as the example below. To fix this
+        LeafMakerSequentialEventToQuantizedAbjadContainer has an extra routine
+        ('_concatenate_adjacent_tuplets'). This test checks if this routine
+        still works.
+        """
+        return self._test_tuplet(
+            seq(
+                [
+                    n("c", f(1, 4)),
+                    n("c", f(1, 12)),
+                    n("c", f(1, 12)),
+                    # The following note should be part of the current
+                    # tuplet, it sustains in this tuplet. But without
+                    # an explicit tuplet - concatenation, this note
+                    # won't be part of the given tuplet, the tuplet
+                    # is split into before this 1/4 and afterwards. Why?
+                    # Because 1/4 can also represented as a not-tuplet.
+                    n("c", f(1, 4)),
+                    n("c", f(1, 12)),
+                ]
+            )
+        )
+
+    @t(RESET_TESTS)
+    def test_nested_tuplet(self):
+        """Test if nested tuplets are supported."""
+        return self._test_tuplet(
+            seq(
+                [
+                    n("c", f(3, 4)),
+                    # Let's divide the last quarter note
+                    # into 5: so we have 1/5 // 4 = 1/20.
+                    n("c", f(1, 20)),
+                    n("c", f(1, 20)),
+                    n("c", f(1, 10)),
+                    # And then, to make it even more complicated,
+                    # we divide the last 1/20 into 3: so we have
+                    # a nested tuplet of 5 => 3. But because
+                    # LeafMakerSequentialEventToQuantizedAbjadContainer
+                    # doesn't support nested tuplets, this looks
+                    # strange. But that's expected, because it's
+                    # not supported yet.
+                    n("d", f(1, 60)),
+                    n("d", f(1, 60)),
+                    n("d", f(1, 60)),
+                ]
+            )
+        )
+
+    @t(RESET_TESTS)
+    def test_ties_across_tuplets_in_two_different_bars(self):
+        """Test if ties across two tuplets in two different bars work"""
+        return self._test_tuplet(
+            seq(
+                [
+                    n("c", f(3, 4)),
+                    n("c", f(1, 6)),
+                    n("c", f(1, 6)),
+                    n("c", f(1, 6)),
+                ]
+            )
+        )
+
+    @t(RESET_TESTS)
+    def test_ties_across_tuplets_with_different_prolation(self):
+        """Test if ties across two tuplets with different prolation works
+
+        LeafMakerSequentialEventToQuantizedAbjadContainer doesn't support
+        this yet: this looks broke.
+        """
+        return self._test_tuplet(
+            seq(
+                [
+                    n("c", f(1, 6)),
+                    n("c", f(1, 6)),
+                    n("c", f(1, 6) + f(1, 20)),  # this is the tied note
+                    n("c", f(1, 20)),
+                    n("c", f(3, 20)),
+                ]
+            )
+        )
+
 
 f = fractions.Fraction
 n = music_events.NoteLike
