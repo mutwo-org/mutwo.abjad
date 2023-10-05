@@ -502,7 +502,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         pitch_list = [
             None if event.is_rest else "c" for event in sequential_event_to_convert
         ]
-        # It has to be a list! Otherwise abjad will raise an exception.
+        # It has to be a list! Otherwise abjad raises an exception.
         duration_list = list(
             map(
                 lambda duration: abjad.Duration(duration),
@@ -572,11 +572,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         self, index_tuple: tuple[int, ...], leaf: abjad.Leaf
     ) -> tuple[tuple[int, ...], bool, bool]:
         has_tie = abjad.get.indicator(leaf, abjad.Tie())
-        is_rest = (
-            isinstance(leaf, abjad.Rest)
-            or isinstance(leaf, abjad.MultimeasureRest)
-            or isinstance(leaf, abjad.Skip)
-        )
+        is_rest = isinstance(leaf, (abjad.Rest, abjad.MultimeasureRest, abjad.Skip))
         return index_tuple, has_tie, is_rest
 
     def _get_data_for_tuplet_or_leaf(
@@ -636,11 +632,9 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
-        # FIXME(bad style)
         self._time_signature_tuple = self._get_time_signature_tuple(
             sequential_event_to_convert
         )
-
         voice = self._make_voice(sequential_event_to_convert)
         related_abjad_leaves_per_simple_event = (
             self._make_related_abjad_leaves_per_simple_event(voice)
