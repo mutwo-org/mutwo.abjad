@@ -70,9 +70,9 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
     >>> p = music_parameters.JustIntonationPitch('5/4')
     >>> converter_on_a = abjad_converters.MutwoPitchToHEJIAbjadPitch(reference_pitch='a')
     >>> converter_on_c = abjad_converters.MutwoPitchToHEJIAbjadPitch(reference_pitch='c')
-    >>> converter_on_a.convert(my_ji_pitch)
+    >>> converter_on_a.convert(p)
     NamedPitch("csoaa''")
-    >>> converter_on_c.convert(my_ji_pitch)
+    >>> converter_on_c.convert(p)
     NamedPitch("eoaa'")
     """
 

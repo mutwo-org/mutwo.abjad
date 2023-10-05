@@ -1085,34 +1085,16 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
         **Example:**
 
         >>> import abjad
-        >>> from mutwo.events import basic, music
-        >>> from mutwo.converters.frontends import abjad as mutwo_abjad
-        >>> mutwo_melody = basic.SequentialEvent(
-        >>>     [
-        >>>         music.NoteLike(pitch, duration)
-        >>>         for pitch, duration in zip("c a g e".split(" "), (1, 1 / 6, 1 / 6, 1 / 6))
-        >>>     ]
-        >>> )
-        >>> converter = mutwo_abjad.SequentialEventToAbjadVoice()
-        >>> abjad_melody = converter.convert(mutwo_melody)
-        >>> abjad.lilypond(abjad_melody)
-        \\new Voice
-        {
-            {
-                \\tempo 4=120
-                %%% \\time 4/4 %%%
-                c'1
-                \\mf
-            }
-            {
-                \\times 2/3 {
-                    a'4
-                    g'4
-                    e'4
-                }
-                r2
-            }
-        }
+        >>> from mutwo import core_events, music_events
+        >>> from mutwo import abjad_converters
+        >>> seq = core_events.SequentialEvent(
+        ...     [
+        ...         music_events.NoteLike(p, d)
+        ...         for p, d in zip("c a g e".split(" "), (1, 1 / 6, 1 / 6, 1 / 6))
+        ...     ]
+        ... )
+        >>> converter = abjad_converters.SequentialEventToAbjadVoice()
+        >>> voice = converter.convert(seq)
         """
 
         return super().convert(sequential_event_to_convert)

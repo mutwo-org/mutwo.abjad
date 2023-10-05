@@ -663,22 +663,22 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
 
     >>> import abjad
     >>> from mutwo import abjad_converters
-    >>> from mutwo import core_events
-    >>> converter = abjad_converters.SequentialEventToAbjadVoiceConverter(
-    >>>     abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
-    >>>        )
-    >>>    )
-    >>> sequential_event_to_convert = core_events.SequentialEvent(
-    >>>     [
-    >>>         music_events.NoteLike("c", 0.125),
-    >>>         music_events.NoteLike("d", 1),
-    >>>         music_events.NoteLike([], 0.125),
-    >>>         music_events.NoteLike("e", 0.16666),
-    >>>         music_events.NoteLike("e", 0.08333333333333333)
-    >>>     ]
-    >>> )
-    >>> converted_sequential_event = converter.convert(sequential_event_to_convert)
-    >>> converted_sequential_event.consists_commands.append("Duration_line_engraver")
+    >>> from mutwo import core_events, music_events
+    >>> converter = abjad_converters.SequentialEventToAbjadVoice(
+    ...     abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
+    ...        )
+    ...    )
+    >>> seq = core_events.SequentialEvent(
+    ...     [
+    ...         music_events.NoteLike("c", 0.25),
+    ...         music_events.NoteLike("d", 1),
+    ...         music_events.NoteLike([], 0.25),
+    ...         music_events.NoteLike("e", 1),
+    ...         music_events.NoteLike("e", 1)
+    ...     ]
+    ... )
+    >>> voice = converter.convert(seq)
+    >>> voice.consists_commands.append("Duration_line_engraver")
     """
 
     def __init__(
