@@ -869,10 +869,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                 related_abjad_leaf_index_tuple, quanitisized_abjad_leaf_voice
             )
             if leaf_class == abjad.Note:
-                # skip don't have note heads
-                if hasattr(abjad_leaf, "note_head"):
-                    abjad_leaf.note_head._written_pitch = abjad_pitch_list[0]
-
+                abjad_leaf.note_head._written_pitch = abjad_pitch_list[0]
             else:
                 new_abjad_leaf = leaf_class(
                     [abjad.NamedPitch() for _ in abjad_pitch_list],
@@ -892,6 +889,16 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
                     quanitisized_abjad_leaf_voice,
                     new_abjad_leaf,
                 )
+
+            # In case we have a duration line based quantization, all leaves
+            # after the first leaf aren't notes, but simply skips. This is
+            # applied in '_adjust_quantisized_abjad_leaves' and it's necessary
+            # to make duration line based notation work. Because of this we
+            # only need to apply pitches to our very first leaf (and we only
+            # *can* apply this to our very first leaf, because all other aren't
+            # notes anymore, but skips, and they don't have note heads).
+            if self._with_duration_line:
+                break
 
     def _apply_pitches_on_quantized_abjad_leaves(
         self,
