@@ -491,17 +491,6 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
     # ###################################################################### #
 
     @staticmethod
-    def _detect_abjad_event_type(pitch_list: list[music_parameters.abc.Pitch]) -> type:
-        pitch_count = len(pitch_list)
-        if pitch_count == 0:
-            abjad_event_type = abjad.Rest
-        elif pitch_count == 1:
-            abjad_event_type = abjad.Note
-        else:
-            abjad_event_type = abjad.Chord
-        return abjad_event_type
-
-    @staticmethod
     def _find_absolute_times_of_abjad_leaves(
         abjad_voice: abjad.Voice,
     ) -> tuple[fractions.Fraction, ...]:
