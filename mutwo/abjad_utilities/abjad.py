@@ -1,8 +1,25 @@
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+
 import abjad
 
 from mutwo import abjad_utilities
 
-__all__ = ("concatenate_adjacent_tuplets",)
+__all__ = ("concatenate_adjacent_tuplets", "reduce_multiplier")
+
+
+def reduce_multiplier(voice: abjad.Voice):
+    """Reduces multipliers of tuplets in ``voice``.
+
+    Essentially the same as :func:`rmakers.reduce_multiplier`, see:
+        https://github.com/Abjad/abjad-ext-rmakers/blob/ebb47f6/abjadext/rmakers/functions.py#L3781
+    """
+    for t in abjad.select.tuplets(voice):
+        fraction = abjad.Fraction(t.multiplier.numerator, t.multiplier.denominator)
+        pair = fraction.numerator, fraction.denominator
+        t.multiplier = pair
 
 
 def concatenate_adjacent_tuplets(voice: abjad.Voice):
