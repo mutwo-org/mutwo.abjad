@@ -397,6 +397,11 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         Because this function can make processing slower (and may lead to not-yet-fixed
         bugs) it can be deactivated if not used. Default to `True`.
     :type concatenate_adjacent_tuplets: bool
+    :param reduce_multiplier: Set to `True` if quantizer should call
+        :func:`mutwo.abjad_utilities.reduce_multiplier` after sequential event
+        has been quantized. Can be useful if working with tuplets. If no tuplets
+        are used it can be deactivated for faster conversion. Default to ``True``.
+    :type reduce_multiplier: bool
 
     This method is significantly faster than the
     :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
@@ -419,6 +424,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         do_rewrite_meter: bool = True,
         add_beams: bool = True,
         concatenate_adjacent_tuplets: bool = True,
+        reduce_multiplier: bool = True,
         **kwargs,
     ):
         self._leaf_maker = abjad.LeafMaker(
@@ -429,6 +435,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         self._concatenate_adjacent_tuplets = concatenate_adjacent_tuplets
         self._do_rewrite_meter = do_rewrite_meter
         self._add_beams = add_beams
+        self._reduce_multiplier = reduce_multiplier
 
     # ###################################################################### #
     #                       static private methods                           #
@@ -566,6 +573,8 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
             self._rewrite_meter(voice)
         if self._concatenate_adjacent_tuplets:
             abjad_utilities.concatenate_adjacent_tuplets(voice)
+        if self._reduce_multiplier:
+            abjad_utilities.reduce_multiplier(voice)
         return voice
 
     def _get_data_for_leaf(
