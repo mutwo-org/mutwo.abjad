@@ -1,12 +1,15 @@
+from .tools import *
 from .abjad import *
 from .exceptions import *
 from .tests import *
 
+from . import tools
 from . import abjad
 from . import exceptions
 from . import tests
-from . import tools  # core patch
 
-__all__ = tests.__all__ + exceptions.__all__ + abjad.__all__
+from mutwo import core_utilities
 
-del abjad, exceptions, tests, tools
+__all__ = core_utilities.get_all(tests, exceptions, abjad, tools)
+
+del abjad, core_utilities, exceptions, tests, tools
