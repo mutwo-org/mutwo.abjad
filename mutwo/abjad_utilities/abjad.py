@@ -51,11 +51,18 @@ def _concatenate_adjacent_tuplets_for_one_group(bar: abjad.Container, group: lis
     # consecutive tuplets have the same prolation, they are put into
     # the same group.
     common_prolation_group_list = [[prolation_list[0], [group[0]]]]
+    any_common = False
     for i, prolation in zip(group[1:], prolation_list[1:]):
         if prolation == common_prolation_group_list[-1][0]:
             common_prolation_group_list[-1][1].append(i)
+            any_common = True
         else:
             common_prolation_group_list.append([prolation, [i]])
+
+    # Only do expensive copy and inplace mutation if there is any
+    # group of consecutive tuplets which can be concatenated.
+    if not any_common:
+        return
 
     tuplet_list = []
     for prolation, tuplet_index_list in common_prolation_group_list:
