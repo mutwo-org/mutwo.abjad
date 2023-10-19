@@ -329,7 +329,9 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # initialise converter and sequential event for simple tests
-        cls.converter = abjad_converters.SequentialEventToAbjadVoice()
+        cls.converter = abjad_converters.SequentialEventToAbjadVoice(
+            abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+        )
         cls.sequential_event = core_events.SequentialEvent(
             [
                 music_events.NoteLike(pitch_name, duration=duration, volume="mf")
@@ -455,7 +457,7 @@ def _make_nested_converter():
                 "Violin": abjad_converters.NestedComplexEventToAbjadContainer(
                     abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainers(
                         [
-                            abjad_converters.SequentialEventToAbjadVoice(),
+                            abjad_converters.SequentialEventToAbjadVoice(abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()),
                         ]
                     ),
                     abjad.Staff,

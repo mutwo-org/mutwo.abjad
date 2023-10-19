@@ -28,7 +28,7 @@ from ..parameters import ComplexTempoEnvelopeToAbjadAttachmentTempo
 from ..parameters import MutwoLyricToAbjadString
 
 from .quantization import SequentialEventToQuantizedAbjadContainer
-from .quantization import NauertSequentialEventToQuantizedAbjadContainer
+from .quantization import LeafMakerSequentialEventToQuantizedAbjadContainer
 
 from .quantization import (
     NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer,
@@ -320,7 +320,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
 
     def __init__(
         self,
-        sequential_event_to_quantized_abjad_container: SequentialEventToQuantizedAbjadContainer = NauertSequentialEventToQuantizedAbjadContainer(),
+        sequential_event_to_quantized_abjad_container: SequentialEventToQuantizedAbjadContainer = LeafMakerSequentialEventToQuantizedAbjadContainer(),
         default_tempo_envelope: core_events.TempoEnvelope = core_events.TempoEnvelope(
             (
                 (0, core_parameters.DirectTempoPoint(120)),

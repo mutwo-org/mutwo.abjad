@@ -36,7 +36,12 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
                 lambda p: setattr(p.arpeggio, "direction", direction),
             )
 
-        return dict(ev=seq([get_ev("up"), get_ev("down")]))
+        return dict(
+            ev=seq([get_ev("up"), get_ev("down")]),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            ),
+        )
 
     @t(RESET_TESTS)
     def test_articulation(self):
@@ -46,7 +51,12 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
                 lambda p: setattr(p.articulation, "name", name),
             )
 
-        return dict(ev=seq([get_ev("."), get_ev("tenuto")]))
+        return dict(
+            ev=seq([get_ev("."), get_ev("tenuto")]),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            ),
+        )
 
     @t(RESET_TESTS)
     def test_tremolo(self):
@@ -58,7 +68,10 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
                         lambda p: setattr(p.tremolo, "flag_count", 16),
                     )
                 ]
-            )
+            ),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            ),
         )
 
     @t(RESET_TESTS)
@@ -74,6 +87,9 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     def test_natural_harmonic_node_list(self):
         return dict(
             ev=self._get_natural_harmonic_node_list_ev(),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            ),
         )
 
     @t(RESET_TESTS)
@@ -133,7 +149,12 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         def p():
             return e("pizzicato")
 
-        return dict(ev=seq([o(), p(), p(), p(), o()]))
+        return dict(
+            ev=seq([o(), p(), p(), p(), o()]),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            ),
+        )
 
     @t(RESET_TESTS)
     def test_trill(self):
@@ -190,7 +211,12 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         def corda1():
             return e("g", True, "corda")
 
-        return dict(ev=seq([sus1(), sus1(), sus0(), corda1(), corda1(), corda0()]))
+        return dict(
+            ev=seq([sus1(), sus1(), sus0(), corda1(), corda1(), corda0()]),
+            converter=abjad_converters.SequentialEventToAbjadVoice(
+                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            ),
+        )
 
     @t(RESET_TESTS)
     def test_hairpin(self):
