@@ -1000,7 +1000,24 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             core_events.SimpleEvent
         ],
     ):
-        # tie rests before processing the event!
+        # Tie rests before further processing the event
+        #
+        # We need to do this, because otherwise pitches/volumes/indicators
+        # don't get attached to the right leaves, since
+        # 'related_abjad_leaf_index_tuple_tuple_per_simple_event' would point
+        # to rests where notes are expected. This is because the quantizer
+        # auto-splits and auto-combines rests in the following cases:
+        #
+        #   - if they are too long and span across two bars
+        #   - if they are pointless (e.g. first beat of 4/4 bar 1/16 and a 3/16
+        #     rest would be combined to a 1/4 rest) the quantizer
+        #     automatically combines them (in 'rewrite_meter').
+        #
+        # These auto-split and auto-merge rest cases are considered as
+        # features (the main functionality of this quantizer:
+        # care about all annoying notational details we don't want to
+        # care about) and not as bugs. But they lead to the limitation, that
+        # in this mode we can't apply indicators to two adjacent rests.
         sequential_event_to_convert = sequential_event_to_convert.tie_by(
             lambda event0, event1: self._is_simple_event_rest(event0)
             and self._is_simple_event_rest(event1),
