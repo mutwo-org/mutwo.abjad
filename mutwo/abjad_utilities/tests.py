@@ -9,7 +9,7 @@ try:
     from PIL import Image  # type: ignore
     from PIL import ImageChops  # type: ignore
 except ImportError:
-    pass
+    Image = None
 
 import abjad
 
