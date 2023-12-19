@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.17.0] - 2023-12-19
+
+### Added
+- `abjad_utilities.concatenate_adjacent_tuplets`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/2af2c1ec192962eb97998e027a77740dc7cbfcb0)
+- option `concatenate_adjacent_tuplets` to `LeafMakerSequentialEventToQuantizedAbjadContainer`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/0d379524ea87c3eb57e1132b0b59a3c1e5b8289a)
+- `abjad_utilities.reduce_multiplier`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/1d35c04d7f1a939f4de54731e7424e172852ff65)
+- option `reduce_multiplier` to `LeafMakerSequentialEventToQuantizedAbjadContainer`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/7d532a6094b17f1a773bc460b0fa9754f2ed8c75)
+
+### Changed
+- Set default quantizer to `LeafMakerSequentialEventToQuantizedAbjadContainer`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/a207dc4454dcd70a19376d7d2749e1fd8bfd9804)
+- Move `is_simple_event_rest` argument from `SequentialEventToAbjadVoice` to `SequentialEventToQuantizedAbjadContainer`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/f83878edb642a9b81b8a2a3dca0c4f3d2544d05a)
+
 
 ## [0.16.0] - 2023-06-08
 
