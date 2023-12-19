@@ -28,6 +28,12 @@ __all__ = (
 )
 
 
+IsSimpleEventRestTuple: typing.TypeAlias = tuple[bool, ...]
+QuantizationData: typing.TypeAlias = tuple[
+    abjad.Container, tuple[tuple[tuple[int, ...], ...], ...], IsSimpleEventRestTuple
+]
+
+
 # XXX: In the future `default_tempo_envelope` should be set to `None` and
 # `mutwo` should, by default, use `event_to_tempo_envelope`. Then
 # `default_tempo_envelope` should be removed completely.
@@ -43,6 +49,11 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         `tuple[abjad.TimeSignature, ...]` from a :class:`mutwo.core_events.abc.Event`.
         If set to `None` `mutwo` falls back to `default_time_signature_sequence`.
         Default to `None`.
+    :param is_simple_event_rest: Function to detect if the
+        the inspected :class:`mutwo.core_events.SimpleEvent` is a Rest. By
+        default Mutwo simply checks if 'pitch_list' contain any objects. If not,
+        the Event will be interpreted as a rest.
+    :type is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool], optional
     """
 
     def __init__(
@@ -56,15 +67,28 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
                 typing.Optional[tuple[abjad.TimeSignature, ...]],
             ]
         ] = None,
+        is_simple_event_rest: typing.Optional[
+            typing.Callable[[core_events.SimpleEvent], bool]
+        ] = None,
     ):
         default_time_signature_sequence_count = len(default_time_signature_sequence)
         if default_time_signature_sequence_count == 0:
             raise abjad_utilities.NoTimeSignatureError()
 
+        if is_simple_event_rest is None:
+
+            def is_simple_event_rest(simple_event: core_events.SimpleEvent) -> bool:
+                pitch_list = core_utilities.call_function_except_attribute_error(
+                    lambda e: e.pitch_list, simple_event, []
+                )
+                return not bool(pitch_list)
+
         default_time_signature_tuple = tuple(default_time_signature_sequence)
         self._default_time_signature_tuple = default_time_signature_tuple
 
         self._event_to_time_signature_tuple = event_to_time_signature_tuple
+
+        self._is_simple_event_rest = is_simple_event_rest
 
     def _get_time_signature_tuple(
         self, event: core_events.abc.Event
@@ -74,6 +98,50 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
                 return time_signature_tuple
         return self._default_time_signature_tuple
 
+    def _tie_rests(self, sequential_event_to_convert: core_events.SequentialEvent):
+        # Tie rests before further processing the event
+        #
+        # We need to do this, because otherwise pitches/volumes/indicators
+        # don't get attached to the right leaves, since
+        # 'related_abjad_leaf_index_tuple_tuple_per_simple_event' would point
+        # to rests where notes are expected. This is because the quantizer
+        # auto-splits and auto-combines rests in the following cases:
+        #
+        #   - if they are too long and span across two bars
+        #   - if they are pointless (e.g. first beat of 4/4 bar 1/16 and a 3/16
+        #     rest would be combined to a 1/4 rest) the quantizer
+        #     automatically combines them (in 'rewrite_meter').
+        #
+        # These auto-split and auto-merge rest cases are considered as
+        # features (the main functionality of this quantizer:
+        # care about all annoying notational details we don't want to
+        # care about) and not as bugs. But they lead to the limitation, that
+        # in this mode we can't apply indicators to two adjacent rests.
+        return sequential_event_to_convert.tie_by(
+            lambda event0, event1: self._is_simple_event_rest(event0)
+            and self._is_simple_event_rest(event1),
+            event_type_to_examine=core_events.SimpleEvent,
+            mutate=False,  # type: ignore
+        )
+
+    def _apply_is_rest(self, sequential_event_to_convert: core_events.SequentialEvent):
+        # Apply 'is_rest' attribute to each event in the 'SequentialEvent'
+        # (this is needed for further proceedings)
+        is_simple_event_rest_tuple = tuple(
+            self._is_simple_event_rest(simple_event)
+            for simple_event in sequential_event_to_convert
+        )
+        is_simple_event_rest_iterator = iter(is_simple_event_rest_tuple)
+        return (
+            sequential_event_to_convert.set_parameter(  # type: ignore
+                "is_rest",
+                lambda _: next(is_simple_event_rest_iterator),
+                set_unassigned_parameter=True,
+                mutate=False,  # type: ignore
+            ),
+            is_simple_event_rest_tuple,
+        )
+
     # ###################################################################### #
     #               public methods for interaction with the user             #
     # ###################################################################### #
@@ -81,7 +149,7 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
     @abc.abstractmethod
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
-    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...]]:
+    ) -> QuantizationData:
         ...
 
 
@@ -361,7 +429,10 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
-    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
+    ) -> QuantizationData:
+        sequential_event_to_convert, is_simple_event_rest_tuple = self._apply_is_rest(
+            self._tie_rests(sequential_event_to_convert)
+        )
         q_event_sequence = self._sequential_event_to_q_event_sequence(
             sequential_event_to_convert
         )
@@ -378,6 +449,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         return (
             quanitisized_abjad_leaf_voice,
             related_abjad_leaves_per_simple_event,
+            is_simple_event_rest_tuple,
         )
 
 
@@ -640,7 +712,10 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
 
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
-    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
+    ) -> QuantizationData:
+        sequential_event_to_convert, is_simple_event_rest_tuple = self._apply_is_rest(
+            self._tie_rests(sequential_event_to_convert)
+        )
         self._time_signature_tuple = self._get_time_signature_tuple(
             sequential_event_to_convert
         )
@@ -648,7 +723,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         related_abjad_leaves_per_simple_event = (
             self._make_related_abjad_leaves_per_simple_event(voice)
         )
-        return voice, related_abjad_leaves_per_simple_event
+        return voice, related_abjad_leaves_per_simple_event, is_simple_event_rest_tuple
 
 
 class _DurationLineBasedQuantizedAbjadContainerMixin(object):
@@ -783,18 +858,22 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer(
 
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
-    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
-
+    ) -> QuantizationData:
         (
             quanitisized_abjad_leaf_voice,
             related_abjad_leaves_per_simple_event,
+            is_simple_event_rest_tuple,
         ) = super().convert(sequential_event_to_convert)
 
         self._adjust_quantisized_abjad_leaves(
             quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
         )
 
-        return quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
+        return (
+            quanitisized_abjad_leaf_voice,
+            related_abjad_leaves_per_simple_event,
+            is_simple_event_rest_tuple,
+        )
 
 
 class LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
@@ -817,11 +896,11 @@ class LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
 
     def convert(
         self, sequential_event_to_convert: core_events.SequentialEvent
-    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
-
+    ) -> QuantizationData:
         (
             quanitisized_abjad_leaf_voice,
             related_abjad_leaves_per_simple_event,
+            is_simple_event_rest_tuple,
         ) = super().convert(sequential_event_to_convert)
 
         self._adjust_quantisized_abjad_leaves(
@@ -838,6 +917,7 @@ class LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
         return (
             quanitisized_abjad_leaf_voice,
             post_processed_releated_abjad_leaves_per_simple_event,
+            is_simple_event_rest_tuple,
         )
 
 
