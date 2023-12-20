@@ -117,6 +117,15 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         # care about all annoying notational details we don't want to
         # care about) and not as bugs. But they lead to the limitation, that
         # in this mode we can't apply indicators to two adjacent rests.
+        #
+        # Maybe there would be a way to support the auto-merge and
+        # auto-split, while still persisting indicators on a rest sequence.
+        # For this, the quantizer would need to only tie rests, that
+        # don't contain any playing or notation indicators. Furthermore
+        # it would be disallowed to auto-merge rests in further proceedings
+        # (as rewrite_meter or concatenate_adjacent_tuplets) that have
+        # indicators applied to them. For this we would need to pin tags to
+        # events according to their status.
         return sequential_event_to_convert.tie_by(
             lambda event0, event1: self._is_simple_event_rest(event0)
             and self._is_simple_event_rest(event1),
