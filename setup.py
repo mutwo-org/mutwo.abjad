@@ -12,7 +12,6 @@ with open("README.md", "r", encoding="utf-8") as fh:
 extras_require = {
     "testing": [
         "pytest>=7.1.1",
-        "pillow>=8.2.0, <9.0.0",
         "mutwo.ekmelily>=0.8.0, <1.0.0",
     ]
 }

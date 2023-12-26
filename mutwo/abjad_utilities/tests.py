@@ -1,15 +1,7 @@
 import functools
-import operator
 import os
-import math
 import typing
 import unittest
-
-try:
-    from PIL import Image  # type: ignore
-    from PIL import ImageChops  # type: ignore
-except ImportError:
-    Image = None
 
 import abjad
 
@@ -21,29 +13,16 @@ __all__ = ("AbjadTestCase", "run_if_ekmelily_available")
 
 
 class AbjadTestCase(unittest.TestCase):
-    base_path = f"tests{os.sep}img"
+    base_path = f"tests{os.sep}testdata"
 
     @staticmethod
-    def t(reset_tests: bool = False, remove_ly: bool = True):
+    def t(reset_tests: bool = False, force_png: bool = False):
         def t(test_method: typing.Callable):
             return lambda self: self._test(
-                test_method.__name__, reset_tests, remove_ly, **test_method(self)
+                test_method.__name__, reset_tests, force_png=force_png, **test_method(self)
             )
 
         return t
-
-    def assertImagesEqual(self, path0: str, path1: str):
-        image0, image1 = (Image.open(path) for path in (path0, path1))
-        difference = ImageChops.difference(image1, image0)
-        self.assertTrue(difference.getbbox() is None, "Images differ!")
-
-    def assertImagesAlmostEqual(
-        self, image0: Image, image1: Image, tolerance: float = 0.01
-    ):
-        d = root_mean_square_difference(image0, image1)
-        self.assertTrue(
-            d < tolerance, f"Images differ above tolerance: '{d} >= '{tolerance}'!"
-        )
 
     def setUp(self):
         header_block = abjad.Block(name="header")
@@ -64,33 +43,24 @@ class AbjadTestCase(unittest.TestCase):
         self,
         name: str,
         reset_tests: bool = False,
-        remove_ly: bool = True,
+        force_png: bool = False,
         converter=None,
         ev: core_events.abc.Event = core_events.SequentialEvent(
             [core_events.SimpleEvent(1)]
         ),
-        tolerance: float = 0.1,
     ):
-        # XXX: To prevent circular import exception, we can't import
-        # abjad_converters at top-level. The import order is
-        #
-        #   abjad_utilities => abjad_parameters => abjad_converters
-        #
-        # because 'abjad_utilities' provides exceptions to be used
-        # by all other modules.
         if converter is None:
-            from mutwo import abjad_converters
-
-            converter = abjad_converters.SequentialEventToAbjadVoice()
+            converter = self._abjad_converters.SequentialEventToAbjadVoice()
 
         converted_event = converter.convert(_parse_event(ev))
 
-        base_p = self.base_path
-        file_ok_path = f"{base_p}{os.sep}{name}_ok.png"
-        file_test_path = f"{base_p}{os.sep}{name}_test.png"
+        p = self.base_path
 
-        if reset_tests:
-            file_test_path = file_ok_path
+        ly_ok_path = f"{p}{os.sep}{name}_ok.ly"
+        ly_test_path = f"{p}{os.sep}{name}_test.ly"
+
+        png_ok_path = f"{p}{os.sep}{name}_ok.png"
+        png_test_path = f"{p}{os.sep}{name}_test.png"
 
         match converted_event:
             case abjad.Voice():
@@ -102,19 +72,36 @@ class AbjadTestCase(unittest.TestCase):
 
         self.score_block.items.append(item)
 
-        abjad.persist.as_png(
-            self.lilypond_file, png_file_path=file_test_path, remove_ly=remove_ly
-        )
+        if reset_tests:
+            abjad.persist.as_png(self.lilypond_file, png_ok_path, remove_ly=True)
+            ly_test_path = ly_ok_path
 
-        image_ok, image_test = (Image.open(p) for p in (file_ok_path, file_test_path))
+        abjad.persist.as_ly(self.lilypond_file, ly_test_path)
 
-        if tolerance > 0:
-            self.assertImagesAlmostEqual(image_ok, image_test, tolerance)
-        else:
-            self.assertImagesEqual(image_ok, image_test)
+        ly_ok, ly_test = pathstr(ly_ok_path), pathstr(ly_test_path)
+        failed = ly_ok != ly_test
 
-        if not reset_tests:
-            os.remove(file_test_path)
+        if failed or force_png:
+            abjad.persist.as_png(
+                self.lilypond_file, png_file_path=png_test_path, remove_ly=True
+            )
+
+        if failed:
+            self.assertFalse(failed)
+
+        elif not reset_tests:
+            os.remove(ly_test_path)
+
+    # NOTE: Prevent circular import exception, we can't import
+    # abjad_converters at top-level. The import order is
+    #
+    #   abjad_utilities => abjad_parameters => abjad_converters
+    #
+    # because 'abjad_utilities' provides exceptions to be used
+    # by all other modules.
+    @functools.cached_property
+    def _abjad_converters(self):
+        return __import__("mutwo.abjad_converters").abjad_converters
 
 
 def _parse_event(ev):
@@ -128,26 +115,6 @@ def _parse_event(ev):
         case _:
             raise NotImplementedError(type(ev))
     return ev
-
-
-def root_mean_square_difference(image0: Image, image1: Image):
-    """Calculate root-mean-square difference between two images.
-
-    Taken from: http://snipplr.com/view/757/compare-two-pil-images-in-python/
-    """
-    h0, h1 = (i.histogram() for i in (image0, image1))
-
-    def mean_square(a: float, b: float) -> float:
-        if not a:
-            a = 0.0
-        if not b:
-            b = 0.0
-        return (a - b) ** 2
-
-    return math.sqrt(
-        functools.reduce(operator.add, map(mean_square, h0, h1))
-        / (image0.size[0] * image0.size[1])
-    )
 
 
 def run_if_ekmelily_available(method_to_wrap: typing.Callable):
@@ -164,3 +131,8 @@ def run_if_ekmelily_available(method_to_wrap: typing.Callable):
             return method_to_wrap(*args, **kwargs)
 
     return test
+
+
+def pathstr(path: str):
+    with open(path, "r") as f:
+        return f.read()

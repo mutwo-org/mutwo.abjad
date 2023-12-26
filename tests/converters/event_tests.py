@@ -27,17 +27,22 @@ t = abjad_utilities.AbjadTestCase.t
 # the content is still the same.
 RESET_TESTS = False
 
+# Set to `True` to export png files for each test even
+# when the test doesn't fail (to check if png output still
+# matches expected output).
+FORCE_PNG = False
+
 
 class IntegrationTest(abjad_utilities.AbjadTestCase):
     base_path = f"{abjad_utilities.AbjadTestCase.base_path}{os.sep}events"
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_integration(self):
         return dict(
             converter=_make_complex_converter(), ev=_make_complex_sequential_event()
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_tempo(self):
         tempo_envelope = core_events.Envelope(
             (
@@ -53,7 +58,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ev=seq([n("c", 1), n("c", 1), n("c", 1)]),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_grace_note(self):
         def mn(**kwargs):
             return n("c", 1, **kwargs)
@@ -78,7 +83,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_first_grace_note_no_flag(self):
         return dict(
             converter=abjad_converters.SequentialEventToAbjadVoice(
@@ -94,7 +99,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_lyric(self):
         lbl = music_parameters.LanguageBasedLyric
         lbs = music_parameters.LanguageBasedSyllable
@@ -114,7 +119,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_duration_line(self):
         return dict(
             converter=abjad_converters.SequentialEventToAbjadVoice(
@@ -134,7 +139,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_multimeasure_rest(self):
         """Test that mutwo.abjad creats MultimeasureRest for empty bar"""
         ev = seq(
@@ -151,7 +156,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ev=ev,
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_multimeasure_rest_with_indicators(self):
         """Test that indicators survive on a multi measure rest
 
@@ -174,7 +179,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ev=ev,
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_nested_event(self):
         return dict(converter=_make_nested_converter(), ev=_make_nested_event())
 
@@ -188,7 +193,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ev=ev,
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_tuplet_simple(self):
         """Test that tuplets work
 
@@ -213,7 +218,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_tuplet_two_prolations_in_one_bar(self):
         """Test if two different tuplets within one bar works."""
         return self._test_tuplet(
@@ -230,7 +235,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_tuplet_concatenation(self):
         """Test if follow-up notes concatenate together.
 
@@ -259,7 +264,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_nested_tuplet(self):
         """Test if nested tuplets are supported."""
         return self._test_tuplet(
@@ -285,7 +290,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_ties_across_tuplets_in_two_different_bars(self):
         """Test if ties across two tuplets in two different bars work"""
         return self._test_tuplet(
@@ -299,7 +304,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_ties_across_tuplets_with_different_prolation(self):
         """Test if ties across two tuplets with different prolation works
 

@@ -24,11 +24,16 @@ t = abjad_utilities.AbjadTestCase.t
 # the content is still the same.
 RESET_TESTS = False
 
+# Set to `True` to export png files for each test even
+# when the test doesn't fail (to check if png output still
+# matches expected output).
+FORCE_PNG = False
+
 
 class IntegrationTest(abjad_utilities.AbjadTestCase):
     base_path = f"{abjad_utilities.AbjadTestCase.base_path}{os.sep}parameters"
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_arpeggio(self):
         def get_ev(direction):
             return mp(
@@ -43,7 +48,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_articulation(self):
         def get_ev(name):
             return mp(
@@ -58,7 +63,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_tremolo(self):
         return dict(
             ev=seq(
@@ -74,7 +79,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_articifical_harmonic(self):
         return dict(
             ev=mp(
@@ -83,7 +88,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_natural_harmonic_node_list(self):
         return dict(
             ev=self._get_natural_harmonic_node_list_ev(),
@@ -92,7 +97,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_natural_harmonic_node_list_with_duration_line(self):
         return dict(
             ev=self._get_natural_harmonic_node_list_ev(),
@@ -101,7 +106,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_first_natural_harmonic_node_list_without_duplicates(self):
         return dict(
             ev=self._get_natural_harmonic_node_list_ev()[2:3],
@@ -135,7 +140,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ]
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_string_contact_point(self):
         def e(name):
             return mp(
@@ -156,7 +161,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_trill(self):
         return dict(
             ev=mp(
@@ -165,11 +170,11 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_cue(self):
         return dict(ev=mp(n("c", f(7, 8)), lambda p: setattr(p.cue, "index", 4)))
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_woodwind_fingering(self):
         def s(p, key, value):
             setattr(p.woodwind_fingering, key, value)
@@ -190,7 +195,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_pedal(self):
         def e(p, activity, type):
             e = n(p, f(5, 8))
@@ -218,7 +223,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ),
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_hairpin(self):
         def h(simple_event):
             return simple_event.playing_indicator_collection.hairpin
@@ -244,13 +249,13 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
         return dict(ev=e)
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_bartok_pizzicato(self):
         return dict(
             ev=mp(n("c", f(7, 8)), lambda p: setattr(p, "bartok_pizzicato", True))
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_breath_mark(self):
         return dict(
             ev=seq(
@@ -258,24 +263,24 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_fermata(self):
         def e(type):
             return mp(n("c", f(7, 8)), lambda p: setattr(p.fermata, "type", type))
 
         return dict(ev=seq([e("fermata"), e("longfermata")]))
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_prall(self):
         return dict(ev=mp(n("c", f(7, 8)), lambda p: setattr(p, "prall", True)))
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_tie(self):
         return dict(
             ev=seq([mp(n("c", f(7, 8)), lambda p: setattr(p, "tie", True)), n("c")])
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_glissando(self):
         return dict(
             ev=seq(
@@ -283,19 +288,19 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_bend_after(self):
         return dict(
             ev=mp(n("c", f(7, 8)), lambda p: setattr(p.bend_after, "bend_amount", 3))
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_laissez_vibrer(self):
         return dict(
             ev=mp(n("c", f(7, 8)), lambda p: setattr(p, "laissez_vibrer", True))
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_ornamenation(self):
         e = n("c", f(5, 16))
         o = e.playing_indicator_collection.ornamentation
@@ -303,7 +308,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         o.direction = "up"
         return dict(ev=e)
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_bar_line(self):
         return dict(
             ev=seq(
@@ -314,11 +319,11 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_clef(self):
         return dict(ev=mn(n("c", f(5, 16)), lambda n: setattr(n.clef, "name", "bass")))
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_ottava(self):
         return dict(
             ev=mn(
@@ -327,7 +332,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_markup(self):
         e = n("c", f(5, 16))
         m = e.notation_indicator_collection.markup
@@ -335,7 +340,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         m.direction = abjad.enums.UP
         return dict(ev=e)
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_rehearsal_mark(self):
         return dict(
             ev=mn(
@@ -344,7 +349,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             )
         )
 
-    @t(RESET_TESTS)
+    @t(RESET_TESTS, FORCE_PNG)
     def test_margin_markup(self):
         return dict(
             ev=mn(
