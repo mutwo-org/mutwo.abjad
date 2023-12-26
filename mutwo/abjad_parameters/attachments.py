@@ -6,10 +6,13 @@ import inspect
 import typing
 import warnings
 
+from packaging.version import Version
+
 import abjad  # type: ignore
 
 from mutwo import abjad_parameters
 from mutwo import music_parameters
+from mutwo import music_version
 
 LeafOrLeafSequence = abjad.Leaf | typing.Sequence[abjad.Leaf]
 
@@ -358,12 +361,19 @@ class Pedal(abjad_parameters.abc.ToggleAttachment):
         leaf: abjad.Leaf,
         previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
     ) -> LeafOrLeafSequence:
-        if self.indicator.pedal_activity:
+        if Version(music_version.VERSION) >= Version('0.26.0'):
+            pedal_type = self.indicator.type
+            pedal_activity = self.indicator.activity
+        else:  # BBB
+            pedal_type = self.indicator.pedal_type
+            pedal_activity = self.indicator.pedal_activity
+
+        if pedal_activity:
             pedal_class = abjad.StartPianoPedal
         else:
             pedal_class = abjad.StopPianoPedal
 
-        abjad.attach(pedal_class(self.indicator.pedal_type), leaf)
+        abjad.attach(pedal_class(pedal_type), leaf)
         return leaf
 
     def process_leaf_tuple(

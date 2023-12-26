@@ -1,6 +1,8 @@
 import os
 import typing
 
+from packaging.version import Version
+
 import abjad
 
 try:
@@ -13,6 +15,7 @@ from mutwo import abjad_utilities
 from mutwo import core_events
 from mutwo import music_events
 from mutwo import music_parameters
+from mutwo import music_version
 
 
 t = abjad_utilities.AbjadTestCase.t
@@ -200,8 +203,12 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         def e(p, activity, type):
             e = n(p, f(5, 8))
             p = e.playing_indicator_collection.pedal
-            p.pedal_activity = activity
-            p.pedal_type = type
+            if Version(music_version.VERSION) >= Version('0.26.0'):
+                p.activity = activity
+                p.type = type
+            else:  # BBB
+                p.pedal_activity = activity
+                p.pedal_type = type
             return e
 
         def sus0():
