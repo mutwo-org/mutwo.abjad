@@ -361,7 +361,7 @@ class Pedal(abjad_parameters.abc.ToggleAttachment):
         leaf: abjad.Leaf,
         previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
     ) -> LeafOrLeafSequence:
-        if Version(music_version.VERSION) >= Version('0.26.0'):
+        if Version(music_version.VERSION) >= Version("0.26.0"):
             pedal_type = self.indicator.type
             pedal_activity = self.indicator.activity
         else:  # BBB
@@ -386,6 +386,20 @@ class Pedal(abjad_parameters.abc.ToggleAttachment):
             return super().process_leaf_tuple(leaf_tuple, previous_attachment)
         else:
             return leaf_tuple
+
+
+class Slur(abjad_parameters.abc.ToggleAttachment):
+    def process_leaf(
+        self,
+        leaf: abjad.Leaf,
+        previous_attachment: typing.Optional[abjad_parameters.abc.AbjadAttachment],
+    ) -> LeafOrLeafSequence:
+        if self.indicator.activity:
+            a = abjad.StartSlur()
+        else:
+            a = abjad.StopSlur()
+        abjad.attach(a, leaf)
+        return leaf
 
 
 class Hairpin(abjad_parameters.abc.ToggleAttachment):

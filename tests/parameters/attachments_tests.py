@@ -203,7 +203,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         def e(p, activity, type):
             e = n(p, f(5, 8))
             p = e.playing_indicator_collection.pedal
-            if Version(music_version.VERSION) >= Version('0.26.0'):
+            if Version(music_version.VERSION) >= Version("0.26.0"):
                 p.activity = activity
                 p.type = type
             else:  # BBB
@@ -361,6 +361,32 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         return dict(
             ev=mn(
                 n("c", f(5, 16)), lambda n: setattr(n.margin_markup, "content", "test")
+            )
+        )
+
+    @t(RESET_TESTS, FORCE_PNG)
+    def test_slur(self):
+        def act(n):
+            n.playing_indicator_collection = "slur.activity=True"
+            return n
+
+        def inact(n):
+            n.playing_indicator_collection = "slur.activity=False"
+            return n
+
+        return dict(
+            ev=seq(
+                [
+                    act(n("c", f(1, 4))),
+                    n("d", f(1, 4)),
+                    n("e", f(1, 4)),
+                    n("d", f(1, 4)),
+                    inact(n("c", f(1, 4))),
+                    n("", f(1, 4)),
+                    act(n("c", f(1, 4))),
+                    act(n("d", f(1, 4))),
+                    inact(n("c", f(1, 4))),
+                ]
             )
         )
 
