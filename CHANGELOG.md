@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.18.0] - 2023-12-27
+
+### Added
+- `abjad_parameters.Slur`, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/796acf26ca7f2b53e470c938d15dc0e44fdabdcc)
+
+### Changed
+- make tests more reliable, see [here](https://github.com/mutwo-org/mutwo.abjad/commit/6b36baedd1f206a61081bd672650f76f35fdfb23)
+
+
 ## [0.17.0] - 2023-12-19
 
 ### Added
