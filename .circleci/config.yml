@@ -18,24 +18,7 @@ jobs:
             virtualenv $TEST_VIRTUALENV_DIR/mutwo_test
             source $TEST_VIRTUALENV_DIR/mutwo_test/bin/activate
             pip3 install .[testing]
-            # XXX: Deactivate remote tests.
-            #
-            #   They are broke in this test runner:
-            #
-            #       self.assertTrue(
-            #         SequentialEventToAbjadVoiceTest._are_png_equal(
-            #           new_png_file_path, png_file_to_compare_path
-            #         )
-            #       )
-            #       AssertionError: False is not true
-            #
-            # Somehow the lilypond version here and the nix lilypond versions
-            # differ. Because of this the created png images have minor
-            # differences. Because of these minor differences the tests don't
-            # pass.
-            #
-            # pytest
-            #
+            pytest
             deactivate
   pypi_publish:
     docker:
