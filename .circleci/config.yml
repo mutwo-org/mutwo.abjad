@@ -13,7 +13,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            nix-build default.nix
+            nix-shell shell.nix --command "pytest"
   pypi_publish:
     docker:
       - image: cimg/python:3.10
