@@ -8,30 +8,52 @@
 }
 \score
 {
+    % OPEN_BRACKETS:
     \new Staff
     {
+        % OPEN_BRACKETS:
         \new Voice
         {
+            % OPEN_BRACKETS:
             {
-                \tempo 4=120
+                % BEFORE:
+                % COMMANDS:
                 \arpeggioArrowUp
+                \tempo 4=120
+                % OPENING:
+                % COMMANDS:
                 \time 4/4
                 <cs' e' a'>2
-                \mf
+                % AFTER:
+                % ARTICULATIONS:
                 \arpeggio
+                \mf
+                % SPANNER_STARTS:
                 ~
                 <cs' e' a'>8
+                % BEFORE:
+                % COMMANDS:
                 \arpeggioArrowDown
                 <cs' e' a'>8
+                % AFTER:
+                % ARTICULATIONS:
                 \arpeggio
+                % SPANNER_STARTS:
                 ~
                 <cs' e' a'>4
+                % AFTER:
+                % SPANNER_STARTS:
                 ~
+            % CLOSE_BRACKETS:
             }
+            % OPEN_BRACKETS:
             {
                 <cs' e' a'>4
                 r2.
+            % CLOSE_BRACKETS:
             }
+        % CLOSE_BRACKETS:
         }
+    % CLOSE_BRACKETS:
     }
 }

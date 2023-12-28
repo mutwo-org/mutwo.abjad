@@ -944,7 +944,7 @@ class SequentialEventToAbjadVoice(ComplexEventToAbjadContainer):
             abjad.attach(
                 abjad.LilyPondLiteral(
                     "\\addlyrics { " + lyric_content + " }",
-                    site="absolute_after",
+                    site="after",
                 ),
                 voice_to_apply_lyrics_to,
             )

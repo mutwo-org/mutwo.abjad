@@ -8,21 +8,34 @@
 }
 \score
 {
+    % OPEN_BRACKETS:
     \new Staff
     {
+        % OPEN_BRACKETS:
         \new Voice
         {
+            % OPEN_BRACKETS:
             {
-                \tempo 4=120
+                % BEFORE:
+                % COMMANDS:
                 \ottava 1
+                \tempo 4=120
+                % OPENING:
+                % COMMANDS:
                 \time 4/4
                 c'''4
+                % AFTER:
+                % ARTICULATIONS:
                 \mf
+                % SPANNER_STARTS:
                 ~
                 c'''16
                 r8.
                 r2
+            % CLOSE_BRACKETS:
             }
+        % CLOSE_BRACKETS:
         }
+    % CLOSE_BRACKETS:
     }
 }
