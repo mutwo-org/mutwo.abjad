@@ -1,3 +1,4 @@
+import difflib
 import functools
 import os
 import typing
@@ -19,7 +20,10 @@ class AbjadTestCase(unittest.TestCase):
     def t(reset_tests: bool = False, force_png: bool = False):
         def t(test_method: typing.Callable):
             return lambda self: self._test(
-                test_method.__name__, reset_tests, force_png=force_png, **test_method(self)
+                test_method.__name__,
+                reset_tests,
+                force_png=force_png,
+                **test_method(self),
             )
 
         return t
@@ -83,11 +87,23 @@ class AbjadTestCase(unittest.TestCase):
 
         if failed or force_png:
             abjad.persist.as_png(
-                self.lilypond_file, png_file_path=png_test_path, remove_ly=True
+                self.lilypond_file, png_file_path=png_test_path, remove_ly=False
             )
+        else:
+            try:
+                os.remove(png_test_path)
+            except FileNotFoundError:
+                pass
 
         if failed:
-            self.assertFalse(failed)
+            diff = difflib.unified_diff(
+                ly_ok.splitlines(),
+                ly_test.splitlines(),
+                lineterm="",
+                fromfile=ly_ok_path,
+                tofile=ly_test_path,
+            )
+            self.fail("ly file differs:\n\n{}".format("\n".join(tuple(diff))))
 
         elif not reset_tests:
             os.remove(ly_test_path)
@@ -135,4 +151,7 @@ def run_if_ekmelily_available(method_to_wrap: typing.Callable):
 
 def pathstr(path: str):
     with open(path, "r") as f:
-        return f.read()
+        # Skip the first line, because this is the version statement.
+        # We shouldn't compare the version statement, as this breaks
+        # tests when running with a different lilypond version.
+        return "\n".join((f.read()).splitlines()[1:])
