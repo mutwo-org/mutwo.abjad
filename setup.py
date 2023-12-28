@@ -40,8 +40,8 @@ setuptools.setup(
         "mutwo.core>=1.4.0, <2.0.0",
         "mutwo.music>=0.26.0, <1.0.0",
         # Abjad dependencies
-        "abjad>=3.9.0, <3.11.0",
-        "abjad-ext-nauert>=3.9.0, <3.11.0",
+        "abjad>=3.9.0, <3.12.0",
+        "abjad-ext-nauert>=3.9.0, <3.12.0",
         # Other dependencies
         "python-ranges>=1.2.0, <2.0.0",
     ],
