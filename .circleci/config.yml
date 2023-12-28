@@ -11,7 +11,6 @@ jobs:
       - run:
           name: Run tests
           command: |
-            sudo apt-get install espeak-ng mbrola mbrola-en1
             pip3 install virtualenv
             TEST_VIRTUALENV_DIR=mutwo_test
             mkdir $TEST_VIRTUALENV_DIR
