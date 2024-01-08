@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.19.0] - 2024-01-08
+
+### Added
+- support for newer abjad version
+
+
 ## [0.18.0] - 2023-12-27
 
 ### Added
