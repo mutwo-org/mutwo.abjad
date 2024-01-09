@@ -12,8 +12,11 @@ If one wants to build complete scores from within mutwo, the module offers the
 
 1. Indicators attached to rests which follow another rest won't be translated to
    `abjad`. This behaviour happens because
-   :class:`~mutwo.abjad_converters.SequentialEventToAbjadVoice`
-   ties rests before converting the data to `abjad` objects.
+   :class:`~mutwo.abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer` and
+   :class:`~mutwo.abjad_converters.NauertSequentialEventToQuantizedAbjadContainer`
+   tie rests before converting the data to `abjad` objects. With a different (maybe
+   user-declared) quantizer this limitation can be fixed. For more details see
+   the comment `here <https://github.com/mutwo-org/mutwo.abjad/blob/58b0044/mutwo/abjad_converters/events/quantization.py#L102-L128>_.
 
 2. Quantization can be slow and not precise. Try both quantization classes.
    Change the parameters. Use different settings and classes for different
