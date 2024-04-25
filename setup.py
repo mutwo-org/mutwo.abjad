@@ -12,7 +12,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 extras_require = {
     "testing": [
         "pytest>=7.1.1",
-        "mutwo.ekmelily>=0.8.0, <1.0.0",
+        "mutwo.ekmelily>=0.9.0, <1.0.0",
     ]
 }
 
@@ -37,8 +37,8 @@ setuptools.setup(
     setup_requires=[],
     install_requires=[
         # Mutwo dependencies
-        "mutwo.core>=1.4.0, <2.0.0",
-        "mutwo.music>=0.26.0, <1.0.0",
+        "mutwo.core>=2.0.0, <3.0.0",
+        "mutwo.music>=0.27.0, <1.0.0",
         # Abjad dependencies
         "abjad>=3.9.0, <3.12.0",
         "abjad-ext-nauert>=3.9.0, <3.12.0",

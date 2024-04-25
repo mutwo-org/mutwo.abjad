@@ -10,6 +10,8 @@ try:
 except ImportError:
     import fractions  # type: ignore
 
+import ranges
+
 from mutwo import abjad_converters
 from mutwo import abjad_utilities
 from mutwo import core_events
@@ -38,22 +40,30 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
     @t(RESET_TESTS, FORCE_PNG)
     def test_integration(self):
-        return dict(
-            converter=_make_complex_converter(), ev=_make_complex_sequential_event()
-        )
+        return dict(converter=_make_complex_converter(), ev=_make_complex_consecution())
 
     @t(RESET_TESTS, FORCE_PNG)
     def test_tempo(self):
-        tempo_envelope = core_events.Envelope(
+        tempo = core_parameters.FlexTempo(
             (
-                (0, core_parameters.DirectTempoPoint((30, 50), 2)),
-                (2, core_parameters.DirectTempoPoint((30, 50), 2)),
+                (
+                    0,
+                    core_parameters.WesternTempo(
+                        ranges.Range(30, 50), reference=fractions.Fraction(1, 2)
+                    ),
+                ),
+                (
+                    2,
+                    core_parameters.WesternTempo(
+                        ranges.Range(30, 50), reference=fractions.Fraction(1, 2)
+                    ),
+                ),
             )
         )
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(),
-                default_tempo_envelope=tempo_envelope,
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer(),
+                default_tempo=tempo,
             ),
             ev=seq([n("c", 1), n("c", 1), n("c", 1)]),
         )
@@ -64,21 +74,21 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             return n("c", 1, **kwargs)
 
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer()
             ),
             ev=seq(
                 [
                     mn(
-                        grace_note_sequential_event=seq([n("d", 0.125), n("e", 0.125)]),
+                        grace_note_consecution=seq([n("d", 0.125), n("e", 0.125)]),
                     ),
                     mn(
-                        after_grace_note_sequential_event=seq(
+                        after_grace_note_consecution=seq(
                             [n("d", 0.125), n("e", 0.125), n("f", 0.125)]
                         ),
                     ),
                     mn(),
-                    mn(grace_note_sequential_event=seq([n("d", 0.125), n("e", 0.125)])),
+                    mn(grace_note_consecution=seq([n("d", 0.125), n("e", 0.125)])),
                 ]
             ),
         )
@@ -86,14 +96,14 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     @t(RESET_TESTS, FORCE_PNG)
     def test_first_grace_note_no_flag(self):
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToDurationLineBasedQuantizedAbjadContainer()
             ),
             ev=seq(
                 [
                     n(
                         "c",
-                        grace_note_sequential_event=seq([n("d", f(1, 8))]),
+                        grace_note_consecution=seq([n("d", f(1, 8))]),
                     )
                 ]
             ),
@@ -104,8 +114,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         lbl = music_parameters.LanguageBasedLyric
         lbs = music_parameters.LanguageBasedSyllable
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer()
             ),
             ev=seq(
                 [
@@ -122,8 +132,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     @t(RESET_TESTS, FORCE_PNG)
     def test_duration_line(self):
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToDurationLineBasedQuantizedAbjadContainer()
             ),
             ev=seq(
                 [
@@ -148,8 +158,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ]
         )
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer(
                     default_time_signature_sequence=(abjad.TimeSignature((3, 4)),)
                 )
             ),
@@ -171,8 +181,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         )
         ev[0].playing_indicator_collection.fermata.type = "fermata"
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer(
                     default_time_signature_sequence=(abjad.TimeSignature((3, 4)),)
                 )
             ),
@@ -183,10 +193,10 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     def test_nested_event(self):
         return dict(converter=_make_nested_converter(), ev=_make_nested_event())
 
-    def _test_tuplet(self, ev: core_events.SequentialEvent):
+    def _test_tuplet(self, ev: core_events.Consecution):
         return dict(
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer(
                     default_time_signature_sequence=(abjad.TimeSignature((4, 4)),)
                 )
             ),
@@ -242,7 +252,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
         In some cases, there are multiple easier understandings what a certain
         duration can be, and in those cases tuplets won't be together, but
         broke up, even in simple cases as the example below. To fix this
-        LeafMakerSequentialEventToQuantizedAbjadContainer has an extra routine
+        LeafMakerConsecutionToQuantizedAbjadContainer has an extra routine
         ('_concatenate_adjacent_tuplets'). This test checks if this routine
         still works.
         """
@@ -279,7 +289,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
                     # And then, to make it even more complicated,
                     # we divide the last 1/20 into 3: so we have
                     # a nested tuplet of 5 => 3. But because
-                    # LeafMakerSequentialEventToQuantizedAbjadContainer
+                    # LeafMakerConsecutionToQuantizedAbjadContainer
                     # doesn't support nested tuplets, this looks
                     # strange. But that's expected, because it's
                     # not supported yet.
@@ -308,7 +318,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     def test_ties_across_tuplets_with_different_prolation(self):
         """Test if ties across two tuplets with different prolation works
 
-        LeafMakerSequentialEventToQuantizedAbjadContainer doesn't support
+        LeafMakerConsecutionToQuantizedAbjadContainer doesn't support
         this yet: this looks broke.
         """
         return self._test_tuplet(
@@ -326,38 +336,38 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
 f = fractions.Fraction
 n = music_events.NoteLike
-seq = core_events.SequentialEvent
-tsim = core_events.TaggedSimultaneousEvent
+seq = core_events.Consecution
+tsim = core_events.Concurrence
 
 
-class SequentialEventToAbjadVoiceTest(unittest.TestCase):
+class ConsecutionToAbjadVoiceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # initialise converter and sequential event for simple tests
-        cls.converter = abjad_converters.SequentialEventToAbjadVoice(
-            abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+        # initialise converter and consecution for simple tests
+        cls.converter = abjad_converters.ConsecutionToAbjadVoice(
+            abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
         )
-        cls.sequential_event = core_events.SequentialEvent(
+        cls.consecution = core_events.Consecution(
             [
                 music_events.NoteLike(pitch_name, duration=duration, volume="mf")
                 for pitch_name, duration in (
-                    ("c", 0.75),
-                    ("a", 0.25),
-                    ("g", 1 / 6),
-                    ("es", 1 / 12),
+                    ("c", '3/4'),
+                    ("a", '1/4'),
+                    ("g", '1/6'),
+                    ("es", '1/12'),
                 )
             ]
         )
-        # initialise complex converter and sequential event for complex tests
+        # initialise complex converter and consecution for complex tests
         cls.complex_converter = _make_complex_converter()
-        cls.complex_sequential_event = _make_complex_sequential_event()
+        cls.complex_consecution = _make_complex_consecution()
 
     def test_convert(self):
         expected_abjad_voice = abjad.Voice(
             [
                 abjad.score.Container("c'2. a'4"),
                 abjad.score.Container(
-                    [abjad.Tuplet(components="g'4 es'8"), abjad.Rest("r2.")]
+                    [abjad.Tuplet(components="g'4 es'8 r8 r1")]
                 ),
             ]
         )
@@ -368,12 +378,12 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
         )
         abjad.attach(abjad.Dynamic("mf"), expected_abjad_voice[0][0])
 
-        converted_sequential_event = self.converter.convert(self.sequential_event)
+        converted_consecution = self.converter.convert(self.consecution)
 
         # complex comparison because == raises Error (although leaves are equal)
         for component0, component1 in zip(
             abjad.select.components(expected_abjad_voice),
-            abjad.select.components(converted_sequential_event),
+            abjad.select.components(converted_consecution),
         ):
             self.assertEqual(type(component0), type(component1))
             if hasattr(component0, "written_duration"):
@@ -396,7 +406,7 @@ class SequentialEventToAbjadVoiceTest(unittest.TestCase):
             self.assertEqual(indicators0, indicators1)
 
 
-class NestedComplexEventToAbjadContainerTest(abjad_utilities.AbjadTestCase):
+class NestedCompoundToAbjadContainerTest(abjad_utilities.AbjadTestCase):
     def test_convert(self):
         # an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
@@ -411,7 +421,7 @@ class NestedComplexEventToAbjadContainerTest(abjad_utilities.AbjadTestCase):
         self.assertEqual(abjad_score.name, "Integrating duo")
 
 
-def _make_nested_event() -> core_events.TaggedSimultaneousEvent:
+def _make_nested_event() -> core_events.Concurrence:
     w = music_parameters.WesternPitch
     return tsim(
         [
@@ -440,14 +450,14 @@ def _make_nested_event() -> core_events.TaggedSimultaneousEvent:
 
 
 def _make_nested_converter():
-    return abjad_converters.NestedComplexEventToAbjadContainer(
-        abjad_converters.TagBasedNestedComplexEventToComplexEventToAbjadContainers(
+    return abjad_converters.NestedCompoundToAbjadContainer(
+        abjad_converters.TagBasedNestedCompoundToCompoundToAbjadContainers(
             {
-                "Piano": abjad_converters.NestedComplexEventToAbjadContainer(
-                    abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainers(
+                "Piano": abjad_converters.NestedCompoundToAbjadContainer(
+                    abjad_converters.CycleBasedNestedCompoundToCompoundToAbjadContainers(
                         [
-                            abjad_converters.SequentialEventToAbjadVoice(
-                                abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer()
+                            abjad_converters.ConsecutionToAbjadVoice(
+                                abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer()
                             ),
                         ]
                     ),
@@ -455,21 +465,23 @@ def _make_nested_converter():
                     "PianoStaff",
                     post_process_abjad_container_routine_sequence=(
                         abjad_converters.AddInstrumentName(
-                            complex_event_to_instrument_name=lambda complex_event: complex_event.tag
+                            compound_to_instrument_name=lambda compound: compound.tag
                         ),
                     ),
                 ),
-                "Violin": abjad_converters.NestedComplexEventToAbjadContainer(
-                    abjad_converters.CycleBasedNestedComplexEventToComplexEventToAbjadContainers(
+                "Violin": abjad_converters.NestedCompoundToAbjadContainer(
+                    abjad_converters.CycleBasedNestedCompoundToCompoundToAbjadContainers(
                         [
-                            abjad_converters.SequentialEventToAbjadVoice(abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()),
+                            abjad_converters.ConsecutionToAbjadVoice(
+                                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
+                            ),
                         ]
                     ),
                     abjad.Staff,
                     "Staff",
                     post_process_abjad_container_routine_sequence=(
                         abjad_converters.AddInstrumentName(
-                            complex_event_to_instrument_name=lambda complex_event: complex_event.tag
+                            compound_to_instrument_name=lambda compound: compound.tag
                         ),
                     ),
                 ),
@@ -481,8 +493,9 @@ def _make_nested_converter():
 
 
 def _make_complex_converter():
-    return abjad_converters.SequentialEventToAbjadVoice(
-        abjad_converters.LeafMakerSequentialEventToQuantizedAbjadContainer(
+    w = core_parameters.WesternTempo
+    return abjad_converters.ConsecutionToAbjadVoice(
+        abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer(
             default_time_signature_sequence=[
                 abjad.TimeSignature(ts)
                 for ts in (
@@ -499,15 +512,13 @@ def _make_complex_converter():
                 )
             ],
         ),
-        default_tempo_envelope=core_events.Envelope(
-            ((0, 120), (3, 120), (5, 130), (7.75, 130), (7.75, 100))
+        default_tempo=core_parameters.FlexTempo(
+            ((0, w(120)), (3, w(120)), (5, w(130)), (7.75, w(130)), (7.75, w(100)))
         ),
     )
 
 
-def _make_complex_sequential_event() -> core_events.SequentialEvent[
-    music_events.NoteLike
-]:
+def _make_complex_consecution() -> core_events.Consecution[music_events.NoteLike]:
     e = seq(
         [
             music_events.NoteLike(pitch_name, duration=duration, volume="mf")

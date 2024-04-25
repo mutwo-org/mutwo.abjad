@@ -1,4 +1,4 @@
-"""Module to quantize free :class:`SequentialEvent` to notation based abjad :class:`Container`"""
+"""Module to quantize free :class:`Consecution` to notation based abjad :class:`Container`"""
 
 import abc
 import typing
@@ -20,28 +20,28 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 __all__ = (
-    "SequentialEventToQuantizedAbjadContainer",
-    "NauertSequentialEventToQuantizedAbjadContainer",
-    "NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer",
-    "LeafMakerSequentialEventToQuantizedAbjadContainer",
-    "LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer",
+    "ConsecutionToQuantizedAbjadContainer",
+    "NauertConsecutionToQuantizedAbjadContainer",
+    "NauertConsecutionToDurationLineBasedQuantizedAbjadContainer",
+    "LeafMakerConsecutionToQuantizedAbjadContainer",
+    "LeafMakerConsecutionToDurationLineBasedQuantizedAbjadContainer",
 )
 
 
-IsSimpleEventRestTuple: typing.TypeAlias = tuple[bool, ...]
+IsChrononRestTuple: typing.TypeAlias = tuple[bool, ...]
 QuantizationData: typing.TypeAlias = tuple[
-    abjad.Container, tuple[tuple[tuple[int, ...], ...], ...], IsSimpleEventRestTuple
+    abjad.Container, tuple[tuple[tuple[int, ...], ...], ...], IsChrononRestTuple
 ]
 
 
 # XXX: In the future `default_tempo_envelope` should be set to `None` and
 # `mutwo` should, by default, use `event_to_tempo_envelope`. Then
 # `default_tempo_envelope` should be removed completely.
-class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
-    """Quantize :class:`~mutwo.core_events.SequentialEvent` objects.
+class ConsecutionToQuantizedAbjadContainer(core_converters.abc.Converter):
+    """Quantize :class:`~mutwo.core_events.Consecution` objects.
 
     :param default_time_signature_sequence: Set time signatures to divide the quantized abjad data
-        in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
+        in desired bar sizes. If the converted :class:`~mutwo.core_events.Consecution`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
@@ -49,11 +49,11 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         `tuple[abjad.TimeSignature, ...]` from a :class:`mutwo.core_events.abc.Event`.
         If set to `None` `mutwo` falls back to `default_time_signature_sequence`.
         Default to `None`.
-    :param is_simple_event_rest: Function to detect if the
-        the inspected :class:`mutwo.core_events.SimpleEvent` is a Rest. By
+    :param is_chronon_rest: Function to detect if the
+        the inspected :class:`mutwo.core_events.Chronon` is a Rest. By
         default Mutwo simply checks if 'pitch_list' contain any objects. If not,
         the Event will be interpreted as a rest.
-    :type is_simple_event_rest: typing.Callable[[core_events.SimpleEvent], bool], optional
+    :type is_chronon_rest: typing.Callable[[core_events.Chronon], bool], optional
     """
 
     def __init__(
@@ -67,19 +67,19 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
                 typing.Optional[tuple[abjad.TimeSignature, ...]],
             ]
         ] = None,
-        is_simple_event_rest: typing.Optional[
-            typing.Callable[[core_events.SimpleEvent], bool]
+        is_chronon_rest: typing.Optional[
+            typing.Callable[[core_events.Chronon], bool]
         ] = None,
     ):
         default_time_signature_sequence_count = len(default_time_signature_sequence)
         if default_time_signature_sequence_count == 0:
             raise abjad_utilities.NoTimeSignatureError()
 
-        if is_simple_event_rest is None:
+        if is_chronon_rest is None:
 
-            def is_simple_event_rest(simple_event: core_events.SimpleEvent) -> bool:
+            def is_chronon_rest(chronon: core_events.Chronon) -> bool:
                 pitch_list = core_utilities.call_function_except_attribute_error(
-                    lambda e: e.pitch_list, simple_event, []
+                    lambda e: e.pitch_list, chronon, []
                 )
                 return not bool(pitch_list)
 
@@ -88,7 +88,7 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
 
         self._event_to_time_signature_tuple = event_to_time_signature_tuple
 
-        self._is_simple_event_rest = is_simple_event_rest
+        self._is_chronon_rest = is_chronon_rest
 
     def _get_time_signature_tuple(
         self, event: core_events.abc.Event
@@ -98,12 +98,12 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
                 return time_signature_tuple
         return self._default_time_signature_tuple
 
-    def _tie_rests(self, sequential_event_to_convert: core_events.SequentialEvent):
+    def _tie_rests(self, consecution_to_convert: core_events.Consecution):
         # Tie rests before further processing the event
         #
         # We need to do this, because otherwise pitches/volumes/indicators
         # don't get attached to the right leaves, since
-        # 'related_abjad_leaf_index_tuple_tuple_per_simple_event' would point
+        # 'related_abjad_leaf_index_tuple_tuple_per_chronon' would point
         # to rests where notes are expected. This is because the quantizer
         # auto-splits and auto-combines rests in the following cases:
         #
@@ -126,29 +126,26 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
         # (as rewrite_meter or concatenate_adjacent_tuplets) that have
         # indicators applied to them. For this we would need to pin tags to
         # events according to their status.
-        return sequential_event_to_convert.tie_by(
-            lambda event0, event1: self._is_simple_event_rest(event0)
-            and self._is_simple_event_rest(event1),
-            event_type_to_examine=core_events.SimpleEvent,
-            mutate=False,  # type: ignore
+        return consecution_to_convert.copy().tie_by(
+            lambda event0, event1: self._is_chronon_rest(event0)
+            and self._is_chronon_rest(event1),
+            event_type_to_examine=core_events.Chronon,
         )
 
-    def _apply_is_rest(self, sequential_event_to_convert: core_events.SequentialEvent):
-        # Apply 'is_rest' attribute to each event in the 'SequentialEvent'
+    def _apply_is_rest(self, consecution_to_convert: core_events.Consecution):
+        # Apply 'is_rest' attribute to each event in the 'Consecution'
         # (this is needed for further proceedings)
-        is_simple_event_rest_tuple = tuple(
-            self._is_simple_event_rest(simple_event)
-            for simple_event in sequential_event_to_convert
+        is_chronon_rest_tuple = tuple(
+            self._is_chronon_rest(chronon) for chronon in consecution_to_convert
         )
-        is_simple_event_rest_iterator = iter(is_simple_event_rest_tuple)
+        is_chronon_rest_iterator = iter(is_chronon_rest_tuple)
         return (
-            sequential_event_to_convert.set_parameter(  # type: ignore
+            consecution_to_convert.copy().set_parameter(  # type: ignore
                 "is_rest",
-                lambda _: next(is_simple_event_rest_iterator),
+                lambda _: next(is_chronon_rest_iterator),
                 set_unassigned_parameter=True,
-                mutate=False,  # type: ignore
             ),
-            is_simple_event_rest_tuple,
+            is_chronon_rest_tuple,
         )
 
     # ###################################################################### #
@@ -157,23 +154,21 @@ class SequentialEventToQuantizedAbjadContainer(core_converters.abc.Converter):
 
     @abc.abstractmethod
     def convert(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> QuantizationData:
         ...
 
 
-class NauertSequentialEventToQuantizedAbjadContainer(
-    SequentialEventToQuantizedAbjadContainer
-):
-    """Quantize :class:`~mutwo.core_events.SequentialEvent` objects via :mod:`abjadext.nauert`.
+class NauertConsecutionToQuantizedAbjadContainer(ConsecutionToQuantizedAbjadContainer):
+    """Quantize :class:`~mutwo.core_events.Consecution` objects via :mod:`abjadext.nauert`.
 
     :param default_time_signature_sequence: Set time signatures to divide the quantized abjad data
-        in desired bar sizes. If the converted :class:`~mutwo.core_events.SequentialEvent`
+        in desired bar sizes. If the converted :class:`~mutwo.core_events.Consecution`
         is longer than the sum of all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
     :param duration_unit: This defines the `duration_unit` of the passed
-        :class:`~mutwo.core_events.SequentialEvent` (how the
+        :class:`~mutwo.core_events.Consecution` (how the
         :attr:`~mutwo.core_events.abc.Event.duration` attribute will be
         interpreted). Can either be 'beats' (default) or 'miliseconds'.
         WARNING: 'miliseconds' isn't working properly yet!
@@ -184,9 +179,9 @@ class NauertSequentialEventToQuantizedAbjadContainer(
         to better represent metrical structures within bars. If no optimizer is desired
         this argument can be set to ``None``.
 
-    Unlike :class:`LeafMakerSequentialEventToQuantizedAbjadContainer` this converter
+    Unlike :class:`LeafMakerConsecutionToQuantizedAbjadContainer` this converter
     supports nested tuplets and ties across tuplets. But this converter is much slower
-    than the :class:`LeafMakerSequentialEventToQuantizedAbjadContainer`. Because the
+    than the :class:`LeafMakerConsecutionToQuantizedAbjadContainer`. Because the
     converter depends on the abjad extension `nauert` its quality is dependent on the
     inner mechanism of the used package. Because the quantization made by the `nauert`
     package can be somewhat indeterministic a lot of tweaking may be necessary for
@@ -252,26 +247,26 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     def _process_abjad_leaf(
         indices: list[int],
         abjad_leaf: abjad.Leaf,
-        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
+        related_abjad_leaves_per_chronon: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
         has_tie: bool,
         index_of_previous_q_event: int,
     ) -> tuple[bool, int]:
-        q_event = NauertSequentialEventToQuantizedAbjadContainer._get_respective_q_event_from_abjad_leaf(
+        q_event = NauertConsecutionToQuantizedAbjadContainer._get_respective_q_event_from_abjad_leaf(
             abjad_leaf
         )
 
         if q_event and type(q_event) != nauert.TerminalQEvent:
             nth_q_event = q_event_sequence.sequence.index(q_event)
-            related_abjad_leaves_per_simple_event[nth_q_event].append(tuple(indices))
+            related_abjad_leaves_per_chronon[nth_q_event].append(tuple(indices))
             index_of_previous_q_event = nth_q_event
         elif has_tie:
-            related_abjad_leaves_per_simple_event[index_of_previous_q_event].append(
+            related_abjad_leaves_per_chronon[index_of_previous_q_event].append(
                 tuple(indices)
             )
         # skip leaves without any links
         # else:
-        #     related_abjad_leaves_per_simple_event.append([tuple(indices)])
+        #     related_abjad_leaves_per_chronon.append([tuple(indices)])
 
         has_tie = abjad.get.has_indicator(abjad_leaf, abjad.Tie)
 
@@ -281,7 +276,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     def _process_tuplet(
         indices: list[int],
         tuplet: abjad.Tuplet,
-        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
+        related_abjad_leaves_per_chronon: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
         has_tie: bool,
         index_of_previous_q_event: int,
@@ -293,10 +288,10 @@ class NauertSequentialEventToQuantizedAbjadContainer(
             (
                 has_tie,
                 index_of_previous_q_event,
-            ) = NauertSequentialEventToQuantizedAbjadContainer._process_abjad_leaf_or_tuplet(
+            ) = NauertConsecutionToQuantizedAbjadContainer._process_abjad_leaf_or_tuplet(
                 indices + [nth_abjad_leaf_or_tuplet],
                 abjad_leaf_or_tuplet,
-                related_abjad_leaves_per_simple_event,
+                related_abjad_leaves_per_chronon,
                 q_event_sequence,
                 has_tie,
                 index_of_previous_q_event,
@@ -308,51 +303,51 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     def _process_abjad_leaf_or_tuplet(
         index_list: list[int],
         abjad_leaf_or_tuplet: typing.Union[abjad.Tuplet, abjad.Leaf],
-        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
+        related_abjad_leaves_per_chronon: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
         has_tie: bool,
         index_of_previous_q_event: int,
     ) -> tuple[bool, int]:
         if isinstance(abjad_leaf_or_tuplet, abjad.Tuplet):
-            return NauertSequentialEventToQuantizedAbjadContainer._process_tuplet(
+            return NauertConsecutionToQuantizedAbjadContainer._process_tuplet(
                 index_list,
                 abjad_leaf_or_tuplet,
-                related_abjad_leaves_per_simple_event,
+                related_abjad_leaves_per_chronon,
                 q_event_sequence,
                 has_tie,
                 index_of_previous_q_event,
             )
 
         else:
-            return NauertSequentialEventToQuantizedAbjadContainer._process_abjad_leaf(
+            return NauertConsecutionToQuantizedAbjadContainer._process_abjad_leaf(
                 index_list,
                 abjad_leaf_or_tuplet,
-                related_abjad_leaves_per_simple_event,
+                related_abjad_leaves_per_chronon,
                 q_event_sequence,
                 has_tie,
                 index_of_previous_q_event,
             )
 
     @staticmethod
-    def _make_related_abjad_leaves_per_simple_event(
-        sequential_event: core_events.SequentialEvent,
+    def _make_related_abjad_leaves_per_chronon(
+        consecution: core_events.Consecution,
         q_event_sequence: nauert.QEventSequence,
         quanitisized_abjad_leaf_voice: abjad.Voice,
     ) -> tuple[tuple[tuple[int, ...], ...], ...,]:
         has_tie = False
         index_of_previous_q_event: int = 0
-        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]] = [
-            [] for _ in sequential_event
+        related_abjad_leaves_per_chronon: list[list[tuple[int, ...]]] = [
+            [] for _ in consecution
         ]
         for nth_bar, bar in enumerate(quanitisized_abjad_leaf_voice):
             for nth_abjad_leaf_or_tuplet, abjad_leaf_or_tuplet in enumerate(bar):
                 (
                     has_tie,
                     index_of_previous_q_event,
-                ) = NauertSequentialEventToQuantizedAbjadContainer._process_abjad_leaf_or_tuplet(
+                ) = NauertConsecutionToQuantizedAbjadContainer._process_abjad_leaf_or_tuplet(
                     [nth_bar, nth_abjad_leaf_or_tuplet],
                     abjad_leaf_or_tuplet,
-                    related_abjad_leaves_per_simple_event,
+                    related_abjad_leaves_per_chronon,
                     q_event_sequence,
                     has_tie,
                     index_of_previous_q_event,
@@ -360,7 +355,7 @@ class NauertSequentialEventToQuantizedAbjadContainer(
 
         return tuple(
             tuple(tuple(item) for item in pair)
-            for pair in related_abjad_leaves_per_simple_event
+            for pair in related_abjad_leaves_per_chronon
         )
 
     @staticmethod
@@ -389,19 +384,21 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     # ###################################################################### #
 
     def _get_q_schema(self, event: core_events.abc.Event) -> nauert.MeasurewiseQSchema:
-        return NauertSequentialEventToQuantizedAbjadContainer._make_q_schema(
+        return NauertConsecutionToQuantizedAbjadContainer._make_q_schema(
             self._get_time_signature_tuple(event), self._search_tree
         )
 
-    def _sequential_event_to_q_event_sequence(
-        self, sequential_event: core_events.SequentialEvent
+    def _consecution_to_q_event_sequence(
+        self, consecution: core_events.Consecution
     ) -> nauert.QEventSequence:
-        duration_list = list(sequential_event.get_parameter("duration"))
+        duration_list = list(
+            map(to_abjad_compatible_duration, consecution.get_parameter("duration"))
+        )
 
-        for nth_simple_event, simple_event in enumerate(sequential_event):
-            if simple_event.is_rest:
-                duration_list[nth_simple_event] = (
-                    core_parameters.DirectDuration(0) - duration_list[nth_simple_event]
+        for nth_chronon, chronon in enumerate(consecution):
+            if chronon.is_rest:
+                duration_list[nth_chronon] = (
+                    0 - duration_list[nth_chronon]
                 )
 
         if self._duration_unit == "beats":
@@ -437,39 +434,37 @@ class NauertSequentialEventToQuantizedAbjadContainer(
     # ###################################################################### #
 
     def convert(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> QuantizationData:
-        sequential_event_to_convert, is_simple_event_rest_tuple = self._apply_is_rest(
-            self._tie_rests(sequential_event_to_convert)
+        consecution_to_convert, is_chronon_rest_tuple = self._apply_is_rest(
+            self._tie_rests(consecution_to_convert)
         )
-        q_event_sequence = self._sequential_event_to_q_event_sequence(
-            sequential_event_to_convert
-        )
-        q_schema = self._get_q_schema(sequential_event_to_convert)
+        q_event_sequence = self._consecution_to_q_event_sequence(consecution_to_convert)
+        q_schema = self._get_q_schema(consecution_to_convert)
         quanitisized_abjad_leaf_voice = (
             self._q_event_sequence_to_quanitisized_abjad_leaf_voice(
                 q_event_sequence, q_schema
             )
         )
 
-        related_abjad_leaves_per_simple_event = NauertSequentialEventToQuantizedAbjadContainer._make_related_abjad_leaves_per_simple_event(
-            sequential_event_to_convert, q_event_sequence, quanitisized_abjad_leaf_voice
+        related_abjad_leaves_per_chronon = NauertConsecutionToQuantizedAbjadContainer._make_related_abjad_leaves_per_chronon(
+            consecution_to_convert, q_event_sequence, quanitisized_abjad_leaf_voice
         )
         return (
             quanitisized_abjad_leaf_voice,
-            related_abjad_leaves_per_simple_event,
-            is_simple_event_rest_tuple,
+            related_abjad_leaves_per_chronon,
+            is_chronon_rest_tuple,
         )
 
 
-class LeafMakerSequentialEventToQuantizedAbjadContainer(
-    SequentialEventToQuantizedAbjadContainer
+class LeafMakerConsecutionToQuantizedAbjadContainer(
+    ConsecutionToQuantizedAbjadContainer
 ):
-    """Quantize :class:`~mutwo.core_events.SequentialEvent` object via :mod:`abjad.LeafMaker`.
+    """Quantize :class:`~mutwo.core_events.Consecution` object via :mod:`abjad.LeafMaker`.
 
     :param default_time_signature_sequence: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted
-        :class:`~mutwo.core_events.SequentialEvent` is longer than the sum of
+        :class:`~mutwo.core_events.Consecution` is longer than the sum of
         all passed time signatures, the last time signature
         will be repeated for the remaining bars.
     :type default_time_signature_sequence: typing.Sequence[abjad.TimeSignature]
@@ -479,21 +474,21 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         bugs) it can be deactivated if not used. Default to `True`.
     :type concatenate_adjacent_tuplets: bool
     :param reduce_multiplier: Set to `True` if quantizer should call
-        :func:`mutwo.abjad_utilities.reduce_multiplier` after sequential event
+        :func:`mutwo.abjad_utilities.reduce_multiplier` after consecution
         has been quantized. Can be useful if working with tuplets. If no tuplets
         are used it can be deactivated for faster conversion. Default to ``True``.
     :type reduce_multiplier: bool
 
     This method is significantly faster than the
-    :class:`NauertSequentialEventToQuantizedAbjadContainer`. But it also
+    :class:`NauertConsecutionToQuantizedAbjadContainer`. But it also
     has several known limitations:
 
-        1. :class:`LeafMakerSequentialEventToQuantizedAbjadContainer` doesn't
+        1. :class:`LeafMakerConsecutionToQuantizedAbjadContainer` doesn't
            support nested tuplets.
-        2. :class:`LeafMakerSequentialEventToQuantizedAbjadContainer` doesn't
+        2. :class:`LeafMakerConsecutionToQuantizedAbjadContainer` doesn't
            support ties across tuplets with different prolation (or across tuplets
            and not-tuplet notation). If ties are desired the user has to build them
-           manually before passing the :class:`~mutwo.core_events.SequentialEvent`
+           manually before passing the :class:`~mutwo.core_events.Consecution`
            to the converter.
     """
 
@@ -539,9 +534,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
         bar: abjad.Container, meter: abjad.Meter, global_offset: abjad.Offset
     ) -> None:
         offset_inventory = (
-            LeafMakerSequentialEventToQuantizedAbjadContainer._find_offset_inventory(
-                meter
-            )
+            LeafMakerConsecutionToQuantizedAbjadContainer._find_offset_inventory(meter)
         )
         leaf_offset_list = []
         # don't attach beams on tuplets
@@ -585,16 +578,16 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
     # ###################################################################### #
 
     def _make_note_tuple(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> tuple[abjad.Leaf, ...]:
         pitch_list = [
-            None if event.is_rest else "c" for event in sequential_event_to_convert
+            None if event.is_rest else "c" for event in consecution_to_convert
         ]
         # It has to be a list! Otherwise abjad raises an exception.
         duration_list = list(
             map(
-                lambda duration: abjad.Duration(duration),
-                sequential_event_to_convert.get_parameter("duration"),
+                lambda duration: abjad.Duration(to_abjad_compatible_duration(duration)),
+                consecution_to_convert.get_parameter("duration"),
             )
         )
         note_tuple = tuple(self._leaf_maker(pitch_list, duration_list))
@@ -631,10 +624,10 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
             )
 
     def _make_voice(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> abjad.Voice:
         # first build notes
-        note_tuple = self._make_note_tuple(sequential_event_to_convert)
+        note_tuple = self._make_note_tuple(consecution_to_convert)
 
         # split notes by time signatures
         notes_split_by_time_signature_sequence = abjad.mutate.split(
@@ -685,7 +678,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
                 )
             return tuple(data_per_leaf_or_tuplet_list)
 
-    def _make_related_abjad_leaves_per_simple_event(
+    def _make_related_abjad_leaves_per_chronon(
         self, voice: abjad.Voice
     ) -> tuple[tuple[tuple[int, ...], ...], ...]:
         data_per_tuplet_or_leaf_list = []
@@ -697,7 +690,7 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
                     )
                 )
 
-        related_abjad_leaves_per_simple_event = []
+        related_abjad_leaves_per_chronon = []
         related_abjad_leaves = []
         was_previous_note_rest = None
         has_previous_tie = None
@@ -706,33 +699,31 @@ class LeafMakerSequentialEventToQuantizedAbjadContainer(
                 related_abjad_leaves.append(index_tuple)
             else:
                 if related_abjad_leaves:
-                    related_abjad_leaves_per_simple_event.append(
-                        tuple(related_abjad_leaves)
-                    )
+                    related_abjad_leaves_per_chronon.append(tuple(related_abjad_leaves))
                 related_abjad_leaves = [index_tuple]
 
             has_previous_tie = has_tie
             was_previous_note_rest = is_rest
 
         if related_abjad_leaves:
-            related_abjad_leaves_per_simple_event.append(tuple(related_abjad_leaves))
+            related_abjad_leaves_per_chronon.append(tuple(related_abjad_leaves))
 
-        return tuple(related_abjad_leaves_per_simple_event)
+        return tuple(related_abjad_leaves_per_chronon)
 
     def convert(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> QuantizationData:
-        sequential_event_to_convert, is_simple_event_rest_tuple = self._apply_is_rest(
-            self._tie_rests(sequential_event_to_convert)
+        consecution_to_convert, is_chronon_rest_tuple = self._apply_is_rest(
+            self._tie_rests(consecution_to_convert)
         )
         self._time_signature_tuple = self._get_time_signature_tuple(
-            sequential_event_to_convert
+            consecution_to_convert
         )
-        voice = self._make_voice(sequential_event_to_convert)
-        related_abjad_leaves_per_simple_event = (
-            self._make_related_abjad_leaves_per_simple_event(voice)
+        voice = self._make_voice(consecution_to_convert)
+        related_abjad_leaves_per_chronon = self._make_related_abjad_leaves_per_chronon(
+            voice
         )
-        return voice, related_abjad_leaves_per_simple_event, is_simple_event_rest_tuple
+        return voice, related_abjad_leaves_per_chronon, is_chronon_rest_tuple
 
 
 class _DurationLineBasedQuantizedAbjadContainerMixin(object):
@@ -757,11 +748,11 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
     >>> import abjad
     >>> from mutwo import abjad_converters
     >>> from mutwo import core_events, music_events
-    >>> converter = abjad_converters.SequentialEventToAbjadVoice(
-    ...     abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
+    >>> converter = abjad_converters.ConsecutionToAbjadVoice(
+    ...     abjad_converters.LeafMakerConsecutionToDurationLineBasedQuantizedAbjadContainer(
     ...        )
     ...    )
-    >>> seq = core_events.SequentialEvent(
+    >>> seq = core_events.Consecution(
     ...     [
     ...         music_events.NoteLike("c", 0.25),
     ...         music_events.NoteLike("d", 1),
@@ -814,11 +805,11 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
     def _adjust_quantisized_abjad_leaves(
         self,
         quanitisized_abjad_leaf_voice: abjad.Container,
-        related_abjad_leaves_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
+        related_abjad_leaves_per_chronon: tuple[tuple[tuple[int, ...], ...], ...],
     ):
         is_first = True
 
-        for abjad_leaves_indices in related_abjad_leaves_per_simple_event:
+        for abjad_leaves_indices in related_abjad_leaves_per_chronon:
             if abjad_leaves_indices:
                 first_element = core_utilities.get_nested_item_from_index_sequence(
                     abjad_leaves_indices[0], quanitisized_abjad_leaf_voice
@@ -847,8 +838,8 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
                         )
 
 
-class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer(
-    NauertSequentialEventToQuantizedAbjadContainer,
+class NauertConsecutionToDurationLineBasedQuantizedAbjadContainer(
+    NauertConsecutionToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
     def __init__(
@@ -866,27 +857,27 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer(
         )
 
     def convert(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> QuantizationData:
         (
             quanitisized_abjad_leaf_voice,
-            related_abjad_leaves_per_simple_event,
-            is_simple_event_rest_tuple,
-        ) = super().convert(sequential_event_to_convert)
+            related_abjad_leaves_per_chronon,
+            is_chronon_rest_tuple,
+        ) = super().convert(consecution_to_convert)
 
         self._adjust_quantisized_abjad_leaves(
-            quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
+            quanitisized_abjad_leaf_voice, related_abjad_leaves_per_chronon
         )
 
         return (
             quanitisized_abjad_leaf_voice,
-            related_abjad_leaves_per_simple_event,
-            is_simple_event_rest_tuple,
+            related_abjad_leaves_per_chronon,
+            is_chronon_rest_tuple,
         )
 
 
-class LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
-    LeafMakerSequentialEventToQuantizedAbjadContainer,
+class LeafMakerConsecutionToDurationLineBasedQuantizedAbjadContainer(
+    LeafMakerConsecutionToQuantizedAbjadContainer,
     _DurationLineBasedQuantizedAbjadContainerMixin,
 ):
     def __init__(
@@ -904,35 +895,39 @@ class LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer(
         )
 
     def convert(
-        self, sequential_event_to_convert: core_events.SequentialEvent
+        self, consecution_to_convert: core_events.Consecution
     ) -> QuantizationData:
         (
             quanitisized_abjad_leaf_voice,
-            related_abjad_leaves_per_simple_event,
-            is_simple_event_rest_tuple,
-        ) = super().convert(sequential_event_to_convert)
+            related_abjad_leaves_per_chronon,
+            is_chronon_rest_tuple,
+        ) = super().convert(consecution_to_convert)
 
         self._adjust_quantisized_abjad_leaves(
-            quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
+            quanitisized_abjad_leaf_voice, related_abjad_leaves_per_chronon
         )
 
         # only assign first item to abjad leaves
-        post_processed_releated_abjad_leaves_per_simple_event = []
-        for related_abjad_leaves in related_abjad_leaves_per_simple_event:
-            post_processed_releated_abjad_leaves_per_simple_event.append(
+        post_processed_releated_abjad_leaves_per_chronon = []
+        for related_abjad_leaves in related_abjad_leaves_per_chronon:
+            post_processed_releated_abjad_leaves_per_chronon.append(
                 (related_abjad_leaves[0],)
             )
 
         return (
             quanitisized_abjad_leaf_voice,
-            post_processed_releated_abjad_leaves_per_simple_event,
-            is_simple_event_rest_tuple,
+            post_processed_releated_abjad_leaves_per_chronon,
+            is_chronon_rest_tuple,
         )
 
 
-NauertSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
-    NauertSequentialEventToQuantizedAbjadContainer
+NauertConsecutionToDurationLineBasedQuantizedAbjadContainer._set_docs(
+    NauertConsecutionToQuantizedAbjadContainer
 )
-LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer._set_docs(
-    LeafMakerSequentialEventToQuantizedAbjadContainer
+LeafMakerConsecutionToDurationLineBasedQuantizedAbjadContainer._set_docs(
+    LeafMakerConsecutionToQuantizedAbjadContainer
 )
+
+
+def to_abjad_compatible_duration(duration: core_parameters.abc.Duration):
+    return getattr(duration, "ratio", None) or duration.beat_count

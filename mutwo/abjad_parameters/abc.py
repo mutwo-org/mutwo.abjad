@@ -17,8 +17,8 @@ class AbjadAttachment(abc.ABC):
     indicator: typing.Optional[
         music_parameters.abc.PlayingIndicator | music_parameters.abc.NotationIndicator
     ] = None
-    is_simple_event_rest: typing.Optional[
-        typing.Callable[[core_events.SimpleEvent], bool]
+    is_chronon_rest: typing.Optional[
+        typing.Callable[[core_events.Chronon], bool]
     ] = None
     mutwo_pitch_to_abjad_pitch: typing.Optional[
         typing.Callable[[music_parameters.abc.Pitch], abjad.Pitch]

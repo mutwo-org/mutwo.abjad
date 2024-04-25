@@ -29,7 +29,7 @@ class MutwoPitchToAbjadPitch(core_converters.abc.Converter):
     :class:`mutwo.music_parameters.WesternPitch`. If it does, Mutwo
     will initialise the Abjad Pitch from the :attr:`name` attribute.
     Otherwise Mutwo will simply initialise the Abjad Pitch from the
-    objects :attr:`frequency` attribute.
+    objects :attr:`hertz` attribute.
 
     If users desire to make more complex conversions (for instance
     due to ``scordatura`` or transpositions of instruments), one can simply
@@ -47,9 +47,9 @@ class MutwoPitchToAbjadPitch(core_converters.abc.Converter):
     def convert(self, pitch_to_convert: music_parameters.abc.Pitch) -> abjad.Pitch:
         if isinstance(pitch_to_convert, music_parameters.WesternPitch):
             return abjad.NamedPitch(
-                pitch_to_convert.round_to(
-                    self._allowed_division_sequence, mutate=False
+                pitch_to_convert.copy().round_to(
+                    self._allowed_division_sequence
                 ).name
             )
         else:
-            return abjad.NamedPitch.from_hertz(pitch_to_convert.frequency)
+            return abjad.NamedPitch.from_hertz(pitch_to_convert.hertz)

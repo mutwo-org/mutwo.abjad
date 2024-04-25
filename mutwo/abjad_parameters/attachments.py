@@ -829,9 +829,9 @@ class DynamicChangeIndicationStop(abjad_parameters.abc.BangFirstAttachment):
         return leaf
 
 
-class GraceNoteSequentialEvent(abjad_parameters.abc.BangFirstAttachment):
-    def __init__(self, grace_note_sequential_event: abjad.BeforeGraceContainer):
-        self._grace_note_sequential_event = grace_note_sequential_event
+class GraceNoteConsecution(abjad_parameters.abc.BangFirstAttachment):
+    def __init__(self, grace_note_consecution: abjad.BeforeGraceContainer):
+        self._grace_note_consecution = grace_note_consecution
 
     @classmethod
     def from_indicator_collection(
@@ -839,7 +839,7 @@ class GraceNoteSequentialEvent(abjad_parameters.abc.BangFirstAttachment):
     ) -> typing.Optional[abjad_parameters.abc.AbjadAttachment]:
         """Always return None.
 
-        GraceNoteSequentialEvent can't be initialised from IndicatorCollection.
+        GraceNoteConsecution can't be initialised from IndicatorCollection.
         """
         return None
 
@@ -854,14 +854,14 @@ class GraceNoteSequentialEvent(abjad_parameters.abc.BangFirstAttachment):
             abjad_parameters.constants.INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES_TUPLE
         ):
             detached_indicator = abjad.detach(indicator_to_detach, leaf)
-            abjad.attach(detached_indicator, self._grace_note_sequential_event[0])
-        abjad.attach(self._grace_note_sequential_event, leaf)
+            abjad.attach(detached_indicator, self._grace_note_consecution[0])
+        abjad.attach(self._grace_note_consecution, leaf)
         return leaf
 
 
-class AfterGraceNoteSequentialEvent(abjad_parameters.abc.BangLastAttachment):
-    def __init__(self, after_grace_note_sequential_event: abjad.AfterGraceContainer):
-        self._after_grace_note_sequential_event = after_grace_note_sequential_event
+class AfterGraceNoteConsecution(abjad_parameters.abc.BangLastAttachment):
+    def __init__(self, after_grace_note_consecution: abjad.AfterGraceContainer):
+        self._after_grace_note_consecution = after_grace_note_consecution
 
     @classmethod
     def from_indicator_collection(
@@ -869,7 +869,7 @@ class AfterGraceNoteSequentialEvent(abjad_parameters.abc.BangLastAttachment):
     ) -> typing.Optional[abjad_parameters.abc.AbjadAttachment]:
         """Always return None.
 
-        AfterGraceNoteSequentialEvent can't be initialised from IndicatorCollection.
+        AfterGraceNoteConsecution can't be initialised from IndicatorCollection.
         """
         return None
 
@@ -878,7 +878,7 @@ class AfterGraceNoteSequentialEvent(abjad_parameters.abc.BangLastAttachment):
         return True
 
     def process_leaf(self, leaf: abjad.Leaf) -> LeafOrLeafSequence:
-        abjad.attach(self._after_grace_note_sequential_event, leaf)
+        abjad.attach(self._after_grace_note_consecution, leaf)
         return leaf
 
 

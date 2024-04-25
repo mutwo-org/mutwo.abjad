@@ -22,7 +22,7 @@ class ProcessAbjadContainerRoutine(abc.ABC):
     @abc.abstractmethod
     def __call__(
         self,
-        complex_event_to_convert: core_events.abc.ComplexEvent,
+        compound_to_convert: core_events.abc.Compound,
         container_to_process: abjad.Container,
     ):
         raise NotImplementedError
@@ -31,7 +31,7 @@ class ProcessAbjadContainerRoutine(abc.ABC):
 class AddDurationLineEngraver(ProcessAbjadContainerRoutine):
     def __call__(
         self,
-        complex_event_to_convert: core_events.abc.ComplexEvent,
+        compound_to_convert: core_events.abc.Compound,
         container_to_process: abjad.Container,
     ):
         container_to_process.consists_commands.append("Duration_line_engraver")
@@ -40,7 +40,7 @@ class AddDurationLineEngraver(ProcessAbjadContainerRoutine):
 class PrepareForDurationLineBasedNotation(ProcessAbjadContainerRoutine):
     def __call__(
         self,
-        _: core_events.abc.ComplexEvent,
+        _: core_events.abc.Compound,
         container_to_process: abjad.Container,
     ):
         first_element = abjad.get.leaf(container_to_process, 0)
@@ -73,39 +73,39 @@ class PrepareForDurationLineBasedNotation(ProcessAbjadContainerRoutine):
 class AddInstrumentName(ProcessAbjadContainerRoutine):
     def __init__(
         self,
-        complex_event_to_instrument_name: typing.Callable[
-            [core_events.abc.ComplexEvent], str
-        ] = lambda complex_event: complex_event.instrument_name,
-        complex_event_to_short_instrument_name: typing.Callable[
-            [core_events.abc.ComplexEvent], str
-        ] = lambda complex_event: complex_event.short_instrument_name,
+        compound_to_instrument_name: typing.Callable[
+            [core_events.abc.Compound], str
+        ] = lambda compound: compound.instrument_name,
+        compound_to_short_instrument_name: typing.Callable[
+            [core_events.abc.Compound], str
+        ] = lambda compound: compound.short_instrument_name,
         instrument_name_font_size: str = "teeny",
         short_instrument_name_font_size: str = "teeny",
     ):
-        self._complex_event_to_instrument_name = complex_event_to_instrument_name
-        self._complex_event_to_short_instrument_name = (
-            complex_event_to_short_instrument_name
+        self._compound_to_instrument_name = compound_to_instrument_name
+        self._compound_to_short_instrument_name = (
+            compound_to_short_instrument_name
         )
         self._instrument_name_font_size = instrument_name_font_size
         self._short_instrument_name_font_size = short_instrument_name_font_size
 
     def __call__(
         self,
-        complex_event_to_convert: core_events.abc.ComplexEvent,
+        compound_to_convert: core_events.abc.Compound,
         container_to_process: abjad.Container,
     ):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)
 
         try:
-            instrument_name = self._complex_event_to_instrument_name(
-                complex_event_to_convert
+            instrument_name = self._compound_to_instrument_name(
+                compound_to_convert
             )
         except AttributeError:
             instrument_name = None
 
         try:
-            short_instrument_name = self._complex_event_to_short_instrument_name(
-                complex_event_to_convert
+            short_instrument_name = self._compound_to_short_instrument_name(
+                compound_to_convert
             )
         except AttributeError:
             short_instrument_name = None
@@ -139,7 +139,7 @@ class AddAccidentalStyle(ProcessAbjadContainerRoutine):
 
     def __call__(
         self,
-        complex_event_to_convert: core_events.abc.ComplexEvent,
+        compound_to_convert: core_events.abc.Compound,
         container_to_process: abjad.Container,
     ):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)
@@ -157,7 +157,7 @@ class SetStaffSize(ProcessAbjadContainerRoutine):
 
     def __call__(
         self,
-        complex_event_to_convert: core_events.abc.ComplexEvent,
+        compound_to_convert: core_events.abc.Compound,
         container_to_process: abjad.Container,
     ):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)

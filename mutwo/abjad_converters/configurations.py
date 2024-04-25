@@ -12,7 +12,7 @@ DEFAULT_ABJAD_ATTACHMENT_CLASS_TUPLE = tuple(
     and abjad_parameters.abc.AbjadAttachment in inspect.getmro(cls)
 )
 """Default value for argument `abjad_attachment_classes` in
-:class:`~mutwo.abjad_converters.SequentialEventToAbjadVoiceConverter`."""
+:class:`~mutwo.abjad_converters.ConsecutionToAbjadVoiceConverter`."""
 
 # Cleanup
 del abjad_parameters, inspect

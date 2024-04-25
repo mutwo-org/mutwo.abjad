@@ -49,12 +49,12 @@ class AbjadTestCase(unittest.TestCase):
         reset_tests: bool = False,
         force_png: bool = False,
         converter=None,
-        ev: core_events.abc.Event = core_events.SequentialEvent(
-            [core_events.SimpleEvent(1)]
+        ev: core_events.abc.Event = core_events.Consecution(
+            [core_events.Chronon(1)]
         ),
     ):
         if converter is None:
-            converter = self._abjad_converters.SequentialEventToAbjadVoice()
+            converter = self._abjad_converters.ConsecutionToAbjadVoice()
 
         converted_event = converter.convert(_parse_event(ev))
 
@@ -123,10 +123,10 @@ class AbjadTestCase(unittest.TestCase):
 def _parse_event(ev):
     match ev:
         case music_events.NoteLike():
-            ev = core_events.SequentialEvent([ev])
-        case core_events.SequentialEvent():
+            ev = core_events.Consecution([ev])
+        case core_events.Consecution():
             ev = ev
-        case core_events.SimultaneousEvent():
+        case core_events.Concurrence():
             ev = ev
         case _:
             raise NotImplementedError(type(ev))

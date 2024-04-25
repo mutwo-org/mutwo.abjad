@@ -46,8 +46,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
         return dict(
             ev=seq([get_ev("up"), get_ev("down")]),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
             ),
         )
 
@@ -61,8 +61,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
         return dict(
             ev=seq([get_ev("."), get_ev("tenuto")]),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
             ),
         )
 
@@ -77,8 +77,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
                     )
                 ]
             ),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
             ),
         )
 
@@ -95,8 +95,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     def test_natural_harmonic_node_list(self):
         return dict(
             ev=self._get_natural_harmonic_node_list_ev(),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
             ),
         )
 
@@ -104,8 +104,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
     def test_natural_harmonic_node_list_with_duration_line(self):
         return dict(
             ev=self._get_natural_harmonic_node_list_ev(),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.LeafMakerSequentialEventToDurationLineBasedQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.LeafMakerConsecutionToDurationLineBasedQuantizedAbjadContainer()
             ),
         )
 
@@ -159,8 +159,8 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
         return dict(
             ev=seq([o(), p(), p(), p(), o()]),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
             ),
         )
 
@@ -225,15 +225,15 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
         return dict(
             ev=seq([sus1(), sus1(), sus0(), corda1(), corda1(), corda0()]),
-            converter=abjad_converters.SequentialEventToAbjadVoice(
-                abjad_converters.NauertSequentialEventToQuantizedAbjadContainer()
+            converter=abjad_converters.ConsecutionToAbjadVoice(
+                abjad_converters.NauertConsecutionToQuantizedAbjadContainer()
             ),
         )
 
     @t(RESET_TESTS, FORCE_PNG)
     def test_hairpin(self):
-        def h(simple_event):
-            return simple_event.playing_indicator_collection.hairpin
+        def h(chronon):
+            return chronon.playing_indicator_collection.hairpin
 
         e = seq(
             [
@@ -392,7 +392,7 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
 
 n = music_events.NoteLike
-seq = core_events.SequentialEvent
+seq = core_events.Consecution
 f = fractions.Fraction
 
 

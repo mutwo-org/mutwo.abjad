@@ -167,7 +167,7 @@ class MutwoPitchToHEJIAbjadPitch(MutwoPitchToAbjadPitch):
         reference_pitch_as_western_pitch = music_parameters.WesternPitch(
             self._reference_pitch, 4
         )
-        expected_difference_in_cents = pitch_to_convert.interval
+        expected_difference_in_cents = pitch_to_convert.cents
         while (
             expected_difference_in_cents
             - (

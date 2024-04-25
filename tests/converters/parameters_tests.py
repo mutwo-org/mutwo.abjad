@@ -1,5 +1,6 @@
 """Test conversion of mutwo to abjad parameters"""
 
+import fractions
 import unittest
 
 import abjad  # type: ignore
@@ -91,7 +92,7 @@ class MutwoVolumeToAbjadAttachmentDynamicTest(unittest.TestCase):
     def test_convert(self):
         converter = abjad_converters.MutwoVolumeToAbjadAttachmentDynamic()
         d = abjad_parameters.Dynamic
-        wv, dv = music_parameters.WesternVolume, music_parameters.DecibelVolume
+        wv, dv = music_parameters.WesternVolume, music_parameters.DirectVolume
         for mutwo_volume, expected_abjad_parameter in (
             (wv("mf"), d(dynamic_indicator="mf")),
             (wv("fff"), d(dynamic_indicator="fff")),
@@ -135,53 +136,53 @@ class MutwoLyricToAbjadStringTest(unittest.TestCase):
         )
 
 
-class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
-    def test_convert_tempo_point_tuple(self):
+class ComplexTempoToAbjadAttachmentTempoTest(unittest.TestCase):
+    def test_convert_tempo_tuple(self):
         self.assertEqual(
-            abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._convert_tempo_point_tuple(
-                (60, 120, core_parameters.DirectTempoPoint(120, reference=4))
+            abjad_converters.ComplexTempoToAbjadAttachmentTempo._convert_tempo_tuple(
+                (60, 120, core_parameters.WesternTempo(120, reference=4))
             ),
             (
-                core_parameters.DirectTempoPoint(60),
-                core_parameters.DirectTempoPoint(120),
-                core_parameters.DirectTempoPoint(120, reference=4),
+                core_parameters.DirectTempo(60),
+                core_parameters.DirectTempo(120),
+                core_parameters.WesternTempo(120, reference=4),
             ),
         )
 
     def test_find_dynamic_change_indication(self):
-        for tempo_point_tuple, expected_dynamic_change_indication in (
+        for tempo_tuple, expected_dynamic_change_indication in (
             (
                 (
-                    core_parameters.DirectTempoPoint(120),
-                    core_parameters.DirectTempoPoint(130),
+                    core_parameters.DirectTempo(120),
+                    core_parameters.DirectTempo(130),
                 ),
                 "acc.",
             ),
             (
                 (
-                    core_parameters.DirectTempoPoint(120),
-                    core_parameters.DirectTempoPoint(110),
+                    core_parameters.DirectTempo(120),
+                    core_parameters.DirectTempo(110),
                 ),
                 "rit.",
             ),
             (
                 (
-                    core_parameters.DirectTempoPoint(120),
-                    core_parameters.DirectTempoPoint(120),
+                    core_parameters.DirectTempo(120),
+                    core_parameters.DirectTempo(120),
                 ),
                 None,
             ),
             (
                 (
-                    core_parameters.DirectTempoPoint(120),
-                    core_parameters.DirectTempoPoint(60, reference=2),
+                    core_parameters.DirectTempo(120),
+                    core_parameters.WesternTempo(60, reference=2),
                 ),
                 None,
             ),
         ):
             self.assertEqual(
-                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_dynamic_change_indication(
-                    *tempo_point_tuple
+                abjad_converters.ComplexTempoToAbjadAttachmentTempo._find_dynamic_change_indication(
+                    *tempo_tuple
                 ),
                 expected_dynamic_change_indication,
             )
@@ -192,24 +193,24 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             core_utilities.accumulate_from_zero(duration_list)
         )
         value_list = [
-            core_parameters.DirectTempoPoint(bpm)
+            core_parameters.DirectTempo(bpm)
             for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
         ]
-        tempo_envelope_to_convert = core_events.Envelope(
+        tempo_to_convert = core_parameters.FlexTempo(
             tuple(zip(absolute_duration_list, value_list))
         )
-        for tempo_point_index, shall_write_metronome_mark in (
+        for tempo_index, shall_write_metronome_mark in (
             (1, False),
             (2, True),
             (5, False),
             (7, True),
         ):
             self.assertEqual(
-                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_write_metronome_mark(
-                    tempo_envelope_to_convert,
-                    tempo_point_index,
-                    tempo_envelope_to_convert.value_tuple[tempo_point_index],
-                    tempo_envelope_to_convert.value_tuple,
+                abjad_converters.ComplexTempoToAbjadAttachmentTempo._shall_write_metronome_mark(
+                    tempo_to_convert,
+                    tempo_index,
+                    tempo_to_convert.parameter_tuple[tempo_index],
+                    tempo_to_convert.parameter_tuple,
                 ),
                 shall_write_metronome_mark,
             )
@@ -227,7 +228,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             (previous_tempo_attachment_tuple[:1], True),
         ):
             self.assertEqual(
-                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
+                abjad_converters.ComplexTempoToAbjadAttachmentTempo._shall_stop_dynamic_change_indication(
                     local_previous_tempo_attachment_tuple
                 ),
                 shall_stop_dynamic_change_indication,
@@ -236,65 +237,67 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
     def test_find_metronome_mark_values(self):
         for (
             write_metronome_mark,
-            tempo_point,
+            tempo,
             stop_dynamic_change_indicaton,
             expected_metronome_mark_values,
         ) in (
             (
                 True,
-                core_parameters.DirectTempoPoint(
-                    60, reference=2, textual_indication="ordinary"
+                core_parameters.WesternTempo(
+                    60,
+                    reference=fractions.Fraction(1, 2),
+                    textual_indication="ordinary",
                 ),
                 False,
                 ((1, 2), 60, "ordinary"),
             ),
             (
                 True,
-                core_parameters.DirectTempoPoint(
-                    120, reference=1, textual_indication="faster"
+                core_parameters.WesternTempo(
+                    120, reference=fractions.Fraction(1, 4), textual_indication="faster"
                 ),
                 False,
                 ((1, 4), 120, "faster"),
             ),
             (
                 False,
-                core_parameters.DirectTempoPoint(
-                    120, reference=1, textual_indication="faster"
+                core_parameters.WesternTempo(
+                    120, reference=fractions.Fraction(1, 4), textual_indication="faster"
                 ),
                 False,
                 (None, None, None),
             ),
             (
                 False,
-                core_parameters.DirectTempoPoint(
-                    120, reference=1, textual_indication="faster"
+                core_parameters.WesternTempo(
+                    120, reference=fractions.Fraction(1, 4), textual_indication="faster"
                 ),
                 True,
                 (None, None, "a tempo"),
             ),
         ):
             self.assertEqual(
-                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._find_metronome_mark_values(
+                abjad_converters.ComplexTempoToAbjadAttachmentTempo._find_metronome_mark_values(
                     write_metronome_mark,
-                    tempo_point,
+                    tempo,
                     stop_dynamic_change_indicaton,
                 ),
                 expected_metronome_mark_values,
             )
 
-    def test_process_tempo_event(self):
+    def test_process_tempo_chronon(self):
         duration_list = [2, 2, 2, 2, 0, 2, 0]
         absolute_duration_list = list(
             core_utilities.accumulate_from_zero(duration_list)
         )
         value_list = [
-            core_parameters.DirectTempoPoint(bpm)
+            core_parameters.WesternTempo(bpm)
             for bpm in (120, 120, 110, 120, 110, 120, 110, 100)
         ]
-        tempo_envelope_to_convert = core_events.Envelope(
+        tempo_to_convert = core_parameters.FlexTempo(
             tuple(zip(absolute_duration_list, value_list))
         )
-        tempo_point_tuple = tempo_envelope_to_convert.value_tuple
+        tempo_tuple = tempo_to_convert.parameter_tuple
         tempo_attachments = (
             (
                 0,
@@ -353,22 +356,22 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoTest(unittest.TestCase):
             ),
         )
 
-        for tempo_point_index, tempo_attachment_index in (
+        for tempo_index, tempo_attachment_index in (
             (0, 0),
             (1, 1),
             (2, 2),
             (3, 3),
             (5, 4),
         ):
-            tempo_point = tempo_point_tuple[tempo_point_index]
+            tempo = tempo_tuple[tempo_index]
             current_tempo_attachments = tempo_attachments[:tempo_attachment_index]
             current_tempo_attachment = tempo_attachments[tempo_attachment_index][1]
             self.assertEqual(
-                abjad_converters.ComplexTempoEnvelopeToAbjadAttachmentTempo._process_tempo_event(
-                    tempo_envelope_to_convert,
-                    tempo_point_index,
-                    tempo_point,
-                    tempo_point_tuple,
+                abjad_converters.ComplexTempoToAbjadAttachmentTempo._process_tempo_chronon(
+                    tempo_to_convert,
+                    tempo_index,
+                    tempo,
+                    tempo_tuple,
                     current_tempo_attachments,
                 ),
                 current_tempo_attachment,
