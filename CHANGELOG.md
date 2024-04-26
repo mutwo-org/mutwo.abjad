@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.20.0] - 2024-04-26
+
+This update 'mutwo.abjad' to new major 'mutwo.core' version.
+
+### Changed
+- `TempoEnvelopeToAbjadAttachmentTempo` to `TempoToAbjadAttachmentTempo`
+- `ComplexTempoEnvelopeToAbjadAttachmentTempo` to `ComplexTempoToAbjadAttachmentTempo`
+- `NestedComplexEventToAbjadContainer` to `NestedCompoundToAbjadContainer`
+- `NestedComplexEventToComplexEventToAbjadContainers` to `NestedCompoundToCompoundToAbjadContainers`
+- `CycleBasedNestedComplexEventToComplexEventToAbjadContainers` to `CycleBasedNestedCompoundToCompoundToAbjadContainers`
+- `TagBasedNestedComplexEventToComplexEventToAbjadContainers` to `TagBasedNestedCompoundToCompoundToAbjadContainers`
+- `SequentialEventToAbjadVoice` to `ConsecutionToAbjadVoice`
+- `SequentialEventToQuantizedAbjadContainer` to `ConsecutionToQuantizedAbjadContainer`
+- `LeafMakerSequentialEventToQuantizedAbjadContainer` to `LeafMakerConsecutionToQuantizedAbjadContainer`
+- `NauertSequentialEventToQuantizedAbjadContainer` to `NauertConsecutionToQuantizedAbjadContainer`
+
+
 ## [0.19.0] - 2024-01-08
 
 ### Added
