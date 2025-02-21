@@ -8,8 +8,8 @@ let
 
   mutwoabjad = import ./default.nix;
 
-  mypython = pkgs.python310.buildEnv.override {
-    extraLibs = with pkgs.python310Packages; [
+  mypython = pkgs.python311.buildEnv.override {
+    extraLibs = with pkgs.python311Packages; [
       mutwoabjad
       # Needed for mutwo.abjad tests
       pytest
