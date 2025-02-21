@@ -23,9 +23,6 @@ class AbjadAttachment(abc.ABC):
     mutwo_pitch_to_abjad_pitch: typing.Optional[
         typing.Callable[[music_parameters.abc.Pitch], abjad.Pitch]
     ] = None
-    mutwo_pitch_to_abjad_pitch: typing.Optional[
-        typing.Callable[[music_parameters.abc.Pitch], abjad.Pitch]
-    ] = None
     mutwo_volume_to_abjad_attachment_dynamic: typing.Optional[
         typing.Callable[[music_parameters.abc.Volume], abjad.Dynamic]
     ] = None
