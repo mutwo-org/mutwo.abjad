@@ -74,7 +74,7 @@ class CompoundToAbjadContainer(core_converters.abc.Converter):
             post_process_abjad_container_routine_sequence
         )
 
-    def _make_empty_abjad_container(
+    def _make_empty_container(
         self, compound_to_converter: core_events.abc.Compound
     ) -> abjad.Container:
         abjad_container_name = core_utilities.call_function_except_attribute_error(
@@ -106,43 +106,43 @@ class CompoundToAbjadContainer(core_converters.abc.Converter):
 
         return self._abjad_container_class([], **kwargs)
 
-    def _pre_process_abjad_container(
+    def _preprocess_container(
         self,
         compound_to_convert: core_events.abc.Compound,
-        abjad_container_to_pre_process: abjad.Container,
+        container_to_preprocess: abjad.Container,
     ):
         for (
             pre_process_abjad_container_routine
         ) in self._pre_process_abjad_container_routine_sequence:
             pre_process_abjad_container_routine(
-                compound_to_convert, abjad_container_to_pre_process
+                compound_to_convert, container_to_preprocess
             )
 
-    def _post_process_abjad_container(
+    def _postprocess_container(
         self,
         compound_to_convert: core_events.abc.Compound,
-        abjad_container_to_post_process: abjad.Container,
+        container_to_postprocess: abjad.Container,
     ):
         for (
             post_process_abjad_container_routine
         ) in self._post_process_abjad_container_routine_sequence:
             post_process_abjad_container_routine(
-                compound_to_convert, abjad_container_to_post_process
+                compound_to_convert, container_to_postprocess
             )
 
     @abc.abstractmethod
-    def _fill_abjad_container(
+    def _fill_container(
         self,
-        abjad_container_to_fill: abjad.Container,
+        container_to_fill: abjad.Container,
         compound_to_convert: core_events.abc.Compound,
     ):
         raise NotImplementedError
 
     def convert(self, compound_to_convert: core_events.abc.Compound) -> abjad.Container:
-        abjad_container = self._make_empty_abjad_container(compound_to_convert)
-        self._pre_process_abjad_container(compound_to_convert, abjad_container)
-        self._fill_abjad_container(abjad_container, compound_to_convert)
-        self._post_process_abjad_container(compound_to_convert, abjad_container)
+        abjad_container = self._make_empty_container(compound_to_convert)
+        self._preprocess_container(compound_to_convert, abjad_container)
+        self._fill_container(abjad_container, compound_to_convert)
+        self._postprocess_container(compound_to_convert, abjad_container)
         return abjad_container
 
 
@@ -241,18 +241,9 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
         collection can be extracted), mutwo will build a notation indicator collection
         from :const:`~mutwo.music_events.configurations.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
     :type chronon_to_notation_indicator_collection: typing.Callable[[core_events.Chronon], music_parameters.NotationIndicatorCollection,], optional
-    :param chronon_to_lyric: Function to extract the lyric from a
+    :param chronon_to_lyric_list: Function to extract the lyric_list from a
         :class:`mutwo.core_events.Chronon` in the purpose of generating lyrics.
-        The function should return an object that inherits from
-        :class:`mutwo.music_parameters.abc.Lyric`. By default it asks the Event for
-        its :attr:`~mutwo.music_events.NoteLike.lyric` attribute (because by default
-        :class:`mutwo.music_events.NoteLike` objects are expected).
-        When using different Event classes than :class:`~mutwo.music_events.NoteLike`
-        with a different name for their lyric property, this argument should
-        be overridden.
-        If the function call raises an :obj:`AttributeError` (e.g. if no lyric can be
-        extracted), mutwo will set :attr:`lyric` to an empty text.
-    :type chronon_to_lyric: typing.Callable[[core_events.Chronon], music_parameters.abc.Lyric], optional
+    :type chronon_to_lyric_list: typing.Callable[[core_events.Chronon], music_parameters.abc.LyricList], optional
     :param mutwo_pitch_to_abjad_pitch: Class which defines how to convert
         :class:`mutwo.music_parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
         See :class:`MutwoPitchToAbjadPitch` for more information.
@@ -351,10 +342,10 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             [core_events.Chronon],
             music_parameters.NotationIndicatorCollection,
         ] = music_converters.ChrononToNotationIndicatorCollection(),
-        chronon_to_lyric: typing.Callable[
+        chronon_to_lyric_list: typing.Callable[
             [core_events.Chronon],
-            music_parameters.abc.Lyric,
-        ] = music_converters.ChrononToLyric(),
+            music_parameters.abc.LyricList,
+        ] = music_converters.ChrononToLyricList(),
         mutwo_pitch_to_abjad_pitch: MutwoPitchToAbjadPitch = MutwoPitchToAbjadPitch(),
         mutwo_volume_to_abjad_attachment_dynamic: typing.Optional[
             MutwoVolumeToAbjadAttachmentDynamic
@@ -449,13 +440,13 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
         self._chronon_to_notation_indicator_collection = (
             chronon_to_notation_indicator_collection
         )
-        self._chronon_to_lyric = chronon_to_lyric
+        self._chronon_to_lyric_list = chronon_to_lyric_list
         self._chronon_to_function_tuple = (
             self._chronon_to_grace_note_consecution,
             self._chronon_to_after_grace_note_consecution,
             self._chronon_to_playing_indicator_collection,
             self._chronon_to_notation_indicator_collection,
-            self._chronon_to_lyric,
+            self._chronon_to_lyric_list,
         )
 
         self._mutwo_pitch_to_abjad_pitch = mutwo_pitch_to_abjad_pitch
@@ -477,7 +468,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
     # ###################################################################### #
 
     @staticmethod
-    def _find_absolute_times_of_abjad_leaves(
+    def _find_leaf_times(
         abjad_voice: abjad.Voice,
     ) -> tuple[fractions.Fraction, ...]:
         absolute_time_per_leaf_list: list[fractions.Fraction] = []
@@ -489,7 +480,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
         return tuple(absolute_time_per_leaf_list)
 
     @staticmethod
-    def _replace_rests_with_full_measure_rests(abjad_voice: abjad.Voice) -> None:
+    def _replace_with_multimeasure_rests(abjad_voice: abjad.Voice) -> None:
         def ok(indicator_sequence) -> bool:
             for indicator in indicator_sequence:
                 if isinstance(
@@ -531,7 +522,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                 return tempo
         return self._default_tempo
 
-    def _indicator_collection_to_abjad_parameters(
+    def _indicators_to_params(
         self,
         indicator_collection: music_parameters.abc.IndicatorCollection,
     ) -> dict[str, abjad_parameters.abc.AbjadAttachment]:
@@ -552,14 +543,12 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
 
         return attachment_dict
 
-    def _grace_note_consecution_to_abjad_attachment(
+    def _grace_notes_to_attachment(
         self,
-        grace_note_consecution_or_after_grace_note_consecution: core_events.Consecution[
-            core_events.Chronon
-        ],
+        grace_notes_consecution: core_events.Consecution[core_events.Chronon],
         is_before: bool,
     ) -> dict[str, abjad_parameters.abc.AbjadAttachment]:
-        if not grace_note_consecution_or_after_grace_note_consecution:
+        if not grace_notes_consecution:
             return {}
         converter = _GraceNotesToAbjadVoiceConverter(
             is_before,
@@ -570,18 +559,16 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             self._mutwo_pitch_to_abjad_pitch,
             self._consecution_to_quantized_abjad_container,
         )
-        grace_note_consecution_container = converter.convert(
-            grace_note_consecution_or_after_grace_note_consecution
-        )
+        grace_notes_consecution_container = converter.convert(grace_notes_consecution)
         if is_before:
             name = "grace_note_consecution"
             abjad_attachment_class = abjad_parameters.GraceNoteConsecution
         else:
             name = "after_grace_note_consecution"
             abjad_attachment_class = abjad_parameters.AfterGraceNoteConsecution
-        return {name: abjad_attachment_class(grace_note_consecution_container)}
+        return {name: abjad_attachment_class(grace_notes_consecution_container)}
 
-    def _volume_to_abjad_attachment(
+    def _volume_to_attachment(
         self, volume: music_parameters.abc.Volume
     ) -> dict[str, abjad_parameters.abc.AbjadAttachment]:
         if self._mutwo_volume_to_abjad_attachment_dynamic:
@@ -592,7 +579,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                 return {"dynamic": abjad_attachment_dynamic}
         return {}
 
-    def _get_tempo_attachment_tuple_for_quantized_abjad_leaves(
+    def _get_tempo_attachments_for_leaves(
         self,
         abjad_voice: abjad.Voice,
         tempo_attachment_tuple: tuple[
@@ -607,9 +594,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
         ],
         ...,
     ]:
-        absolute_time_per_leaf = (
-            ConsecutionToAbjadVoice._find_absolute_times_of_abjad_leaves(abjad_voice)
-        )
+        absolute_time_per_leaf = ConsecutionToAbjadVoice._find_leaf_times(abjad_voice)
 
         assert absolute_time_per_leaf == tuple(sorted(absolute_time_per_leaf))
 
@@ -640,7 +625,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
 
         return tuple(leaf_index_to_tempo_attachment_pairs_list)
 
-    def _get_abjad_parameters_for_quantized_abjad_leaves(
+    def _get_params_for_leaves(
         self,
         extracted_data_per_chronon: ExtractedDataPerChronon,
     ) -> tuple[tuple[typing.Optional[abjad_parameters.abc.AbjadAttachment], ...], ...]:
@@ -650,7 +635,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             attachment_name: [None for _ in extracted_data_per_chronon]
             for attachment_name in self._available_attachment_tuple
         }
-        for nth_event, extracted_data in enumerate(extracted_data_per_chronon):
+        for e_index, extracted_data in enumerate(extracted_data_per_chronon):
             (
                 _,
                 volume,
@@ -660,26 +645,22 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                 notation_indicators,
                 *_,
             ) = extracted_data
-            abjad_parameters_for_nth_event = self._volume_to_abjad_attachment(volume)
-            abjad_parameters_for_nth_event.update(
-                self._grace_note_consecution_to_abjad_attachment(
-                    grace_note_consecution, True
-                )
+            abjad_parameters_for_e_index = self._volume_to_attachment(volume)
+            abjad_parameters_for_e_index.update(
+                self._grace_notes_to_attachment(grace_note_consecution, True)
             )
-            abjad_parameters_for_nth_event.update(
-                self._grace_note_consecution_to_abjad_attachment(
-                    after_grace_note_consecution, False
-                )
+            abjad_parameters_for_e_index.update(
+                self._grace_notes_to_attachment(after_grace_note_consecution, False)
             )
-            abjad_parameters_for_nth_event.update(
-                self._indicator_collection_to_abjad_parameters(playing_indicators)
+            abjad_parameters_for_e_index.update(
+                self._indicators_to_params(playing_indicators)
             )
-            abjad_parameters_for_nth_event.update(
-                self._indicator_collection_to_abjad_parameters(notation_indicators)
+            abjad_parameters_for_e_index.update(
+                self._indicators_to_params(notation_indicators)
             )
-            for attachment_name, attachment in abjad_parameters_for_nth_event.items():
+            for attachment_name, attachment in abjad_parameters_for_e_index.items():
                 abjad_parameters_per_type_per_event[attachment_name][
-                    nth_event
+                    e_index
                 ] = attachment
 
         return tuple(
@@ -687,9 +668,9 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             for abjad_parameters in abjad_parameters_per_type_per_event.values()
         )
 
-    def _apply_tempo_on_quantized_abjad_leaves(
+    def _apply_tempo_on_leaves(
         self,
-        quanitisized_abjad_leaf_voice: abjad.Voice,
+        quantized_voice: abjad.Voice,
         tempo: core_parameters.abc.Tempo,
     ):
         tempo_attachment_tuple = None
@@ -698,25 +679,21 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                 tempo
             )
         if tempo_attachment_tuple:
-            leaves = abjad.select.leaves(quanitisized_abjad_leaf_voice)
-            tempo_attachment_data = (
-                self._get_tempo_attachment_tuple_for_quantized_abjad_leaves(
-                    quanitisized_abjad_leaf_voice, tempo_attachment_tuple
-                )
+            leaves = abjad.select.leaves(quantized_voice)
+            tempo_attachment_data = self._get_tempo_attachments_for_leaves(
+                quantized_voice, tempo_attachment_tuple
             )
-            for nth_event, tempo_attachment in tempo_attachment_data:
+            for e_index, tempo_attachment in tempo_attachment_data:
                 try:
-                    tempo_attachment.process_leaf_tuple((leaves[nth_event],), None)
+                    tempo_attachment.process_leaf_tuple((leaves[e_index],), None)
                 except abjad.exceptions.PersistentIndicatorError:
                     pass
 
-    def _apply_abjad_parameters_on_quantized_abjad_leaves(
+    def _apply_params_on_leaves(
         self,
-        quanitisized_abjad_leaf_voice: abjad.Voice,
-        related_abjad_leaf_index_tuple_tuple_per_chronon: tuple[
-            tuple[tuple[int, ...], ...], ...
-        ],
-        abjad_parameters_per_type_per_event_tuple: tuple[
+        quantized_voice: abjad.Voice,
+        leaf_indices_per_chronon: tuple[tuple[tuple[int, ...], ...], ...],
+        params_per_type_per_event: tuple[
             tuple[typing.Optional[abjad_parameters.abc.AbjadAttachment], ...], ...
         ],
     ) -> None:
@@ -736,15 +713,15 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             else:
                 return 0
 
-        abjad_parameters_per_type_per_event_tuple = sorted(
-            abjad_parameters_per_type_per_event_tuple,
+        params_per_type_per_event = sorted(
+            params_per_type_per_event,
             key=filter_key,
         )
 
-        for abjad_parameters_per_type in abjad_parameters_per_type_per_event_tuple:
+        for abjad_parameters_per_type in params_per_type_per_event:
             previous_attachment = None
             for related_abjad_leaf_index_tuple_tuple, attachment in zip(
-                related_abjad_leaf_index_tuple_tuple_per_chronon,
+                leaf_indices_per_chronon,
                 abjad_parameters_per_type,
             ):
                 if attachment and attachment.is_active:
@@ -752,7 +729,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                         self._apply_abjad_attachment(
                             attachment,
                             previous_attachment,
-                            quanitisized_abjad_leaf_voice,
+                            quantized_voice,
                             related_abjad_leaf_index_tuple_tuple,
                         )
                     )
@@ -760,7 +737,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
 
         for index_tuple in reversed(index_tuple_to_remove_list):
             core_utilities.del_nested_item_from_index_sequence(
-                index_tuple, quanitisized_abjad_leaf_voice
+                index_tuple, quantized_voice
             )
 
     def _apply_abjad_attachment(
@@ -804,7 +781,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                 )
         return tuple(index_tuple_to_remove_list)
 
-    def _extract_pitch_list_and_volume_from_chronon(
+    def _extract_pitch_and_volume(
         self, chronon: core_events.Chronon
     ) -> tuple[list[music_parameters.abc.Pitch], music_parameters.abc.Volume]:
         pitch_list = self._chronon_to_pitch_list(chronon)
@@ -819,31 +796,31 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
 
         return pitch_list, volume
 
-    def _extract_data_from_chronon(self, chronon: core_events.Chronon) -> ExtractedData:
+    def _extract_chronon_data(self, chronon: core_events.Chronon) -> ExtractedData:
         # Special case for pitch_list and volume:
         # if pitch_list is empty, there is also no volume. If volume is empty
         # there is also no pitch_list.
-        extracted_data = list(self._extract_pitch_list_and_volume_from_chronon(chronon))
+        extracted_data = list(self._extract_pitch_and_volume(chronon))
 
         for function in self._chronon_to_function_tuple:
             extracted_data.append(function(chronon))  # type: ignore
 
         return tuple(extracted_data)  # type: ignore
 
-    def _apply_pitch_list_on_quantized_abjad_leaf(
+    def _apply_pitches_on_leaf(
         self,
-        quanitisized_abjad_leaf_voice: abjad.Voice,
+        quantized_voice: abjad.Voice,
         abjad_pitch_list: list[abjad.Pitch],
-        related_abjad_leaf_index_tuple_tuple: tuple[tuple[int, ...], ...],
+        leaf_indices: tuple[tuple[int, ...], ...],
     ):
         if len(abjad_pitch_list) == 1:
             leaf_class = abjad.Note
         else:
             leaf_class = abjad.Chord
 
-        for related_abjad_leaf_index_tuple in related_abjad_leaf_index_tuple_tuple:
+        for related_abjad_leaf_index_tuple in leaf_indices:
             abjad_leaf = core_utilities.get_nested_item_from_index_sequence(
-                related_abjad_leaf_index_tuple, quanitisized_abjad_leaf_voice
+                related_abjad_leaf_index_tuple, quantized_voice
             )
             if leaf_class == abjad.Note:
                 abjad_leaf.note_head._written_pitch = abjad_pitch_list[0]
@@ -863,7 +840,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
 
                 core_utilities.set_nested_item_from_index_sequence(
                     related_abjad_leaf_index_tuple,
-                    quanitisized_abjad_leaf_voice,
+                    quantized_voice,
                     new_abjad_leaf,
                 )
 
@@ -877,12 +854,10 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             if self._with_duration_line:
                 break
 
-    def _apply_pitches_on_quantized_abjad_leaves(
+    def _apply_pitches_on_leaves(
         self,
-        quanitisized_abjad_leaf_voice: abjad.Voice,
-        related_abjad_leaf_index_tuple_tuple_per_chronon: tuple[
-            tuple[tuple[int, ...], ...], ...
-        ],
+        quantized_voice: abjad.Voice,
+        leaf_indices_per_chronon: tuple[tuple[tuple[int, ...], ...], ...],
         extracted_data_per_chronon: ExtractedDataPerChronon,
         is_chronon_rest_tuple: tuple[bool, ...],
     ):
@@ -893,7 +868,7 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
         ) in zip(
             is_chronon_rest_tuple,
             extracted_data_per_chronon,
-            related_abjad_leaf_index_tuple_tuple_per_chronon,
+            leaf_indices_per_chronon,
         ):
             if not is_chronon_rest:
                 pitch_list = extracted_data[0]
@@ -901,8 +876,8 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                     self._mutwo_pitch_to_abjad_pitch.convert(pitch)
                     for pitch in pitch_list
                 ]
-                self._apply_pitch_list_on_quantized_abjad_leaf(
-                    quanitisized_abjad_leaf_voice,
+                self._apply_pitches_on_leaf(
+                    quantized_voice,
                     abjad_pitch_list,
                     related_abjad_leaf_index_tuple_tuple,
                 )
@@ -917,14 +892,18 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
             extracted_data_per_chronon, is_chronon_rest_tuple
         ):
             if not is_chronon_rest:
-                lyric = extracted_data[6]
+                lyric_list = extracted_data[6]
+                if (lyric_count := len(lyric_list)) > 1:
+                    raise NotImplementedError("only supports 1 lyric")
+                elif lyric_count == 1:
+                    lyric = lyric_list[0]
+                else:
+                    lyric = music_parameters.DirectLyric("")
                 abjad_string = self._mutwo_lyric_to_abjad_string(lyric)
                 lyric_content_list.append(abjad_string)
         return " ".join(lyric_content_list)
 
-    def _apply_lyrics_on_voice(
-        self, voice_to_apply_lyrics_to: abjad.Voice, lyric_content: str
-    ):
+    def _apply_lyrics(self, voice_to_apply_lyrics_to: abjad.Voice, lyric_content: str):
         # We only add the lyrics in case it isn't empty
         reduced_lyric = tuple(set(filter(bool, lyric_content.split(" "))))
         test_tuple = (
@@ -944,15 +923,15 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
                 voice_to_apply_lyrics_to,
             )
 
-    def _fill_abjad_container(
+    def _fill_container(
         self,
         abjad_container_to_fill: abjad.Voice,
         consecution_to_convert: core_events.Consecution[core_events.Chronon],
     ):
         # first quantize the consecution
         (
-            quanitisized_abjad_leaf_voice,
-            related_abjad_leaf_index_tuple_tuple_per_chronon,
+            quantized_voice,
+            leaf_indices_per_chronon,
             is_chronon_rest_tuple,
         ) = self._consecution_to_quantized_abjad_container.convert(
             consecution_to_convert
@@ -960,48 +939,41 @@ class ConsecutionToAbjadVoice(CompoundToAbjadContainer):
 
         # second, extract data from chronons
         extracted_data_per_chronon = tuple(
-            self._extract_data_from_chronon(chronon)
-            for chronon in consecution_to_convert
+            self._extract_chronon_data(chronon) for chronon in consecution_to_convert
         )
 
         # third, apply pitches on Abjad voice
-        self._apply_pitches_on_quantized_abjad_leaves(
-            quanitisized_abjad_leaf_voice,
-            related_abjad_leaf_index_tuple_tuple_per_chronon,
+        self._apply_pitches_on_leaves(
+            quantized_voice,
+            leaf_indices_per_chronon,
             extracted_data_per_chronon,
             is_chronon_rest_tuple,
         )
 
         # fourth, apply dynamics, tempos and playing_indicators on abjad voice
-        abjad_parameters_per_type_per_event = (
-            self._get_abjad_parameters_for_quantized_abjad_leaves(
-                extracted_data_per_chronon
-            )
+        params_per_type_per_event = self._get_params_for_leaves(
+            extracted_data_per_chronon
         )
         tempo = self._get_tempo(consecution_to_convert)
-        self._apply_tempo_on_quantized_abjad_leaves(
-            quanitisized_abjad_leaf_voice, tempo
-        )
-        self._apply_abjad_parameters_on_quantized_abjad_leaves(
-            quanitisized_abjad_leaf_voice,
-            related_abjad_leaf_index_tuple_tuple_per_chronon,
-            abjad_parameters_per_type_per_event,
+        self._apply_tempo_on_leaves(quantized_voice, tempo)
+        self._apply_params_on_leaves(
+            quantized_voice,
+            leaf_indices_per_chronon,
+            params_per_type_per_event,
         )
 
         # fifth, replace rests lasting one bar with full measure rests
         if self._write_multimeasure_rests:
-            ConsecutionToAbjadVoice._replace_rests_with_full_measure_rests(
-                quanitisized_abjad_leaf_voice
-            )
+            ConsecutionToAbjadVoice._replace_with_multimeasure_rests(quantized_voice)
 
-        # move leaves from 'quanitisized_abjad_leaf_voice' object to target container
-        abjad.mutate.swap(quanitisized_abjad_leaf_voice, abjad_container_to_fill)
+        # move leaves from 'quantized_voice' object to target container
+        abjad.mutate.swap(quantized_voice, abjad_container_to_fill)
 
         # finally: apply lyrics on abjad voice
         lyric_content = self._get_lyric_content(
             extracted_data_per_chronon, is_chronon_rest_tuple
         )
-        self._apply_lyrics_on_voice(abjad_container_to_fill, lyric_content)
+        self._apply_lyrics(abjad_container_to_fill, lyric_content)
 
     # ###################################################################### #
     #               public methods for interaction with the user             #
@@ -1051,10 +1023,10 @@ class _GraceNotesToAbjadVoiceConverter(ConsecutionToAbjadVoice):
         ) -> abjad.Container:
             container = abjad.Container([], simultaneous=False)
             indices = []
-            for nth_event, event in enumerate(consecution_to_convert):
-                leaf = abjad.Note("c", to_abjad_compatible_duration(event.duration))
+            for e_index, e in enumerate(consecution_to_convert):
+                leaf = abjad.Note("c", to_abjad_compatible_duration(e.duration))
                 container.append(leaf)
-                indices.append(((nth_event,),))
+                indices.append(((e_index,),))
             return (
                 container,
                 tuple(indices),
@@ -1106,7 +1078,7 @@ class _GraceNotesToAbjadVoiceConverter(ConsecutionToAbjadVoice):
             lilypond_type_of_abjad_container=None,
         )
 
-    def _grace_note_consecution_to_abjad_attachment(
+    def _grace_notes_to_attachment(
         self,
         grace_note_consecution_or_after_grace_note_consecution: core_events.Consecution[
             core_events.Chronon
@@ -1115,7 +1087,7 @@ class _GraceNotesToAbjadVoiceConverter(ConsecutionToAbjadVoice):
     ) -> dict[str, abjad_parameters.abc.AbjadAttachment]:
         return {}
 
-    def _get_tempo_attachment_tuple_for_quantized_abjad_leaves(
+    def _get_tempo_attachments_for_leaves(
         self,
         abjad_voice: abjad.Voice,
     ) -> tuple[
@@ -1143,26 +1115,18 @@ class CycleBasedNestedCompoundToCompoundToAbjadContainers(
 ):
     def __init__(
         self,
-        compound_to_abjad_container_converter_sequence: typing.Sequence[
-            CompoundToAbjadContainer
-        ],
+        container_converter_sequence: typing.Sequence[CompoundToAbjadContainer],
     ):
-        self._compound_to_abjad_container_converters = (
-            compound_to_abjad_container_converter_sequence
-        )
+        self._container_converter_sequence = container_converter_sequence
 
     def convert(
         self, nested_compound_to_convert: core_events.abc.Compound
     ) -> tuple[CompoundToAbjadContainer, ...]:
-        compound_to_abjad_container_converters_cycle = itertools.cycle(
-            self._compound_to_abjad_container_converters
-        )
-        compound_to_abjad_container_converter_list = []
+        container_converters_cycle = itertools.cycle(self._container_converter_sequence)
+        container_converter_list = []
         for _ in nested_compound_to_convert:
-            compound_to_abjad_container_converter_list.append(
-                next(compound_to_abjad_container_converters_cycle)
-            )
-        return tuple(compound_to_abjad_container_converter_list)
+            container_converter_list.append(next(container_converters_cycle))
+        return tuple(container_converter_list)
 
 
 class TagBasedNestedCompoundToCompoundToAbjadContainers(
@@ -1181,13 +1145,11 @@ class TagBasedNestedCompoundToCompoundToAbjadContainers(
     def convert(
         self, nested_compound_to_convert: core_events.abc.Compound
     ) -> tuple[CompoundToAbjadContainer, ...]:
-        compound_to_abjad_container_converter_list = []
+        container_converter_list = []
         for compound in nested_compound_to_convert:
             tag = self._compound_to_tag(compound)
             try:
-                compound_to_abjad_container_converter = (
-                    self._tag_to_abjad_converter_dict[tag]
-                )
+                container_converter = self._tag_to_abjad_converter_dict[tag]
             except KeyError:
                 raise KeyError(
                     f"Found undefined tag '{tag}'."
@@ -1195,16 +1157,14 @@ class TagBasedNestedCompoundToCompoundToAbjadContainers(
                     f" '{self._tag_to_abjad_converter_dict.keys()}'"
                 )
 
-            compound_to_abjad_container_converter_list.append(
-                compound_to_abjad_container_converter
-            )
-        return tuple(compound_to_abjad_container_converter_list)
+            container_converter_list.append(container_converter)
+        return tuple(container_converter_list)
 
 
 class NestedCompoundToAbjadContainer(CompoundToAbjadContainer):
     def __init__(
         self,
-        nested_compound_to_compound_to_abjad_container_converters_converter: NestedCompoundToCompoundToAbjadContainers,
+        nested_converter: NestedCompoundToCompoundToAbjadContainers,
         abjad_container_class: typing.Type[abjad.Container],
         lilypond_type_of_abjad_container: str,
         compound_to_abjad_container_name: typing.Callable[
@@ -1224,21 +1184,19 @@ class NestedCompoundToAbjadContainer(CompoundToAbjadContainer):
             pre_process_abjad_container_routine_sequence,
             post_process_abjad_container_routine_sequence,
         )
-        self._nested_compound_to_compound_to_abjad_container_converters_converter = (
-            nested_compound_to_compound_to_abjad_container_converters_converter
-        )
+        self._nested_converter = nested_converter
 
-    def _fill_abjad_container(
+    def _fill_container(
         self,
         abjad_container_to_fill: abjad.Container,
         nested_compound_to_convert: core_events.abc.Compound,
     ):
-        compound_to_abjad_container_converter_tuple = self._nested_compound_to_compound_to_abjad_container_converters_converter.convert(
+        container_converter_tuple = self._nested_converter.convert(
             nested_compound_to_convert
         )
-        for compound, compound_to_abjad_container_converter in zip(
+        for compound, container_converter in zip(
             nested_compound_to_convert,
-            compound_to_abjad_container_converter_tuple,
+            container_converter_tuple,
         ):
-            converted_compound = compound_to_abjad_container_converter.convert(compound)
+            converted_compound = container_converter.convert(compound)
             abjad_container_to_fill.append(converted_compound)

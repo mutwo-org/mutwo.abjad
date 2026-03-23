@@ -111,8 +111,6 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
 
     @t(RESET_TESTS, FORCE_PNG)
     def test_lyric(self):
-        lbl = music_parameters.LanguageBasedLyric
-        lbs = music_parameters.LanguageBasedSyllable
         return dict(
             converter=abjad_converters.ConsecutionToAbjadVoice(
                 abjad_converters.LeafMakerConsecutionToQuantizedAbjadContainer()
@@ -120,11 +118,11 @@ class IntegrationTest(abjad_utilities.AbjadTestCase):
             ev=seq(
                 [
                     n([], 1),
-                    n("c", 1, lyric=lbl("helloT")),
-                    n("d", f(1, 8), lyric=lbl("")),
-                    n("e", f(1, 4), lyric=lbl("i")),
-                    n("e", f(3, 8), lyric=lbs(False, "ho")),
-                    n("e", f(1, 4), lyric=lbs(True, "pe")),
+                    n("c", 1, lyric_list="helloT"),
+                    n("d", f(1, 8), lyric_list=""),
+                    n("e", f(1, 4), lyric_list="i"),
+                    n("e", f(3, 8), lyric_list="ho --"),
+                    n("e", f(1, 4), lyric_list="pe"),
                 ]
             ),
         )

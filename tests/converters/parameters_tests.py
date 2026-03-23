@@ -121,18 +121,8 @@ class MutwoLyricToAbjadStringTest(unittest.TestCase):
 
     def test_convert_not_last_syllable(self):
         self.assertEqual(
-            self.mutwo_lyric_to_abjad_string(
-                music_parameters.LanguageBasedSyllable(False, "hel")
-            ),
+            self.mutwo_lyric_to_abjad_string(music_parameters.NotationLyric("hel --")),
             "hel --",
-        )
-
-    def test_convert_last_syllable(self):
-        self.assertEqual(
-            self.mutwo_lyric_to_abjad_string(
-                music_parameters.LanguageBasedSyllable(True, "lo")
-            ),
-            "lo",
         )
 
 
